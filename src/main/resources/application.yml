@@ -1,0 +1,22 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: online-ticket-sales
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+open:
+  api:
+    title: API document
+    version: v1.0.0
+    description: API Service
+    serverUrl: http://localhost:8080
+    serverName: Server
+    license: https://github.com/gahoccode215/Summer2025_SBA301_2
