@@ -3,10 +3,19 @@ server:
 spring:
   application:
     name: online-ticket-sales
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_ticket_sales_db?createDatabaseIfNotExist=true
+    username: root
+    password: 12345
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/sba301
 springdoc:
   api-docs:
     enabled: true

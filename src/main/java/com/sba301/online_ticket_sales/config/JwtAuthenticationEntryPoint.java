@@ -13,6 +13,8 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void commence(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
@@ -26,8 +28,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .build();
-
-        ObjectMapper objectMapper = new ObjectMapper();
 
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         response.flushBuffer();
