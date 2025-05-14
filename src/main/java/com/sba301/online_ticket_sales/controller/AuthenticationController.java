@@ -1,8 +1,11 @@
 package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.ApiResponse;
+import com.sba301.online_ticket_sales.dto.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.response.LoginResponse;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@Tag(name = "Authentication Controller")
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
     AuthenticationService authenticationService;
@@ -29,6 +33,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Đăng ký thành công")
+                .build());
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.<LoginResponse>builder()
+                .result(authenticationService.login(request))
+                .code(HttpStatus.OK.value())
+                .message("Đăng nhập thành công")
                 .build());
     }
 }

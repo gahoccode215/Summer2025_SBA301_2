@@ -3,7 +3,9 @@ package com.sba301.online_ticket_sales.service.impl;
 import com.sba301.online_ticket_sales.dto.identity.Credential;
 import com.sba301.online_ticket_sales.dto.identity.TokenExchangeParam;
 import com.sba301.online_ticket_sales.dto.identity.UserCreationParam;
+import com.sba301.online_ticket_sales.dto.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.response.LoginResponse;
 import com.sba301.online_ticket_sales.entity.User;
 //import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import com.sba301.online_ticket_sales.exception.ErrorNormalizer;
@@ -82,6 +84,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setUserId(userId);
             userRepository.save(user);
         } catch (FeignException ex) {
+            throw errorNormalizer.handleKeyCloakException(ex);
+        }
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        try {
+            log.info("Attempting login for user: {}", request.getEmail());
+            // Call Keycloak token endpoint with password grant type
+            LoginResponse loginResponse = identityClient.login(TokenExchangeParam.builder()
+                    .grant_type("password")
+                    .client_id(clientId)
+                    .client_secret(clientSecret)
+                    .username(request.getEmail())
+                    .password(request.getPassword())
+                    .scope("openid")
+                    .build());
+
+            log.info("Login successful for user: {}", request.getEmail());
+            return loginResponse;
+        } catch (FeignException ex) {
+            log.error("Login failed for user: {}", request.getEmail(), ex);
             throw errorNormalizer.handleKeyCloakException(ex);
         }
     }
