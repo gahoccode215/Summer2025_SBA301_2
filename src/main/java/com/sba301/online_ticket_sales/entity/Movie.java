@@ -8,6 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "movies")
@@ -31,5 +33,21 @@ public class Movie extends AbstractEntity{
     Country country;
     @Enumerated(EnumType.STRING)
     MovieStatus movieStatus;
+
+    @ManyToMany
+    @JoinTable(
+            name = "movie_directors",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    List<Person> directors = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "movie_actors",
+            joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "person_id")
+    )
+    List<Person> actors = new ArrayList<>();
 
 }
