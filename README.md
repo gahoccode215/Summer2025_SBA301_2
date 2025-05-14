@@ -1,4 +1,4 @@
-# KeyCloak integration
+# How to start
 
 ## Prerequisites
 
