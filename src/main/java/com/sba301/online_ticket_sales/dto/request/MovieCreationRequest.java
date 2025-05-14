@@ -1,7 +1,6 @@
 package com.sba301.online_ticket_sales.dto.request;
 
 
-import com.sba301.online_ticket_sales.enums.Country;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +19,5 @@ public class MovieCreationRequest {
     LocalDate releaseDate;
     String trailerUrl;
     String director;
-    Country country;
     MovieStatus movieStatus;
 }

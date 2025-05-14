@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.entity;
 
-import com.sba301.online_ticket_sales.enums.Country;
 import com.sba301.online_ticket_sales.enums.Occupation;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,10 +27,12 @@ public class Person extends AbstractEntity {
     LocalDate birthDate;
     Double height;
     @Enumerated(EnumType.STRING)
-    Country nationality;
-    @Enumerated(EnumType.STRING)
     Occupation occupation;
     String biography;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id", nullable = false)
+    private Country country;
 
     @ElementCollection
     @CollectionTable(name = "person_images", joinColumns = @JoinColumn(name = "person_id"))

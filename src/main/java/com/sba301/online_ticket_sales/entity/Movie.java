@@ -1,13 +1,11 @@
 package com.sba301.online_ticket_sales.entity;
 
-import com.sba301.online_ticket_sales.enums.Country;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,9 +28,11 @@ public class Movie extends AbstractEntity{
     String trailerUrl;
     String director;
     @Enumerated(EnumType.STRING)
-    Country country;
-    @Enumerated(EnumType.STRING)
     MovieStatus movieStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id", nullable = false)
+    private Country country;
 
     @ManyToMany
     @JoinTable(
