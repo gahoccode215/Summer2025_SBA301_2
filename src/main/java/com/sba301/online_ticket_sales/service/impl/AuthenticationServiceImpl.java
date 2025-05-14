@@ -6,6 +6,7 @@ import com.sba301.online_ticket_sales.dto.identity.UserCreationParam;
 import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
 import com.sba301.online_ticket_sales.entity.User;
 //import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
+import com.sba301.online_ticket_sales.exception.ErrorNormalizer;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import com.sba301.online_ticket_sales.repository.IdentityClient;
 import com.sba301.online_ticket_sales.repository.UserRepository;
@@ -31,6 +32,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     IdentityClient identityClient;
     AuthenticationMapper authenticationMapper;
     UserRepository userRepository;
+    ErrorNormalizer errorNormalizer;
 
     @Value("${idp.client-id}")
     @NonFinal
@@ -80,13 +82,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setUserId(userId);
             userRepository.save(user);
         } catch (FeignException ex) {
-            log.error(ex.getMessage());
+            throw errorNormalizer.handleKeyCloakException(ex);
         }
     }
 
     private String extractUserId(ResponseEntity<?> response) {
         String location = response.getHeaders().get("Location").getFirst();
-        String[] splitedStr = location.split("/");
-        return splitedStr[splitedStr.length - 1];
+        String[] splitStr = location.split("/");
+        return splitStr[splitStr.length - 1];
     }
 }

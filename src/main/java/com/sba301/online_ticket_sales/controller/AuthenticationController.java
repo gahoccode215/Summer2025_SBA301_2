@@ -27,7 +27,7 @@ public class AuthenticationController {
     public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest request) {
         authenticationService.register(request);
         return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.OK.value())
+                .code(HttpStatus.CREATED.value())
                 .message("Đăng ký thành công")
                 .build());
     }
