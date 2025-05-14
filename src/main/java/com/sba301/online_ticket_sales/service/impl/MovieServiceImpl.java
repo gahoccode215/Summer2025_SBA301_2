@@ -19,9 +19,11 @@ public class MovieServiceImpl implements MovieService {
 
     MovieRepository movieRepository;
     MovieMapper movieMapper;
+
     @Override
     public void createMovie(MovieCreationRequest request) {
-        Movie movie = movieMapper.toMovie(request);
-        movieRepository.save(movie);
+//        Movie movie = movieMapper.toMovie(request);
+//        movieRepository.save(movie);
+        movieRepository.save(movieMapper.toMovie(request));
     }
 }

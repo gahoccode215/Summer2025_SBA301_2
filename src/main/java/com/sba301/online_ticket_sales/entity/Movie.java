@@ -1,5 +1,7 @@
 package com.sba301.online_ticket_sales.entity;
 
+import com.sba301.online_ticket_sales.enums.Country;
+import com.sba301.online_ticket_sales.enums.MovieStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Movie {
+public class Movie extends AbstractEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -25,17 +27,9 @@ public class Movie {
     LocalDate releaseDate;
     String trailerUrl;
     String director;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    @Enumerated(EnumType.STRING)
+    Country country;
+    @Enumerated(EnumType.STRING)
+    MovieStatus movieStatus;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

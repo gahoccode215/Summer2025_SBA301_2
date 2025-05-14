@@ -13,9 +13,11 @@ public class MovieMapperImpl implements MovieMapper {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .duration(request.getDuration())
+                .country(request.getCountry())
                 .director(request.getDirector())
                 .trailerUrl(request.getTrailerUrl())
                 .releaseDate(request.getReleaseDate())
+                .movieStatus(request.getMovieStatus())
                 .build();
     }
 }
