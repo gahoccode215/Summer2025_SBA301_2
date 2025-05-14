@@ -1,0 +1,36 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: online-ticket-sales
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_ticket_sales_db?createDatabaseIfNotExist=true
+    username: root
+    password: 12345
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/sba301
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+open:
+  api:
+    title: API document
+    version: v1.0.0
+    description: API Service
+    serverUrl: http://localhost:8080
+    serverName: Server
+    license: https://github.com/gahoccode215/Summer2025_SBA301_2
+idp:
+  url: ${IDP_URL:http://localhost:8180}
+  client-id: ${KEYCLOAK_CLIENT_ID}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET}
+  realm: sba301
