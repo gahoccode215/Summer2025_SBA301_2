@@ -2,7 +2,7 @@ package com.sba301.online_ticket_sales.config;
 
 import java.io.IOException;
 
-import com.sba301.online_ticket_sales.dto.ApiResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

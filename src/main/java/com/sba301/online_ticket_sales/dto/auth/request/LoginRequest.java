@@ -1,4 +1,4 @@
-package com.sba301.online_ticket_sales.dto.request;
+package com.sba301.online_ticket_sales.dto.auth.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

@@ -1,9 +1,9 @@
 package com.sba301.online_ticket_sales.controller;
 
-import com.sba301.online_ticket_sales.dto.ApiResponse;
-import com.sba301.online_ticket_sales.dto.request.LoginRequest;
-import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
-import com.sba301.online_ticket_sales.dto.response.LoginResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponse;
+import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
+import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.auth.response.LoginResponse;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

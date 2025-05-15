@@ -31,8 +31,8 @@ public class Person extends AbstractEntity {
     String biography;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id", nullable = false)
-    private Country country;
+    @JoinColumn(name = "country_id")
+    Country country;
 
     @ElementCollection
     @CollectionTable(name = "person_images", joinColumns = @JoinColumn(name = "person_id"))

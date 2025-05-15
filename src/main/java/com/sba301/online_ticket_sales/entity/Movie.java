@@ -31,7 +31,7 @@ public class Movie extends AbstractEntity{
     MovieStatus movieStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id", nullable = false)
+    @JoinColumn(name = "country_id")
     private Country country;
 
     @ManyToMany

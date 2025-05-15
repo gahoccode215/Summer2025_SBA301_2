@@ -1,6 +1,6 @@
 package com.sba301.online_ticket_sales.exception;
 
-import com.sba301.online_ticket_sales.dto.ApiResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

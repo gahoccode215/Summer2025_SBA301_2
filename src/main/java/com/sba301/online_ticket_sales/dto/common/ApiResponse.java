@@ -1,4 +1,4 @@
-package com.sba301.online_ticket_sales.dto;
+package com.sba301.online_ticket_sales.dto.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

@@ -1,6 +1,6 @@
 package com.sba301.online_ticket_sales.mapper.impl;
 
-import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import org.springframework.stereotype.Component;

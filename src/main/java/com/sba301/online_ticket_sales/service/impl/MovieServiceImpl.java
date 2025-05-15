@@ -1,7 +1,6 @@
 package com.sba301.online_ticket_sales.service.impl;
 
-import com.sba301.online_ticket_sales.dto.request.MovieCreationRequest;
-import com.sba301.online_ticket_sales.entity.Movie;
+import com.sba301.online_ticket_sales.dto.movie.request.MovieCreationRequest;
 import com.sba301.online_ticket_sales.mapper.MovieMapper;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.service.MovieService;
