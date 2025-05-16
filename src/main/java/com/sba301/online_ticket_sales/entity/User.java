@@ -30,9 +30,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AbstractEntity<Long> implements UserDetails {
+public class User extends AbstractEntity<Long> implements UserDetails, Serializable {
+    @Column(name = "full_name")
     String fullName;
+
+    @Column(name = "email", unique = true)
     String email;
+
     @Enumerated(EnumType.STRING)
     Gender gender;
 
@@ -40,7 +44,10 @@ public class User extends AbstractEntity<Long> implements UserDetails {
     @Column(name = "status")
     UserStatus status;
 
+    @Column(name = "password")
     String password;
+
+    @Column(name = "birth_date")
     LocalDate birthDate;
 
     @ManyToMany()
@@ -78,6 +85,6 @@ public class User extends AbstractEntity<Long> implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return UserStatus.ACTIVE.equals(status);
     }
 }
