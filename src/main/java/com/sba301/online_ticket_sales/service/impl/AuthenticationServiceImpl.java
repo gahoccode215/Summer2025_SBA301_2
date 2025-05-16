@@ -11,10 +11,12 @@ import com.sba301.online_ticket_sales.repository.UserRepository;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import com.sba301.online_ticket_sales.service.JwtService;
 import com.sba301.online_ticket_sales.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +24,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
+import static org.springframework.http.HttpHeaders.REFERER;
 
 @Service
 @Slf4j
@@ -66,5 +71,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .refreshToken(refreshToken)
                 .userId(user.getId())
                 .build();
+    }
+
+    @Override
+    public String logout(HttpServletRequest request) {
+        final String token = request.getHeader(REFERER);
+        if (StringUtils.isBlank(token)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        final String userName = jwtService.extractEmail(token, ACCESS_TOKEN);
+
+        // tokenService.delete(userName);
+//        redisTokenService.remove(userName);
+
+        return "Removed!";
     }
 }

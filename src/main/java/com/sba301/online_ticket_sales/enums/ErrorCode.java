@@ -13,6 +13,7 @@ public enum ErrorCode {
     EMAIL_EXSITED(1002, "Email đã tồn tại", HttpStatus.BAD_REQUEST),
     EMAIL_OR_PASSWORD_NOT_CORRECT(1003, "Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
     ACCOUNT_HAS_BEEN_DISABLE(1004, "Tài khoản của bạn chưa kích hoạt hoặc bị khóa", HttpStatus.BAD_REQUEST),
+    INVALID_TOKEN(1005, "Invalid token", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
