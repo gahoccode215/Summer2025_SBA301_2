@@ -30,11 +30,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AbstractEntity<Long> implements UserDetails {
+public class User extends AbstractEntity<Long> implements UserDetails, Serializable {
     @Column(name = "full_name")
     String fullName;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email", unique = true, nullable = false)
     String email;
 
     @Enumerated(EnumType.STRING)
@@ -44,7 +44,7 @@ public class User extends AbstractEntity<Long> implements UserDetails {
     @Column(name = "status")
     UserStatus status;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     String password;
 
     @Column(name = "birth_date")

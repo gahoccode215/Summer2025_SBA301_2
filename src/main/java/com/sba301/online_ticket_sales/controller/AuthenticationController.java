@@ -1,9 +1,9 @@
 package com.sba301.online_ticket_sales.controller;
 
-import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
+import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
-import com.sba301.online_ticket_sales.dto.auth.response.LoginResponse;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +34,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("Đăng ký thành công")
+                .build());
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<TokenResponse>> accessToken(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Đăng nhập thành công")
+                .result(authenticationService.login(request))
                 .build());
     }
 }
