@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -22,19 +23,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AbstractEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-
-    // Userid from keycloak
-    String userId;
+public class User extends AbstractEntity<String>{
     String fullName;
     String email;
     @Enumerated(EnumType.STRING)
     Gender gender;
     String password;
-    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate birthDate;
-
 }

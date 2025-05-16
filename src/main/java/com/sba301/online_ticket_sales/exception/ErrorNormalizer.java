@@ -26,6 +26,10 @@ public class ErrorNormalizer {
         errorCodeMap = new HashMap<>();
 
         errorCodeMap.put("User exists with same email", ErrorCode.EMAIL_EXSITED);
+        errorCodeMap.put("invalid_grant", ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
+        errorCodeMap.put("Invalid user credentials", ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
+        errorCodeMap.put("error-invalid-length", ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
+        errorCodeMap.put("error-invalid-email", ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
     }
 
     public AppException handleKeyCloakException(FeignException exception) {

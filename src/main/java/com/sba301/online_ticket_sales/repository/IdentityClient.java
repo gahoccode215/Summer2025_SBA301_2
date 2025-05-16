@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.dto.identity.TokenExchangeParam;
 import com.sba301.online_ticket_sales.dto.identity.TokenExchangeResponse;
 import com.sba301.online_ticket_sales.dto.identity.UserCreationParam;
 import com.sba301.online_ticket_sales.dto.auth.response.LoginResponse;
+import feign.QueryMap;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface IdentityClient {
     @PostMapping(value = "/realms/${idp.realm}/protocol/openid-connect/token",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-//    TokenExchangeResponse exchangeToken(@QueryMap TokenExchangeParam param);
-    TokenExchangeResponse exchangeToken(@RequestBody TokenExchangeParam param);
+    TokenExchangeResponse exchangeToken(@QueryMap TokenExchangeParam param);
+//    TokenExchangeResponse exchangeToken(@RequestBody TokenExchangeParam param);
 
-    @PostMapping(value = "/admin/realms/sba301/users",
+    @PostMapping(value = "/admin/realms/${idp.realm}/users",
             consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<?> createUser(
             @RequestHeader("Authorization") String token,

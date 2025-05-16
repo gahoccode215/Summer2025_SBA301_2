@@ -10,7 +10,8 @@ public enum ErrorCode {
     // AUTHENTICATION EXCEPTION (1000 - 1099)
     UNAUTHENTICATED(1000, "Vui lòng đăng nhập để sử dụng chức năng này", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1001, "Không thể thực hiện chức năng này", HttpStatus.FORBIDDEN),
-    EMAIL_EXSITED(1002, "Email đã tồn tại", HttpStatus.BAD_REQUEST)
+    EMAIL_EXSITED(1002, "Email đã tồn tại", HttpStatus.BAD_REQUEST),
+    EMAIL_OR_PASSWORD_NOT_CORRECT(1003, "Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

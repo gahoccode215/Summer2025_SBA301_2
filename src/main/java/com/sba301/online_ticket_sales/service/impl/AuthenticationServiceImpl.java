@@ -8,6 +8,8 @@ import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.dto.auth.response.LoginResponse;
 import com.sba301.online_ticket_sales.entity.User;
 //import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.exception.ErrorNormalizer;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import com.sba301.online_ticket_sales.repository.IdentityClient;
@@ -105,6 +107,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return loginResponse;
         } catch (FeignException ex) {
             log.error("Login failed for user: {}", request.getEmail(), ex);
+//            throw new AppException(ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
             throw errorNormalizer.handleKeyCloakException(ex);
         }
     }

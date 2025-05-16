@@ -8,9 +8,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+
+
+    /**
+     * Xử lý lỗi không có quyền truy cập (401 Unauthorized).
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException exception) {
+        log.warn("Access Denied: {}", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.<Void>builder()
+                        .code(HttpStatus.UNAUTHORIZED.value())
+                        .message(ErrorCode.UNAUTHENTICATED.getMessage())
+                        .build());
+    }
 
 
     /**
