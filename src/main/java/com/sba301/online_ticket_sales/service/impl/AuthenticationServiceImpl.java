@@ -1,27 +1,24 @@
 package com.sba301.online_ticket_sales.service.impl;
 
-import com.sba301.online_ticket_sales.dto.identity.Credential;
-import com.sba301.online_ticket_sales.dto.identity.TokenExchangeParam;
-import com.sba301.online_ticket_sales.dto.identity.UserCreationParam;
-import com.sba301.online_ticket_sales.dto.request.LoginRequest;
-import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
-import com.sba301.online_ticket_sales.dto.response.LoginResponse;
+import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
+import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import com.sba301.online_ticket_sales.entity.User;
-//import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
-import com.sba301.online_ticket_sales.exception.ErrorNormalizer;
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
-import com.sba301.online_ticket_sales.repository.IdentityClient;
 import com.sba301.online_ticket_sales.repository.UserRepository;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
-import feign.FeignException;
+import com.sba301.online_ticket_sales.service.JwtService;
+import com.sba301.online_ticket_sales.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,88 +28,43 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements AuthenticationService {
-    IdentityClient identityClient;
-    AuthenticationMapper authenticationMapper;
+
     UserRepository userRepository;
-    ErrorNormalizer errorNormalizer;
-
-    @Value("${idp.client-id}")
-    @NonFinal
-    String clientId;
-
-    @Value("${idp.client-secret}")
-    @NonFinal
-    String clientSecret;
-
+    AuthenticationMapper authenticationMapper;
+    UserService userService;
+    AuthenticationManager authenticationManager;
+    JwtService jwtService;
 
     @Override
     public void register(RegisterRequest request) {
-        try {
-            log.info("CLIENT ID: {}", clientId);
-            // Create account in KeyCloak
-            // Exchange client Token
-            var token = identityClient.exchangeToken(TokenExchangeParam.builder()
-                    .grant_type("client_credentials")
-                    .client_id(clientId)
-                    .client_secret(clientSecret)
-                    .scope("openid")
-                    .build());
-            log.info("TokenInfo {}", token);
-            // Create user with client Token and given info
-            // Get userId of keyCloak account
-            var creationResponse = identityClient.createUser(
-                    "Bearer " + token.getAccessToken(),
-                    UserCreationParam.builder()
-                            .username(request.getEmail())
-                            .firstName(request.getFullName())
-                            .lastName(request.getFullName())
-                            .email(request.getEmail())
-                            .enabled(true)
-                            .emailVerified(false)
-                            .credentials(List.of(Credential.builder()
-                                    .type("password")
-                                    .temporary(false)
-                                    .value(request.getPassword())
-                                    .build()))
-                            .build());
-
-            // Assign userId of keycloak to User
-            String userId = extractUserId(creationResponse);
-            log.info("UserId {}", userId);
-
-            User user = authenticationMapper.toUser(request);
-            user.setUserId(userId);
-            userRepository.save(user);
-        } catch (FeignException ex) {
-            throw errorNormalizer.handleKeyCloakException(ex);
-        }
+        userRepository.save(authenticationMapper.toUser(request));
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
-        try {
-            log.info("Attempting login for user: {}", request.getEmail());
-            // Call Keycloak token endpoint with password grant type
-            LoginResponse loginResponse = identityClient.login(TokenExchangeParam.builder()
-                    .grant_type("password")
-                    .client_id(clientId)
-                    .client_secret(clientSecret)
-                    .username(request.getEmail())
-                    .password(request.getPassword())
-                    .scope("openid")
-                    .build());
-
-            log.info("Login successful for user: {}", request.getEmail());
-            return loginResponse;
-        } catch (FeignException ex) {
-            log.error("Login failed for user: {}", request.getEmail(), ex);
-            throw errorNormalizer.handleKeyCloakException(ex);
+    public TokenResponse login(LoginRequest request) {
+        User user = userService.getByEmail(request.getEmail());
+        if(!user.isEnabled()){
+            throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
         }
-    }
+        List<String> roles = userService.getAllRolesByUserId(user.getId());
+        List<SimpleGrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword(), authorities));
+        }catch (BadCredentialsException e){
+            throw new AppException(ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
+        }
 
-    private String extractUserId(ResponseEntity<?> response) {
-        String location = response.getHeaders().get("Location").getFirst();
-        String[] splitStr = location.split("/");
-        return splitStr[splitStr.length - 1];
+
+        // create new access token
+        String accessToken = jwtService.generateToken(user);
+
+        // create new refresh token
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .build();
     }
 }

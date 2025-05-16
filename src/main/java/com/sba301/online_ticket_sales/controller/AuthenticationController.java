@@ -1,22 +1,23 @@
 package com.sba301.online_ticket_sales.controller;
 
-import com.sba301.online_ticket_sales.dto.ApiResponse;
-import com.sba301.online_ticket_sales.dto.request.LoginRequest;
-import com.sba301.online_ticket_sales.dto.request.RegisterRequest;
-import com.sba301.online_ticket_sales.dto.response.LoginResponse;
+import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
+import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponse;
+import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -28,20 +29,20 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<Void>> register(@RequestBody @Valid RegisterRequest request) {
         authenticationService.register(request);
         return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.CREATED.value())
+                .code(HttpStatus.OK.value())
                 .message("Đăng ký thành công")
                 .build());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(ApiResponse.<LoginResponse>builder()
-                .result(authenticationService.login(request))
+    public ResponseEntity<ApiResponse<TokenResponse>> accessToken(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Đăng nhập thành công")
+                .result(authenticationService.login(request))
                 .build());
     }
 }

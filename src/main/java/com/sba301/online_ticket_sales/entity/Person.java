@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Person extends AbstractEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+public class Person extends AbstractEntity<Integer> implements Serializable {
+
 
     String name;
     String description;
@@ -31,8 +30,8 @@ public class Person extends AbstractEntity {
     String biography;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id", nullable = false)
-    private Country country;
+    @JoinColumn(name = "country_id")
+    Country country;
 
     @ElementCollection
     @CollectionTable(name = "person_images", joinColumns = @JoinColumn(name = "person_id"))
