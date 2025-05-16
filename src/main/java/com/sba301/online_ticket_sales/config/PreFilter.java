@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.config;
 
+import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 import com.sba301.online_ticket_sales.service.JwtService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.FilterChain;
@@ -19,9 +20,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
+
 import java.io.IOException;
 
-import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component

@@ -30,7 +30,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User extends AbstractEntity<Long> implements UserDetails, Serializable {
+public class User extends AbstractEntity<Long> implements UserDetails {
     @Column(name = "full_name")
     String fullName;
 
@@ -65,7 +65,7 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
 
     @Override
     public String getUsername() {
-        return "";
+        return this.email;
     }
 
     @Override
@@ -86,5 +86,12 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     @Override
     public boolean isEnabled() {
         return UserStatus.ACTIVE.equals(status);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (status == null) {
+            status = UserStatus.ACTIVE;
+        }
     }
 }

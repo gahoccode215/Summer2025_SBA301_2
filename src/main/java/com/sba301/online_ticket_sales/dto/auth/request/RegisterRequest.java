@@ -21,5 +21,4 @@ public class RegisterRequest {
     Gender gender;
     LocalDate birthDate;
     String password;
-
 }
