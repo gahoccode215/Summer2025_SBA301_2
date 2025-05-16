@@ -27,21 +27,5 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     AuthenticationService authenticationService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterRequest request) {
-        authenticationService.register(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.CREATED.value())
-                .message("Đăng ký thành công")
-                .build());
-    }
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(ApiResponse.<LoginResponse>builder()
-                .result(authenticationService.login(request))
-                .code(HttpStatus.OK.value())
-                .message("Đăng nhập thành công")
-                .build());
-    }
 }

@@ -17,7 +17,7 @@ import java.util.Date;
 @Getter
 @Setter
 @MappedSuperclass
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class AbstractEntity<T extends Serializable> implements Serializable {
 
     @Id
@@ -35,12 +35,10 @@ public abstract class AbstractEntity<T extends Serializable> implements Serializ
 
     @Column(name = "created_at")
     @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
     LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
     LocalDateTime updatedAt;
 
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Movie extends AbstractEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
+public class Movie extends AbstractEntity<Long> implements Serializable {
     String title;
     String description;
     Integer duration;
