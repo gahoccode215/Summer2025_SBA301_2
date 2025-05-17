@@ -55,4 +55,12 @@ public class AuthenticationController {
                 .message("Đăng xuất thành công")
                 .build());
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(HttpServletRequest request) {
+        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
+                .code(HttpStatus.OK.value())
+                .result(authenticationService.refreshToken(request))
+                .build());
+    }
 }

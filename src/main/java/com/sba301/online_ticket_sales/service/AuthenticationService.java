@@ -9,4 +9,5 @@ public interface AuthenticationService {
     void register(RegisterRequest request);
     TokenResponse login(LoginRequest request);
     void logout(HttpServletRequest request);
+    TokenResponse refreshToken(HttpServletRequest request);
 }

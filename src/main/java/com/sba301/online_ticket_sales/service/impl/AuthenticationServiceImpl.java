@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
+import static com.sba301.online_ticket_sales.enums.TokenType.REFRESH_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.REFERER;
 
@@ -91,5 +92,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
         log.info("TOI DAY ROI NE");
         redisTokenService.remove(email);
+    }
+
+    @Override
+    public TokenResponse refreshToken(HttpServletRequest request) {
+        final String refreshToken = request.getHeader(AUTHORIZATION);
+
+        if (StringUtils.isBlank(refreshToken)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+        final String userName = jwtService.extractEmail(refreshToken, REFRESH_TOKEN);
+        var user = userService.getByEmail(userName);
+        if (!jwtService.isValid(refreshToken, REFRESH_TOKEN, user)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // create new access token
+        String accessToken = jwtService.generateToken(user);
+
+        // save token to db
+        // tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        redisTokenService.save(RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .build();
     }
 }

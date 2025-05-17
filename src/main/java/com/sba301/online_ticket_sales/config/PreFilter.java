@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
-
 import java.io.IOException;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -38,45 +37,77 @@ public class PreFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final RedisTokenService redisTokenService;
 
+    //    @Override
+//    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+//        log.info("---------- doFilterInternal ----------");
+//
+//        final String authHeader = request.getHeader(AUTHORIZATION);
+//        log.info("Authorization: {}", authHeader);
+//
+//        if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
+//            filterChain.doFilter(request, response);
+//            throw new AppException(ErrorCode.UNAUTHENTICATED);
+//        }
+//        final String token = authHeader.substring(7);
+//        final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
+//        if (StringUtils.isBlank(email)) {
+//            log.warn("Token JWT không hợp lệ");
+//            throw new AppException(ErrorCode.UNAUTHENTICATED);
+//        }
+//
+//
+//        // Kiểm tra token có tồn tại trong Redis
+//        if (!redisTokenService.isExists(email)) {
+//            log.warn("Token cho email {} đã bị vô hiệu hóa", email);
+//            throw new AppException(ErrorCode.UNAUTHENTICATED);
+//        }
+//
+//
+//        if (StringUtils.isNotEmpty(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
+//            log.info("DAY NE");
+//            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
+//            if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
+//                log.info("ALO ALO");
+//                SecurityContext context = SecurityContextHolder.createEmptyContext();
+//                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//                context.setAuthentication(authentication);
+//                SecurityContextHolder.setContext(context);
+//                log.info("TOI DUOC DAY");
+//            }
+//        }
+//
+//        filterChain.doFilter(request, response);
+//    }
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         log.info("---------- doFilterInternal ----------");
 
-        final String authHeader = request.getHeader(AUTHORIZATION);
-        log.info("Authorization: {}", authHeader);
+        final String authorization = request.getHeader(AUTHORIZATION);
+        //log.info("Authorization: {}", authorization);
 
-        if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
+        if (StringUtils.isBlank(authorization) || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        final String token = authHeader.substring(7);
-        final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
-        if (StringUtils.isBlank(email)) {
-            log.warn("Token JWT không hợp lệ");
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            return;
         }
 
-        // Kiểm tra token có tồn tại trong Redis
-        if (!redisTokenService.isExists(email)) {
-            log.warn("Token cho email {} đã bị vô hiệu hóa", email);
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
+        final String token = authorization.substring("Bearer ".length());
+        //log.info("Token: {}", token);
 
+        final String userName = jwtService.extractEmail(token, ACCESS_TOKEN);
 
-        if (StringUtils.isNotEmpty(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            log.info("DAY NE");
-            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
+        if (StringUtils.isNotEmpty(userName) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userName);
             if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
-                log.info("ALO ALO");
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 context.setAuthentication(authentication);
                 SecurityContextHolder.setContext(context);
-                log.info("TOI DUOC DAY");
             }
         }
 
         filterChain.doFilter(request, response);
     }
 }
+
