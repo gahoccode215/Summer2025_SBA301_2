@@ -1,7 +1,11 @@
 package com.sba301.online_ticket_sales.config;
 
 import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
+
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.service.JwtService;
+import com.sba301.online_ticket_sales.service.RedisTokenService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,32 +36,44 @@ public class PreFilter extends OncePerRequestFilter {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final RedisTokenService redisTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         log.info("---------- doFilterInternal ----------");
 
-        final String authorization = request.getHeader(AUTHORIZATION);
-        //log.info("Authorization: {}", authorization);
+        final String authHeader = request.getHeader(AUTHORIZATION);
+        log.info("Authorization: {}", authHeader);
 
-        if (StringUtils.isBlank(authorization) || !authorization.startsWith("Bearer ")) {
+        if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
-            return;
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        final String token = authHeader.substring(7);
+        final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
+        if (StringUtils.isBlank(email)) {
+            log.warn("Token JWT không hợp lệ");
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        final String token = authorization.substring("Bearer ".length());
-        //log.info("Token: {}", token);
+        // Kiểm tra token có tồn tại trong Redis
+        if (!redisTokenService.isExists(email)) {
+            log.warn("Token cho email {} đã bị vô hiệu hóa", email);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
-        final String userName = jwtService.extractEmail(token, ACCESS_TOKEN);
 
-        if (StringUtils.isNotEmpty(userName) && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userName);
+        if (StringUtils.isNotEmpty(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            log.info("DAY NE");
+            UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
             if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
+                log.info("ALO ALO");
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 context.setAuthentication(authentication);
                 SecurityContextHolder.setContext(context);
+                log.info("TOI DUOC DAY");
             }
         }
 
