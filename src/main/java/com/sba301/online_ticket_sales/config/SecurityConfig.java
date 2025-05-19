@@ -27,6 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
 import java.util.List;
 
 @Configuration
@@ -42,13 +43,27 @@ public class SecurityConfig {
     };
 
 
+//    @Bean
+//    public SecurityFilterChain configure(@NonNull HttpSecurity http) throws Exception {
+//        http.csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers(PUBLIC_ENDPOINTS).permitAll().anyRequest().authenticated())
+//                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+//                .authenticationProvider(provider()).addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
+//    }
+
     @Bean
-    public SecurityFilterChain configure(@NonNull HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests.requestMatchers(PUBLIC_ENDPOINTS).permitAll().anyRequest().authenticated())
-                .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        httpSecurity
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request
+                        -> request.requestMatchers(PUBLIC_ENDPOINTS)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .authenticationProvider(provider()).addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+        return httpSecurity.build();
     }
 
     @Bean
@@ -65,10 +80,10 @@ public class SecurityConfig {
 
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return webSecurity ->
-                webSecurity.ignoring()
-                        .requestMatchers("/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**");
+    public WebSecurityCustomizer ignoreResources() {
+        return webSecurity -> webSecurity
+                .ignoring()
+                .requestMatchers("/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**", "/favicon.ico");
     }
 
     @Bean

@@ -26,7 +26,6 @@ public class PersonController {
     PersonService personService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> createPerson(@RequestBody PersonCreationRequest request) {
         personService.createPerson(request);
         return ResponseEntity.ok(ApiResponse.<Void>builder()

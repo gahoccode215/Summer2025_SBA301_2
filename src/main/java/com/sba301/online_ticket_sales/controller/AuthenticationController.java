@@ -6,6 +6,7 @@ import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,23 @@ public class AuthenticationController {
                 .code(HttpStatus.OK.value())
                 .message("Đăng nhập thành công")
                 .result(authenticationService.login(request))
+                .build());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> removeToken(HttpServletRequest request) {
+        authenticationService.logout(request);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Đăng xuất thành công")
+                .build());
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(HttpServletRequest request) {
+        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
+                .code(HttpStatus.OK.value())
+                .result(authenticationService.refreshToken(request))
                 .build());
     }
 }

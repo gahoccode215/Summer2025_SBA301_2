@@ -30,7 +30,7 @@ public class OpenApiConfig {
     public GroupedOpenApi groupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("api-service")
-                .packagesToScan("com.sba301.online_ticket_sales")
+                .packagesToScan("com.sba301.online_ticket_sales.controller")
                 .build();
     }
 }

@@ -11,7 +11,7 @@ public interface JwtService {
 
     String generateResetToken(UserDetails user);
 
-    String extractUsername(String token, TokenType type);
+    String extractEmail(String token, TokenType type);
 
     boolean isValid(String token, TokenType type, UserDetails user);
 }
