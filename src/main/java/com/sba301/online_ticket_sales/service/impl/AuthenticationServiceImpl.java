@@ -141,27 +141,4 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    @Override
-    public String forgotPassword(String email) {
-        log.info("---------- forgotPassword ----------");
-
-        // check email exists or not
-        User user = userService.getByEmail(email);
-
-        // generate reset token
-        String resetToken = jwtService.generateResetToken(user);
-
-        // save to db
-        // tokenService.save(Token.builder().username(user.getUsername()).resetToken(resetToken).build());
-        redisTokenService.save(RedisToken.builder().id(user.getUsername()).resetToken(resetToken).build());
-
-        // TODO send email to user
-        String confirmLink = String.format("curl --location 'http://localhost:80/auth/reset-password' \\\n" +
-                "--header 'accept: */*' \\\n" +
-                "--header 'Content-Type: application/json' \\\n" +
-                "--data '%s'", resetToken);
-        log.info("--> confirmLink: {}", confirmLink);
-
-        return resetToken;
-    }
 }

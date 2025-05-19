@@ -10,5 +10,4 @@ public interface AuthenticationService {
     TokenResponse login(LoginRequest request);
     void logout(HttpServletRequest request);
     TokenResponse refreshToken(HttpServletRequest request);
-    String forgotPassword(String email);
 }
