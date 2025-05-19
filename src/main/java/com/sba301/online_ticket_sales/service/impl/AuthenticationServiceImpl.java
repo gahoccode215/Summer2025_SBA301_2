@@ -140,4 +140,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .userId(user.getId())
                 .build();
     }
+
 }
