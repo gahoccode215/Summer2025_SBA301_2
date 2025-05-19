@@ -11,6 +11,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class RedisToken implements Serializable {
     private String id;
     private String accessToken;

@@ -6,4 +6,6 @@ public interface RedisTokenService {
     void save(RedisToken token);
     void remove(String id);
     boolean isExists(String id);
+    RedisToken getById(String id); // Thêm phương thức lấy RedisToken theo id
+    boolean isValidToken(String id, String accessToken); // Thêm phương thức kiểm tra accessToken
 }

@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
-import static com.sba301.online_ticket_sales.enums.TokenType.REFRESH_TOKEN;
+import static com.sba301.online_ticket_sales.enums.TokenType.*;
 
 @Service
 @Slf4j
@@ -58,11 +57,13 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateResetToken(UserDetails user) {
-        return "";
+        return generateResetToken(new HashMap<>(), user);
     }
 
     @Override
     public String extractEmail(String token, TokenType type) {
+        log.info("TOKEN EMAIL {}", token);
+        log.info("extract email  {}", extractClaim(token, type, Claims::getSubject));
         return extractClaim(token, type, Claims::getSubject);
     }
 
@@ -74,6 +75,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String generateToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateToken ----------");
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -84,6 +86,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String generateRefreshToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateRefreshToken ----------");
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -93,7 +96,19 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
+    private String generateResetToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateResetToken ----------");
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .signWith(getKey(RESET_TOKEN), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Key getKey(TokenType type) {
+        log.info("---------- getKey ----------");
         switch (type) {
             case ACCESS_TOKEN -> {
                 return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessKey));
@@ -101,16 +116,23 @@ public class JwtServiceImpl implements JwtService {
             case REFRESH_TOKEN -> {
                 return Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshKey));
             }
-            default -> throw new AppException(ErrorCode.UNAUTHENTICATED);
+            case RESET_TOKEN -> {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(resetKey));
+            }
+            default -> throw new AppException(ErrorCode.INVALID_TOKEN);
         }
+
     }
+
     private <T> T extractClaim(String token, TokenType type, Function<Claims, T> claimResolver) {
         final Claims claims = extraAllClaim(token, type);
         return claimResolver.apply(claims);
     }
+
     private Claims extraAllClaim(String token, TokenType type) {
         return Jwts.parserBuilder().setSigningKey(getKey(type)).build().parseClaimsJws(token).getBody();
     }
+
     private boolean isTokenExpired(String token, TokenType type) {
         return extractExpiration(token, type).before(new Date());
     }

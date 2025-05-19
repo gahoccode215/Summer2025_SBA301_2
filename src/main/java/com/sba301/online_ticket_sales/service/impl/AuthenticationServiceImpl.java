@@ -5,6 +5,7 @@ import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.enums.TokenType;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import com.sba301.online_ticket_sales.model.RedisToken;
@@ -70,7 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // create new refresh token
         String refreshToken = jwtService.generateRefreshToken(user);
-
+        log.info("REDIS TOKEN {}", RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
         redisTokenService.save(RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
@@ -82,37 +83,56 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void logout(HttpServletRequest request) {
+        log.info("VAO HAM LOGOUT - {}", request.getHeader(AUTHORIZATION));
         log.info("TOKEN -- {}", request.getHeader(AUTHORIZATION));
         final String authHeader = request.getHeader(AUTHORIZATION);
-        final String token = authHeader.substring(7);
-        if (StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
-
+        final String token = authHeader.substring(7);
         final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
-        log.info("TOI DAY ROI NE");
+        log.info("EMAIL {}", email);
         redisTokenService.remove(email);
     }
 
     @Override
+    /**
+     * Refresh token
+     *
+     * @param request
+     * @return
+     */
     public TokenResponse refreshToken(HttpServletRequest request) {
-        final String refreshToken = request.getHeader(AUTHORIZATION);
+        log.info("---------- refreshToken ----------");
 
+        final String refreshToken = request.getHeader("X-Refresh-Token");
         if (StringUtils.isBlank(refreshToken)) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
-        final String userName = jwtService.extractEmail(refreshToken, REFRESH_TOKEN);
+
+        log.info("Refresh token received: {}", refreshToken);
+
+        final String userName = jwtService.extractEmail(refreshToken, TokenType.REFRESH_TOKEN);
+        if (StringUtils.isBlank(userName)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
         var user = userService.getByEmail(userName);
-        if (!jwtService.isValid(refreshToken, REFRESH_TOKEN, user)) {
+        if (!jwtService.isValid(refreshToken, TokenType.REFRESH_TOKEN, user)) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
 
-        // create new access token
+        // Xóa access token cũ trong Redis
+        redisTokenService.remove(user.getUsername());
+
+        // Tạo access token mới
         String accessToken = jwtService.generateToken(user);
 
-        // save token to db
-        // tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
-        redisTokenService.save(RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        // Lưu token mới vào Redis
+        redisTokenService.save(RedisToken.builder()
+                .id(user.getUsername())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build());
 
         return TokenResponse.builder()
                 .accessToken(accessToken)

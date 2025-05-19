@@ -31,4 +31,16 @@ public class RedisTokenServiceImpl implements RedisTokenService {
         }
         return true;
     }
+
+    @Override
+    public RedisToken getById(String id) {
+        return redisTokenRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
+    }
+
+    @Override
+    public boolean isValidToken(String id, String accessToken) {
+        RedisToken redisToken = getById(id);
+        return redisToken.getAccessToken().equals(accessToken);
+    }
 }
