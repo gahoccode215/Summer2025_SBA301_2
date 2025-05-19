@@ -63,4 +63,12 @@ public class AuthenticationController {
                 .result(authenticationService.refreshToken(request))
                 .build());
     }
+    
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody String email) {
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .code(HttpStatus.OK.value())
+                .result(authenticationService.forgotPassword(email))
+                .build());
+    }
 }

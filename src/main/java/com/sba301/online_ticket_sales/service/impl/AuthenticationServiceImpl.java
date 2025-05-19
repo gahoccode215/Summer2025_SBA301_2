@@ -140,4 +140,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .userId(user.getId())
                 .build();
     }
+
+    @Override
+    public String forgotPassword(String email) {
+        return "";
+    }
 }
