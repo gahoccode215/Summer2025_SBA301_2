@@ -55,10 +55,10 @@ public class JwtServiceImpl implements JwtService {
         return generateRefreshToken(new HashMap<>(), user);
     }
 
-    @Override
-    public String generateResetToken(UserDetails user) {
-        return generateResetToken(new HashMap<>(), user);
-    }
+//    @Override
+//    public String generateResetToken(UserDetails user) {
+//        return generateResetToken(new HashMap<>(), user);
+//    }
 
     @Override
     public String extractEmail(String token, TokenType type) {
