@@ -13,3 +13,7 @@ Run MySQL on port 3306
 ### Swagger
 
 `http://localhost:8080/swagger-ui/index.html`
+
+### Kibana
+
+`http://localhost:5601/app/management/kibana/indexPatterns/`

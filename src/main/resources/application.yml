@@ -4,13 +4,14 @@ spring:
   application:
     name: online-ticket-sales
   datasource:
-    url: jdbc:mysql://localhost:3306/online_ticket_sales_db?createDatabaseIfNotExist=true
-    username: root
-    password: 12345
+    url: jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/online_ticket_sales_db?createDatabaseIfNotExist=true
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:12345}
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
       host: ${REDIS_HOST:localhost}

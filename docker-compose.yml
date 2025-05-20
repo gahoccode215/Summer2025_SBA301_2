@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   redis:
-    image: redis:latest-alpine
+    image: redis:6.2-alpine
     container_name: redis
     hostname: redis
     ports:
@@ -11,8 +11,93 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB;FLUSHALL
     networks:
-      - backend
+      - default
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    ports:
+      - '3307:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_DATABASE: online_ticket_sales_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  backend-service:
+    container_name: backend-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/online_ticket_sales_db?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345
+      LOGSTASH_HOST: logstash:5600
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      logstash:
+        condition: service_started
+    networks:
+      - default
+
+  elastic-search:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch
+    restart: always
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+    networks:
+      - default
+
+  kibana:
+    image: kibana:7.14.1
+    container_name: kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elastic-search
+    networks:
+      - default
+
+  logstash:
+    image: logstash:7.14.1
+    container_name: logstash
+    restart: always
+    ports:
+      - "5600:5600"
+      - "5044:5044"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    environment:
+      - XPACK_MONITORING_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_MONITORING_ENABLED=true
+    depends_on:
+      - elastic-search
+    networks:
+      - default
 
 networks:
-  backend:
+  default:
     driver: bridge
+
+volumes:
+  mysql-data:
