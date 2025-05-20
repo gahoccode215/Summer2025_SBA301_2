@@ -16,6 +16,11 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
 springdoc:
   api-docs:
     enabled: true
@@ -29,6 +34,11 @@ open:
     serverUrl: http://localhost:8080
     serverName: Server
     license: https://github.com/gahoccode215/Summer2025_SBA301_2
+
+logging:
+  level:
+    root: INFO
+    web: INFO
 
 jwt:
   expiryHour: 1
