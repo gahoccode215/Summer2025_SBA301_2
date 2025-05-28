@@ -7,4 +7,5 @@ import com.sba301.online_ticket_sales.dto.genre.response.GenreResponse;
 public interface GenreService {
     GenreResponse createGenre(GenreCreationRequest request);
     GenreResponse updateGenre(Integer id, GenreUpdateRequest request);
+    void deleteGenre(Integer id);
 }

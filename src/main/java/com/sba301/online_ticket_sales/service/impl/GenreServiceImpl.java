@@ -49,4 +49,11 @@ public class GenreServiceImpl implements GenreService {
             throw new AppException(ErrorCode.GENRE_ALREADY_EXISTS);
         }
     }
+    @Override
+    public void deleteGenre(Integer id) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+        genreRepository.delete(genre);
+        log.info("Deleted genre: {}", genre.getName());
+    }
 }

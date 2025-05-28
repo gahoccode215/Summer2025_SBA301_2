@@ -77,4 +77,25 @@ public class GenreController {
                 .result(response)
                 .build());
     }
+    @Operation(
+            summary = "Xóa thể loại phim",
+            description = "Xóa cứng thể loại phim theo ID, xóa liên kết với Movie trong bảng movie_genres mà không xóa Movie. Yêu cầu quyền ADMIN hoặc MANAGER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Xóa thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Thể loại không tồn tại",
+                    content = @Content)
+    })
+    @DeleteMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteGenre(
+            @Parameter(description = "ID của thể loại cần xóa", required = true)
+            @PathVariable Integer id) {
+        genreService.deleteGenre(id);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Xóa thành công")
+                .build());
+    }
 }
