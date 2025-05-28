@@ -37,7 +37,7 @@ public class PersonController {
 
     @Operation(
             summary = "Tạo mới Person",
-            description = "Tạo một Person mới (diễn viên hoặc đạo diễn) với thông tin được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER (hiện bị vô hiệu hóa)."
+            description = "Tạo một Person mới (diễn viên hoặc đạo diễn) với thông tin được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Tạo mới thành công",
@@ -62,7 +62,7 @@ public class PersonController {
 
     @Operation(
             summary = "Cập nhật Person",
-            description = "Cập nhật thông tin của Person theo ID. Chỉ cập nhật các trường được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER (hiện bị vô hiệu hóa)."
+            description = "Cập nhật thông tin của Person theo ID. Chỉ cập nhật các trường được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Cập nhật thành công",
@@ -88,7 +88,7 @@ public class PersonController {
 
     @Operation(
             summary = "Xóa Person (xóa mềm)",
-            description = "Xóa mềm Person theo ID bằng cách đặt isDeleted = true, xóa liên kết với Movie và Country. Yêu cầu quyền ADMIN hoặc MANAGER (hiện bị vô hiệu hóa)."
+            description = "Xóa mềm Person theo ID bằng cách đặt isDeleted = true, xóa liên kết với Movie và Country. Yêu cầu quyền ADMIN hoặc MANAGER "
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Xóa thành công",
@@ -110,7 +110,7 @@ public class PersonController {
 
     @Operation(
             summary = "Lấy chi tiết Person",
-            description = "Lấy thông tin chi tiết của Person theo ID. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER (hiện bị vô hiệu hóa)."
+            description = "Lấy thông tin chi tiết của Person theo ID. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER "
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lấy chi tiết thành công",
@@ -133,7 +133,7 @@ public class PersonController {
 
     @Operation(
             summary = "Lấy danh sách Persons",
-            description = "Lấy danh sách Persons với phân trang, tìm kiếm theo tên, lọc theo nghề nghiệp, và sắp xếp theo tên hoặc ngày sinh. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER (hiện bị vô hiệu hóa)."
+            description = "Lấy danh sách Persons với phân trang, tìm kiếm theo tên, lọc theo nghề nghiệp, và sắp xếp theo tên hoặc ngày sinh. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
