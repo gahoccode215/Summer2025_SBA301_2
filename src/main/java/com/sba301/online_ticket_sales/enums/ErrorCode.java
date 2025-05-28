@@ -18,7 +18,9 @@ public enum ErrorCode {
     // PERSON EXCEPTION (1100 - 1199)
     PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
     COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
-    INVALID_OCCUPATION(1102, "Invalid occupation", HttpStatus.BAD_REQUEST);
+    INVALID_OCCUPATION(1102, "Invalid occupation", HttpStatus.BAD_REQUEST),
+    // GENRE EXCEPTION (1200 - 1299)
+    GENRE_ALREADY_EXISTS(1200, "Genre name already exists", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
