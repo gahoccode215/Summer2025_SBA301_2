@@ -52,7 +52,18 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public void deletePerson(Integer id) {
-
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PERSON_NOT_FOUND));
+        if (person.isDeleted()) {
+            throw new AppException(ErrorCode.PERSON_NOT_FOUND);
+        }
+        // Xóa liên kết với Movie (bảng movie_directors và movie_actors)
+        person.getDirectedMovies().clear();
+        person.getActedMovies().clear();
+        // Đặt country thành null
+        person.setCountry(null);
+        person.setDeleted(true);
+        personRepository.save(person);
     }
 
     @Override

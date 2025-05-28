@@ -48,4 +48,13 @@ public class PersonController {
                 .result(response)
                 .build());
     }
+    @DeleteMapping("/{id}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> deletePerson(@PathVariable Integer id) {
+        personService.deletePerson(id);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Xóa thành công")
+                .build());
+    }
 }
