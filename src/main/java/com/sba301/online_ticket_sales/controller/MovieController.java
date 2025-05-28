@@ -1,6 +1,6 @@
 package com.sba301.online_ticket_sales.controller;
 
-import com.sba301.online_ticket_sales.dto.common.ApiResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.dto.movie.request.MovieCreationRequest;
 import com.sba301.online_ticket_sales.service.MovieService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,9 +25,9 @@ public class MovieController {
     MovieService movieService;
 
     @PostMapping()
-    public ResponseEntity<ApiResponse<Void>> createMovie(@RequestBody MovieCreationRequest request) {
+    public ResponseEntity<ApiResponseDTO<Void>> createMovie(@RequestBody MovieCreationRequest request) {
         movieService.createMovie(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Tạo mới phim thành công")
                 .build());

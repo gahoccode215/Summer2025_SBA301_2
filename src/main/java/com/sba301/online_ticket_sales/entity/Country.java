@@ -16,7 +16,6 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Country extends AbstractEntity<Integer> {
 
-
     @Column(nullable = false, unique = true)
     private String name;
 }
