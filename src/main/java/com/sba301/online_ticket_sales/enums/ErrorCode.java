@@ -20,7 +20,8 @@ public enum ErrorCode {
     COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
     INVALID_OCCUPATION(1102, "Invalid occupation", HttpStatus.BAD_REQUEST),
     // GENRE EXCEPTION (1200 - 1299)
-    GENRE_ALREADY_EXISTS(1200, "Genre name already exists", HttpStatus.BAD_REQUEST)
+    GENRE_ALREADY_EXISTS(1200, "Genre name already exists", HttpStatus.BAD_REQUEST),
+    GENRE_NOT_FOUND(1201, "Genre not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
