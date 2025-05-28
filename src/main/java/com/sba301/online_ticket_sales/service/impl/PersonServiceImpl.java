@@ -4,6 +4,8 @@ import com.sba301.online_ticket_sales.dto.person.request.PersonCreationRequest;
 import com.sba301.online_ticket_sales.dto.person.request.PersonUpdateRequest;
 import com.sba301.online_ticket_sales.dto.person.response.PersonResponse;
 import com.sba301.online_ticket_sales.entity.Person;
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.PersonMapper;
 import com.sba301.online_ticket_sales.repository.PersonRepository;
 import com.sba301.online_ticket_sales.service.PersonService;
@@ -37,7 +39,15 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonResponse updatePerson(Integer id, PersonUpdateRequest request) {
-        return null;
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PERSON_NOT_FOUND));
+        if (person.isDeleted()) {
+            throw new AppException(ErrorCode.PERSON_NOT_FOUND);
+        }
+        personMapper.updatePersonFromRequest(request, person);
+        Person updatedPerson = personRepository.save(person);
+        log.info("Updated person: {}", updatedPerson.getName());
+        return personMapper.toPersonResponse(updatedPerson);
     }
 
     @Override

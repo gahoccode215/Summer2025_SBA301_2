@@ -11,6 +11,8 @@ import com.sba301.online_ticket_sales.mapper.PersonMapper;
 import com.sba301.online_ticket_sales.repository.CountryRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class PersonMapperImpl implements PersonMapper {
     private final CountryRepository countryRepository;
@@ -55,6 +57,17 @@ public class PersonMapperImpl implements PersonMapper {
 
     @Override
     public void updatePersonFromRequest(PersonUpdateRequest request, Person person) {
-
+        Optional.ofNullable(request.getName()).filter(name -> !name.isBlank()).ifPresent(person::setName);
+        Optional.ofNullable(request.getDescription()).ifPresent(person::setDescription);
+        Optional.ofNullable(request.getBirthDate()).ifPresent(person::setBirthDate);
+        Optional.ofNullable(request.getHeight()).ifPresent(person::setHeight);
+        Optional.ofNullable(request.getOccupation()).ifPresent(person::setOccupation);
+        Optional.ofNullable(request.getBiography()).ifPresent(person::setBiography);
+        if (request.getCountryId() != null) {
+            Country country = countryRepository.findById(request.getCountryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
+            person.setCountry(country);
+        }
+        Optional.ofNullable(request.getImages()).ifPresent(person::setImages);
     }
 }

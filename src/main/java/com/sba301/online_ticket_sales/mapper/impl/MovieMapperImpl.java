@@ -61,29 +61,29 @@ public class MovieMapperImpl implements MovieMapper {
 
     @Override
     public void updateMovieFromRequest(MovieUpdateRequest request, Movie movie) {
-        Optional.ofNullable(request.getTitle()).ifPresent(movie::setTitle);
-        Optional.ofNullable(request.getDescription()).ifPresent(movie::setDescription);
-        Optional.ofNullable(request.getDuration()).ifPresent(movie::setDuration);
-        Optional.ofNullable(request.getReleaseDate()).ifPresent(movie::setReleaseDate);
-        Optional.ofNullable(request.getTrailerUrl()).ifPresent(movie::setTrailerUrl);
-        Optional.ofNullable(request.getDirector()).ifPresent(movie::setDirector);
-        Optional.ofNullable(request.getMovieStatus()).ifPresent(movie::setMovieStatus);
-        Optional.ofNullable(request.getCountryId()).ifPresent(countryId -> {
-            Country country = countryRepository.findById(countryId)
-                    .orElseThrow(() -> new RuntimeException("Country not found"));
-            movie.setCountry(country);
-        });
-        Optional.ofNullable(request.getGenreIds()).ifPresent(genreIds -> {
-            List<Genre> genres = genreRepository.findAllById(genreIds);
-            movie.setGenres(genres);
-        });
-        Optional.ofNullable(request.getDirectorIds()).ifPresent(directorIds -> {
-            List<Person> directors = personRepository.findAllById(directorIds);
-            movie.setDirectors(directors);
-        });
-        Optional.ofNullable(request.getActorIds()).ifPresent(actorIds -> {
-            List<Person> actors = personRepository.findAllById(actorIds);
-            movie.setActors(actors);
-        });
+//        Optional.ofNullable(request.getTitle()).ifPresent(movie::setTitle);
+//        Optional.ofNullable(request.getDescription()).ifPresent(movie::setDescription);
+//        Optional.ofNullable(request.getDuration()).ifPresent(movie::setDuration);
+//        Optional.ofNullable(request.getReleaseDate()).ifPresent(movie::setReleaseDate);
+//        Optional.ofNullable(request.getTrailerUrl()).ifPresent(movie::setTrailerUrl);
+//        Optional.ofNullable(request.getDirector()).ifPresent(movie::setDirector);
+//        Optional.ofNullable(request.getMovieStatus()).ifPresent(movie::setMovieStatus);
+//        Optional.ofNullable(request.getCountryId()).ifPresent(countryId -> {
+//            Country country = countryRepository.findById(countryId)
+//                    .orElseThrow(() -> new RuntimeException("Country not found"));
+//            movie.setCountry(country);
+//        });
+//        Optional.ofNullable(request.getGenreIds()).ifPresent(genreIds -> {
+//            List<Genre> genres = genreRepository.findAllById(genreIds);
+//            movie.setGenres(genres);
+//        });
+//        Optional.ofNullable(request.getDirectorIds()).ifPresent(directorIds -> {
+//            List<Person> directors = personRepository.findAllById(directorIds);
+//            movie.setDirectors(directors);
+//        });
+//        Optional.ofNullable(request.getActorIds()).ifPresent(actorIds -> {
+//            List<Person> actors = personRepository.findAllById(actorIds);
+//            movie.setActors(actors);
+//        });
     }
 }
