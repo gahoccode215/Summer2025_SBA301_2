@@ -30,7 +30,7 @@ public class Movie extends AbstractEntity<Long> implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
-    private Country country;
+    Country country;
 
     @ManyToMany
     @JoinTable(
@@ -38,7 +38,7 @@ public class Movie extends AbstractEntity<Long> implements Serializable {
             joinColumns = @JoinColumn(name = "movie_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    private List<Genre> genres = new ArrayList<>();
+    List<Genre> genres = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(

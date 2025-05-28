@@ -3,6 +3,7 @@ package com.sba301.online_ticket_sales.exception;
 import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,6 +14,21 @@ import java.nio.file.AccessDeniedException;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+
+
+    /**
+     * Xử lý lỗi nhập data khong hop le
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        log.warn("Data violation: {}", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>builder()
+                        .code(HttpStatus.BAD_REQUEST.value())
+                        .message("Data input invalid")
+                        .build());
+    }
 
 
 
