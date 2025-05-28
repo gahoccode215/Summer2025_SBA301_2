@@ -56,4 +56,10 @@ public class GenreServiceImpl implements GenreService {
         genreRepository.delete(genre);
         log.info("Deleted genre: {}", genre.getName());
     }
+    @Override
+    public GenreResponse getGenreDetail(Integer id) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+        return genreMapper.toGenreResponse(genre);
+    }
 }

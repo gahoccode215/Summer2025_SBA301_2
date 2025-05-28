@@ -98,4 +98,26 @@ public class GenreController {
                 .message("Xóa thành công")
                 .build());
     }
+    @Operation(
+            summary = "Lấy chi tiết thể loại phim",
+            description = "Lấy thông tin chi tiết của thể loại phim theo ID. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy chi tiết thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Thể loại không tồn tại",
+                    content = @Content)
+    })
+    @GetMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<GenreResponse>> getGenreDetail(
+            @Parameter(description = "ID của thể loại cần lấy", required = true)
+            @PathVariable Integer id) {
+        GenreResponse response = genreService.getGenreDetail(id);
+        return ResponseEntity.ok(ApiResponseDTO.<GenreResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
 }
