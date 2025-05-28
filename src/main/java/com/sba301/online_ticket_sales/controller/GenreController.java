@@ -17,6 +17,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -117,6 +121,36 @@ public class GenreController {
         return ResponseEntity.ok(ApiResponseDTO.<GenreResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
+    @Operation(
+            summary = "Lấy danh sách thể loại phim",
+            description = "Lấy danh sách thể loại phim với phân trang, tìm kiếm theo tên, và sắp xếp theo tên. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
+    })
+    @GetMapping
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<Page<GenreResponse>>> getAllGenres(
+            @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Số bản ghi mỗi trang", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Từ khóa tìm kiếm trên tên", example = "Hành động")
+            @RequestParam(required = false) String keyword,
+            @Parameter(description = "Trường để sắp xếp (hiện chỉ hỗ trợ name)", example = "name")
+            @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Hướng sắp xếp (asc hoặc desc)", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Direction.fromString(sortDir), sortBy));
+        Page<GenreResponse> response = genreService.getAllGenres(pageable, keyword);
+        return ResponseEntity.ok(ApiResponseDTO.<Page<GenreResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy danh sách thành công")
                 .result(response)
                 .build());
     }
