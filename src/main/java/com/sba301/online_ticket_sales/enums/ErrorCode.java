@@ -14,6 +14,7 @@ public enum ErrorCode {
     EMAIL_OR_PASSWORD_NOT_CORRECT(1003, "Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
     ACCOUNT_HAS_BEEN_DISABLE(1004, "Tài khoản của bạn chưa kích hoạt hoặc bị khóa", HttpStatus.BAD_REQUEST),
     INVALID_TOKEN(1005, "Invalid token", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_FOUND(1006, "Role not found", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
