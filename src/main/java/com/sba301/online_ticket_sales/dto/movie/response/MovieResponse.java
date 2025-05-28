@@ -3,6 +3,7 @@ package com.sba301.online_ticket_sales.dto.movie.response;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDate;
 import java.util.List;
 

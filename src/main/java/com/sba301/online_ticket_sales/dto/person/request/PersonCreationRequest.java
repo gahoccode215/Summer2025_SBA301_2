@@ -15,6 +15,6 @@ public class PersonCreationRequest {
     private Double height;
     private Occupation occupation;
     private String biography;
-    private Long countryId;
+    private Integer countryId;
     private List<String> images;
 }

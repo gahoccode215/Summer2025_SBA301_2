@@ -1,6 +1,8 @@
 package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.dto.movie.request.MovieCreationRequest;
+import com.sba301.online_ticket_sales.dto.movie.response.MovieResponse;
+import com.sba301.online_ticket_sales.entity.Movie;
 import com.sba301.online_ticket_sales.mapper.MovieMapper;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.service.MovieService;
@@ -20,9 +22,9 @@ public class MovieServiceImpl implements MovieService {
     MovieMapper movieMapper;
 
     @Override
-    public void createMovie(MovieCreationRequest request) {
-//        Movie movie = movieMapper.toMovie(request);
-//        movieRepository.save(movie);
-        movieRepository.save(movieMapper.toMovie(request));
+    public MovieResponse createMovie(MovieCreationRequest request) {
+        Movie movie = movieMapper.toMovie(request);
+        Movie savedMovie = movieRepository.save(movie);
+        return movieMapper.toMovieResponse(savedMovie);
     }
 }
