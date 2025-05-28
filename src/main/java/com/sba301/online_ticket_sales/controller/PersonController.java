@@ -2,8 +2,10 @@ package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.dto.person.request.PersonCreationRequest;
+import com.sba301.online_ticket_sales.dto.person.response.PersonResponse;
 import com.sba301.online_ticket_sales.service.PersonService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,11 +28,14 @@ public class PersonController {
     PersonService personService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createPerson(@RequestBody PersonCreationRequest request) {
-        personService.createPerson(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.CREATED.value())
-                .message("Tạo mới thành công")
-                .build());
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<PersonResponse>> createPerson(@Valid @RequestBody PersonCreationRequest request) {
+        PersonResponse response = personService.createPerson(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<PersonResponse>builder()
+                        .code(HttpStatus.CREATED.value())
+                        .message("Tạo mới thành công")
+                        .result(response)
+                        .build());
     }
 }

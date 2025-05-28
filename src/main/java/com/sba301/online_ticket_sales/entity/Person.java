@@ -20,7 +20,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Person extends AbstractEntity<Integer> implements Serializable {
 
-
     String name;
     String description;
     LocalDate birthDate;
@@ -28,6 +27,7 @@ public class Person extends AbstractEntity<Integer> implements Serializable {
     @Enumerated(EnumType.STRING)
     Occupation occupation;
     String biography;
+    boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
