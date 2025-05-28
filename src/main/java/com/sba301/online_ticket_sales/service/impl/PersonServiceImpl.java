@@ -73,6 +73,11 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonResponse getPersonDetail(Integer id) {
-        return null;
+        Person person = personRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PERSON_NOT_FOUND));
+        if (person.isDeleted()) {
+            throw new AppException(ErrorCode.PERSON_NOT_FOUND);
+        }
+        return personMapper.toPersonResponse(person);
     }
 }

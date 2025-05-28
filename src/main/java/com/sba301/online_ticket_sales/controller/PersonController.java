@@ -57,4 +57,14 @@ public class PersonController {
                 .message("Xóa thành công")
                 .build());
     }
+    @GetMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponse<PersonResponse>> getPersonDetail(@PathVariable Integer id) {
+        PersonResponse response = personService.getPersonDetail(id);
+        return ResponseEntity.ok(ApiResponse.<PersonResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
 }
