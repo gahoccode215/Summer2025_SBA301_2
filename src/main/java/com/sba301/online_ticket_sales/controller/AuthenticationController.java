@@ -2,7 +2,7 @@ package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
-import com.sba301.online_ticket_sales.dto.common.ApiResponse;
+import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,17 +30,17 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(@RequestBody @Valid RegisterRequest request) {
+    public ResponseEntity<ApiResponseDTO<Void>> register(@RequestBody @Valid RegisterRequest request) {
         authenticationService.register(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("Đăng ký thành công")
                 .build());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<TokenResponse>> accessToken(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
+    public ResponseEntity<ApiResponseDTO<TokenResponse>> accessToken(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponseDTO.<TokenResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Đăng nhập thành công")
                 .result(authenticationService.login(request))
@@ -48,17 +48,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> removeToken(HttpServletRequest request) {
+    public ResponseEntity<ApiResponseDTO<Void>> removeToken(HttpServletRequest request) {
         authenticationService.logout(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("Đăng xuất thành công")
                 .build());
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(HttpServletRequest request) {
-        return ResponseEntity.ok(ApiResponse.<TokenResponse>builder()
+    public ResponseEntity<ApiResponseDTO<TokenResponse>> refreshToken(HttpServletRequest request) {
+        return ResponseEntity.ok(ApiResponseDTO.<TokenResponse>builder()
                 .code(HttpStatus.OK.value())
                 .result(authenticationService.refreshToken(request))
                 .build());
