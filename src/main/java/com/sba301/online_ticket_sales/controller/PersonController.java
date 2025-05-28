@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.dto.common.ApiResponse;
 import com.sba301.online_ticket_sales.dto.person.request.PersonCreationRequest;
 import com.sba301.online_ticket_sales.dto.person.request.PersonUpdateRequest;
 import com.sba301.online_ticket_sales.dto.person.response.PersonResponse;
+import com.sba301.online_ticket_sales.enums.Occupation;
 import com.sba301.online_ticket_sales.service.PersonService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -11,6 +12,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -64,6 +69,24 @@ public class PersonController {
         return ResponseEntity.ok(ApiResponse.<PersonResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
+    @GetMapping
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponse<Page<PersonResponse>>> getAllPersons(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Occupation occupation,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Direction.fromString(sortDir), sortBy));
+        Page<PersonResponse> response = personService.getAllPersons(pageable, keyword, occupation);
+        return ResponseEntity.ok(ApiResponse.<Page<PersonResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy danh sách thành công")
                 .result(response)
                 .build());
     }
