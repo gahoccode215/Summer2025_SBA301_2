@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.mapper.impl;
 
+import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.mapper.UserMapper;
@@ -7,11 +8,11 @@ import com.sba301.online_ticket_sales.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class UserMapperImpl implements UserMapper {
-
-    private final UserService userService;
 
     @Override
     public UserProfileResponse toUserProfileResponse(User user) {
@@ -21,7 +22,14 @@ public class UserMapperImpl implements UserMapper {
         response.setFullName(user.getFullName());
         response.setBirthDate(user.getBirthDate());
         response.setGender(user.getGender());
-        response.setRoles(userService.getAllRolesByUserId(user.getId()));
         return response;
+    }
+
+    @Override
+    public void updateUserFromProfileRequest(UserProfileUpdateRequest updateRequest, User user) {
+        Optional.ofNullable(updateRequest.getFullName()).filter(name -> !name.isBlank()).ifPresent(user::setFullName);
+        Optional.ofNullable(updateRequest.getBirthDate()).ifPresent(user::setBirthDate);
+        Optional.ofNullable(updateRequest.getGender()).ifPresent(user::setGender);
+        Optional.ofNullable(updateRequest.getPhone()).ifPresent(user::setPhone);
     }
 }

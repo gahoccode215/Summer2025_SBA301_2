@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.service.impl;
 
+import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
@@ -43,13 +44,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponse getProfile() {
+        User user = getUserAuthenticated();
+        return userMapper.toUserProfileResponse(user);
+    }
+
+    @Override
+    public UserProfileResponse updateProfile(UserProfileUpdateRequest request) {
+        User user = getUserAuthenticated();
+        userMapper.updateUserFromProfileRequest(request, user);
+        User updatedUser = userRepository.save(user);
+        return userMapper.toUserProfileResponse(updatedUser);
+    }
+
+    private User getUserAuthenticated(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() instanceof String) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        User user = (User) authentication.getPrincipal();
-        return userMapper.toUserProfileResponse(user);
+        return (User) authentication.getPrincipal();
     }
-
-
 }

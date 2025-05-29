@@ -50,6 +50,9 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     @Column(name = "birth_date")
     LocalDate birthDate;
 
+    @Column(name = "phone")
+    String phone;
+
     @ManyToMany()
     @JoinTable(
             name = "user_has_role",
