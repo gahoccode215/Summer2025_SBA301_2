@@ -10,6 +10,11 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB;FLUSHALL
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - default
 
@@ -43,14 +48,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/online_ticket_sales_db?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 12345
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       LOGSTASH_HOST: logstash:5600
     depends_on:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       logstash:
-        condition: service_started
+        condition: service_healthy
     networks:
       - default
 
@@ -92,8 +101,14 @@ services:
       - XPACK_MONITORING_ENABLED=true
     depends_on:
       - elastic-search
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - default
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -104,11 +119,14 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - '9090:9090'
+    networks:
+      - default
+
   grafana:
     image: grafana/grafana
     container_name: grafana
     restart: unless-stopped
-    environment: # account: grafana/password
+    environment:
       - GF_SECURITY_ADMIN_USER=grafana
       - GF_SECURITY_ADMIN_PASSWORD=password
     ports:
@@ -117,6 +135,8 @@ services:
       - prometheus
     volumes:
       - grafana:/var/lib/grafana
+    networks:
+      - default
 
 networks:
   default:

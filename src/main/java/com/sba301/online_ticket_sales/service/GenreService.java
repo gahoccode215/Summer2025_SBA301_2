@@ -7,9 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface GenreService {
-    GenreResponse createGenre(GenreCreationRequest request);
-    GenreResponse updateGenre(Integer id, GenreUpdateRequest request);
-    void deleteGenre(Integer id);
-    GenreResponse getGenreDetail(Integer id);
-    Page<GenreResponse> getAllGenres(Pageable pageable, String keyword);
+  GenreResponse createGenre(GenreCreationRequest request);
+
+  GenreResponse updateGenre(Integer id, GenreUpdateRequest request);
+
+  void deleteGenre(Integer id);
+
+  GenreResponse getGenreDetail(Integer id);
+
+  Page<GenreResponse> getAllGenres(Pageable pageable, String keyword);
 }

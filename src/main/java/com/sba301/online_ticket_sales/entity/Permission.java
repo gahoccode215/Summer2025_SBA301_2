@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "permissions")
-public class Permission extends AbstractEntity<Integer>{
-    private String name;
-    private String description;
+public class Permission extends AbstractEntity<Integer> {
+  private String name;
+  private String description;
 }

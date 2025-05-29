@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GenreCreationRequest {
-    @NotBlank(message = "Name is required")
-    private String name;
+  @NotBlank(message = "Name is required")
+  private String name;
 }

@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
-
 @Entity
 @Table(name = "genres")
 @Getter
@@ -14,8 +12,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Genre extends AbstractEntity<Integer>{
+public class Genre extends AbstractEntity<Integer> {
 
-    @Column(nullable = false, unique = true)
-    String name;
+  @Column(nullable = false, unique = true)
+  String name;
 }

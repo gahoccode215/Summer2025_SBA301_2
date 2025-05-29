@@ -8,9 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface MovieService {
-    MovieResponse createMovie(MovieCreationRequest request);
-    MovieResponse updateMovie(Long id, MovieUpdateRequest request);
-    void deleteMovie(Long id);
-    MovieResponse getMovieDetail(Long id);
-    Page<MovieResponse> getAllMovies(Pageable pageable, String keyword, MovieStatus movieStatus);
+  MovieResponse createMovie(MovieCreationRequest request);
+
+  MovieResponse updateMovie(Long id, MovieUpdateRequest request);
+
+  void deleteMovie(Long id);
+
+  MovieResponse getMovieDetail(Long id);
+
+  Page<MovieResponse> getAllMovies(Pageable pageable, String keyword, MovieStatus movieStatus);
 }

@@ -4,13 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum Occupation {
-    DIRECTOR("Đạo diễn"),
-    ACTOR("Diễn viên")
-    ;
+  DIRECTOR("Đạo diễn"),
+  ACTOR("Diễn viên");
 
-    private final String displayName;
+  private final String displayName;
 
-    Occupation(String displayName) {
-        this.displayName = displayName;
-    }
+  Occupation(String displayName) {
+    this.displayName = displayName;
+  }
 }

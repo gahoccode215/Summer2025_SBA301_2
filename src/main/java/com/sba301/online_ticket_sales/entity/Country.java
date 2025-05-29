@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
-
 @Entity
 @Table(name = "countries")
 @Getter
@@ -16,6 +14,6 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Country extends AbstractEntity<Integer> {
 
-    @Column(nullable = false, unique = true)
-    String name;
+  @Column(nullable = false, unique = true)
+  String name;
 }
