@@ -27,6 +27,7 @@ public class Movie extends AbstractEntity<Long> implements Serializable {
     String director;
     @Enumerated(EnumType.STRING)
     MovieStatus movieStatus;
+    boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")

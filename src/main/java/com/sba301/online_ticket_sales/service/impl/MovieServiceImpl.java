@@ -15,6 +15,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -39,5 +41,20 @@ public class MovieServiceImpl implements MovieService {
         Movie updatedMovie = movieRepository.save(movie);
         log.info("Updated movie: {}", updatedMovie.getTitle());
         return movieMapper.toMovieResponse(updatedMovie);
+    }
+
+    @Override
+    public void deleteMovie(Long id) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        if (movie.isDeleted()) {
+            throw new AppException(ErrorCode.MOVIE_NOT_FOUND);
+        }
+        movie.getGenres().clear();
+        movie.getDirectors().clear();
+        movie.getActors().clear();
+        movie.setCountry(null);
+        movie.setDeleted(true);
+        movieRepository.save(movie);
     }
 }

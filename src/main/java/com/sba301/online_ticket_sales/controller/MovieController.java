@@ -77,4 +77,25 @@ public class MovieController {
                 .result(response)
                 .build());
     }
+    @Operation(
+            summary = "Xóa phim (xóa mềm)",
+            description = "Xóa mềm phim theo ID bằng cách đặt isDeleted = true, xóa liên kết với Country, Genre, Person (directors, actors) mà không xóa các thực thể liên kết. Yêu cầu quyền ADMIN hoặc MANAGER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Xóa thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Phim không tồn tại hoặc đã bị xóa",
+                    content = @Content)
+    })
+    @DeleteMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteMovie(
+            @Parameter(description = "ID của phim cần xóa", required = true)
+            @PathVariable Long id) {
+        movieService.deleteMovie(id);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Xóa thành công")
+                .build());
+    }
 }

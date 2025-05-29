@@ -7,4 +7,5 @@ import com.sba301.online_ticket_sales.dto.movie.response.MovieResponse;
 public interface MovieService {
     MovieResponse createMovie(MovieCreationRequest request);
     MovieResponse updateMovie(Long id, MovieUpdateRequest request);
+    void deleteMovie(Long id);
 }
