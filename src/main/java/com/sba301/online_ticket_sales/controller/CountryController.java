@@ -78,4 +78,25 @@ public class CountryController {
                 .result(response)
                 .build());
     }
+    @Operation(
+            summary = "Xóa quốc gia (xóa cứng)",
+            description = "Xóa quốc gia theo ID, đặt country_id thành NULL trong các bảng liên quan (ví dụ: persons, movies) mà không xóa các thực thể liên kết. Yêu cầu quyền ADMIN hoặc MANAGER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Xóa thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Quốc gia không tồn tại",
+                    content = @Content)
+    })
+    @DeleteMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteCountry(
+            @Parameter(description = "ID của quốc gia cần xóa", required = true)
+            @PathVariable Integer id) {
+        countryService.deleteCountry(id);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Xóa thành công")
+                .build());
+    }
 }
