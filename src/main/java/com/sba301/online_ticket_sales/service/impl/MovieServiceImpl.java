@@ -1,8 +1,11 @@
 package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.dto.movie.request.MovieCreationRequest;
+import com.sba301.online_ticket_sales.dto.movie.request.MovieUpdateRequest;
 import com.sba301.online_ticket_sales.dto.movie.response.MovieResponse;
 import com.sba301.online_ticket_sales.entity.Movie;
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.MovieMapper;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.service.MovieService;
@@ -26,5 +29,15 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = movieMapper.toMovie(request);
         Movie savedMovie = movieRepository.save(movie);
         return movieMapper.toMovieResponse(savedMovie);
+    }
+
+    @Override
+    public MovieResponse updateMovie(Long id, MovieUpdateRequest request) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        movieMapper.updateMovieFromRequest(request, movie);
+        Movie updatedMovie = movieRepository.save(movie);
+        log.info("Updated movie: {}", updatedMovie.getTitle());
+        return movieMapper.toMovieResponse(updatedMovie);
     }
 }

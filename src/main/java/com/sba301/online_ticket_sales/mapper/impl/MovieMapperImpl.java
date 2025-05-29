@@ -89,4 +89,45 @@ public class MovieMapperImpl implements MovieMapper {
         return response;
     }
 
+    @Override
+    public void updateMovieFromRequest(MovieUpdateRequest request, Movie movie) {
+        Optional.ofNullable(request.getTitle()).filter(title -> !title.isBlank()).ifPresent(movie::setTitle);
+        Optional.ofNullable(request.getDescription()).ifPresent(movie::setDescription);
+        Optional.ofNullable(request.getDuration()).ifPresent(movie::setDuration);
+        Optional.ofNullable(request.getReleaseDate()).ifPresent(movie::setReleaseDate);
+        Optional.ofNullable(request.getTrailerUrl()).ifPresent(movie::setTrailerUrl);
+        Optional.ofNullable(request.getDirector()).ifPresent(movie::setDirector);
+        Optional.ofNullable(request.getMovieStatus()).ifPresent(movie::setMovieStatus);
+
+        if (request.getCountryId() != null) {
+            Country country = countryRepository.findById(request.getCountryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.INVALID_COUNTRY));
+            movie.setCountry(country);
+        }
+
+        if (request.getGenreIds() != null) {
+            List<Genre> genres = genreRepository.findAllById(request.getGenreIds());
+            if (genres.size() != request.getGenreIds().size()) {
+                throw new AppException(ErrorCode.INVALID_GENRE);
+            }
+            movie.setGenres(genres);
+        }
+
+        if (request.getDirectorIds() != null) {
+            List<Person> directors = personRepository.findAllById(request.getDirectorIds());
+            if (directors.size() != request.getDirectorIds().size()) {
+                throw new AppException(ErrorCode.INVALID_PERSON);
+            }
+            movie.setDirectors(directors);
+        }
+
+        if (request.getActorIds() != null) {
+            List<Person> actors = personRepository.findAllById(request.getActorIds());
+            if (actors.size() != request.getActorIds().size()) {
+                throw new AppException(ErrorCode.INVALID_PERSON);
+            }
+            movie.setActors(actors);
+        }
+    }
+
 }
