@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.dto.movie.request.MovieCreationRequest;
 import com.sba301.online_ticket_sales.dto.movie.request.MovieUpdateRequest;
 import com.sba301.online_ticket_sales.dto.movie.response.MovieResponse;
+import com.sba301.online_ticket_sales.enums.MovieStatus;
 import com.sba301.online_ticket_sales.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +18,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -117,6 +122,38 @@ public class MovieController {
         return ResponseEntity.ok(ApiResponseDTO.<MovieResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
+    @Operation(
+            summary = "Lấy danh sách phim",
+            description = "Lấy danh sách phim với phân trang, tìm kiếm theo tiêu đề, sắp xếp theo tiêu đề, thời lượng hoặc ngày phát hành, và lọc theo trạng thái phim (UPCOMING, NOW_SHOWING, ENDED, IMAX). Chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER (hiện bị vô hiệu hóa)."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
+    })
+    @GetMapping
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<Page<MovieResponse>>> getAllMovies(
+            @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Số bản ghi mỗi trang", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Từ khóa tìm kiếm trên tiêu đề", example = "Avengers")
+            @RequestParam(required = false) String keyword,
+            @Parameter(description = "Trạng thái phim để lọc (UPCOMING, NOW_SHOWING, ENDED, IMAX)", example = "NOW_SHOWING")
+            @RequestParam(required = false) MovieStatus movieStatus,
+            @Parameter(description = "Trường để sắp xếp (title, duration, releaseDate)", example = "title")
+            @RequestParam(defaultValue = "title") String sortBy,
+            @Parameter(description = "Hướng sắp xếp (asc hoặc desc)", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Direction.fromString(sortDir), sortBy));
+        Page<MovieResponse> response = movieService.getAllMovies(pageable, keyword, movieStatus);
+        return ResponseEntity.ok(ApiResponseDTO.<Page<MovieResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy danh sách thành công")
                 .result(response)
                 .build());
     }

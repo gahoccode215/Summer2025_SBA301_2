@@ -17,7 +17,6 @@ public class MovieUpdateRequest {
     private Integer duration;
     private LocalDate releaseDate;
     private String trailerUrl;
-    private String director;
     private MovieStatus movieStatus;
     private Integer countryId;
     private List<Integer> genreIds;

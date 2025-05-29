@@ -62,7 +62,6 @@ public class MovieMapperImpl implements MovieMapper {
                 .duration(request.getDuration())
                 .releaseDate(request.getReleaseDate())
                 .trailerUrl(request.getTrailerUrl())
-                .director(request.getDirector())
                 .movieStatus(request.getMovieStatus())
                 .country(country)
                 .genres(genres)
@@ -80,7 +79,6 @@ public class MovieMapperImpl implements MovieMapper {
         response.setDuration(movie.getDuration());
         response.setReleaseDate(movie.getReleaseDate());
         response.setTrailerUrl(movie.getTrailerUrl());
-        response.setDirector(movie.getDirector());
         response.setMovieStatus(movie.getMovieStatus());
         response.setCountry(movie.getCountry() != null ? movie.getCountry().getName() : null);
         response.setGenres(movie.getGenres().stream().map(Genre::getName).toList());
@@ -96,7 +94,6 @@ public class MovieMapperImpl implements MovieMapper {
         Optional.ofNullable(request.getDuration()).ifPresent(movie::setDuration);
         Optional.ofNullable(request.getReleaseDate()).ifPresent(movie::setReleaseDate);
         Optional.ofNullable(request.getTrailerUrl()).ifPresent(movie::setTrailerUrl);
-        Optional.ofNullable(request.getDirector()).ifPresent(movie::setDirector);
         Optional.ofNullable(request.getMovieStatus()).ifPresent(movie::setMovieStatus);
 
         if (request.getCountryId() != null) {

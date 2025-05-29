@@ -2,9 +2,6 @@ package com.sba301.online_ticket_sales.dto.movie.request;
 
 
 import com.sba301.online_ticket_sales.enums.MovieStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +16,6 @@ public class MovieCreationRequest {
     private Integer duration;
     private LocalDate releaseDate;
     private String trailerUrl;
-    private String director;
     private MovieStatus movieStatus;
     private Integer countryId;
     private List<Integer> genreIds;

@@ -20,10 +20,10 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role extends AbstractEntity<Integer> {
     @Column(name = "name")
-     String name;
+    String name;
 
     @Column(name = "description")
-     String description;
+    String description;
 
     @ManyToMany(mappedBy = "roles")
     List<User> users;
