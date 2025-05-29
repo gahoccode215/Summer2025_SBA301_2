@@ -1,10 +1,16 @@
 package com.sba301.online_ticket_sales.controller;
 
+import com.sba301.online_ticket_sales.dto.auth.request.ChangePasswordRequest;
 import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -14,10 +20,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -64,4 +67,26 @@ public class AuthenticationController {
                 .build());
     }
 
+    @Operation(
+            summary = "Đổi mật khẩu",
+            description = "Đổi mật khẩu của người dùng hiện tại. Yêu cầu mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới. Yêu cầu người dùng đã đăng nhập."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Đổi mật khẩu thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ, mật khẩu hiện tại không đúng hoặc mật khẩu mới không khớp",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ",
+                    content = @Content)
+    })
+    @PutMapping("/change-password")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authenticationService.changePassword(request);
+        return ResponseEntity.ok(ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Đổi mật khẩu thành công")
+                .build());
+    }
 }

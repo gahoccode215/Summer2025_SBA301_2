@@ -15,6 +15,8 @@ public enum ErrorCode {
     ACCOUNT_HAS_BEEN_DISABLE(1004, "Tài khoản của bạn chưa kích hoạt hoặc bị khóa", HttpStatus.BAD_REQUEST),
     INVALID_TOKEN(1005, "Invalid token", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1006, "Role not found", HttpStatus.BAD_REQUEST),
+    INCORRECT_PASSWORD(1007, "Current password is incorrect", HttpStatus.BAD_REQUEST),
+    PASSWORD_MISMATCH(1008, "New password and confirm password do not match", HttpStatus.BAD_REQUEST),
     // PERSON EXCEPTION (1100 - 1199)
     PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
     COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),

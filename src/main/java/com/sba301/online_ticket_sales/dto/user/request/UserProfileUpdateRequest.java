@@ -12,7 +12,6 @@ import java.time.LocalDate;
 public class UserProfileUpdateRequest {
     private String fullName;
 
-    @Past(message = "Birth date must be in the past")
     private LocalDate birthDate;
 
     private Gender gender;
