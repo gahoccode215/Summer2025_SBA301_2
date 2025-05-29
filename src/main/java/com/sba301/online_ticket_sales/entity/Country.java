@@ -17,5 +17,5 @@ import java.io.Serializable;
 public class Country extends AbstractEntity<Integer> {
 
     @Column(nullable = false, unique = true)
-    private String name;
+    String name;
 }
