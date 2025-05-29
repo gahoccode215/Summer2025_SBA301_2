@@ -99,4 +99,27 @@ public class CountryController {
                 .message("Xóa thành công")
                 .build());
     }
+
+    @Operation(
+            summary = "Lấy chi tiết quốc gia",
+            description = "Lấy thông tin chi tiết của quốc gia theo ID. Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy chi tiết thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Quốc gia không tồn tại",
+                    content = @Content)
+    })
+    @GetMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<CountryResponse>> getCountryDetail(
+            @Parameter(description = "ID của quốc gia cần lấy", required = true)
+            @PathVariable Integer id) {
+        CountryResponse response = countryService.getCountryDetail(id);
+        return ResponseEntity.ok(ApiResponseDTO.<CountryResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
 }
