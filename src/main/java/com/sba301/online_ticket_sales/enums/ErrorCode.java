@@ -26,7 +26,9 @@ public enum ErrorCode {
     INVALID_COUNTRY(1300, "Invalid country ID", HttpStatus.BAD_REQUEST),
     INVALID_GENRE(1301, "One or more genre IDs are invalid", HttpStatus.BAD_REQUEST),
     INVALID_PERSON(1302, "One or more person IDs are invalid", HttpStatus.BAD_REQUEST),
-    MOVIE_NOT_FOUND(1303, "Movie not found", HttpStatus.NOT_FOUND)
+    MOVIE_NOT_FOUND(1303, "Movie not found", HttpStatus.NOT_FOUND),
+    // COUNTRY EXCEPTION (1400 - 1499)
+    COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

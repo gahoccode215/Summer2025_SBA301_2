@@ -1,0 +1,56 @@
+package com.sba301.online_ticket_sales.controller;
+
+import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
+import com.sba301.online_ticket_sales.dto.country.request.CountryCreationRequest;
+import com.sba301.online_ticket_sales.dto.country.response.CountryResponse;
+import com.sba301.online_ticket_sales.service.CountryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
+@Tag(name = "Country Controller", description = "APIs quản lý quốc gia")
+@RequestMapping("/api/v1/countries")
+public class CountryController {
+    CountryService countryService;
+
+    @Operation(
+            summary = "Tạo mới quốc gia",
+            description = "Tạo một quốc gia mới với tên được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Tạo mới thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ hoặc tên quốc gia đã tồn tại",
+                    content = @Content)
+    })
+    @PostMapping
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<CountryResponse>> createCountry(
+            @Valid @RequestBody CountryCreationRequest request) {
+        CountryResponse response = countryService.createCountry(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponseDTO.<CountryResponse>builder()
+                        .code(HttpStatus.CREATED.value())
+                        .message("Tạo mới thành công")
+                        .result(response)
+                        .build());
+    }
+}

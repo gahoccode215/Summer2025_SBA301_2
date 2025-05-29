@@ -127,7 +127,7 @@ public class MovieController {
     }
     @Operation(
             summary = "Lấy danh sách phim",
-            description = "Lấy danh sách phim với phân trang, tìm kiếm theo tiêu đề, sắp xếp theo tiêu đề, thời lượng hoặc ngày phát hành, và lọc theo trạng thái phim (UPCOMING, NOW_SHOWING, ENDED, IMAX). Chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER (hiện bị vô hiệu hóa)."
+            description = "Lấy danh sách phim với phân trang, tìm kiếm theo tiêu đề, sắp xếp theo tiêu đề, thời lượng hoặc ngày phát hành, và lọc theo trạng thái phim (UPCOMING, NOW_SHOWING, ENDED, IMAX). Chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
