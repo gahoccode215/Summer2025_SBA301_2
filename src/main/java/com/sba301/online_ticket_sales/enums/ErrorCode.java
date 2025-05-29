@@ -29,6 +29,8 @@ public enum ErrorCode {
     MOVIE_NOT_FOUND(1303, "Movie not found", HttpStatus.NOT_FOUND),
     // COUNTRY EXCEPTION (1400 - 1499)
     COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
+    // USER EXCEPTION (1500 - 1599)
+    USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
