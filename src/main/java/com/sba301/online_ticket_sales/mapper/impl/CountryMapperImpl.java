@@ -10,22 +10,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class CountryMapperImpl implements CountryMapper {
 
-    @Override
-    public Country toCountry(CountryCreationRequest request) {
-        return Country.builder()
-                .name(request.getName())
-                .build();
-    }
+  @Override
+  public Country toCountry(CountryCreationRequest request) {
+    return Country.builder().name(request.getName()).build();
+  }
 
-    @Override
-    public CountryResponse toCountryResponse(Country country) {
-        CountryResponse response = new CountryResponse();
-        response.setId(country.getId());
-        response.setName(country.getName());
-        return response;
-    }
-    @Override
-    public void updateCountryFromRequest(CountryUpdateRequest request, Country country) {
-        country.setName(request.getName());
-    }
+  @Override
+  public CountryResponse toCountryResponse(Country country) {
+    CountryResponse response = new CountryResponse();
+    response.setId(country.getId());
+    response.setName(country.getName());
+    return response;
+  }
+
+  @Override
+  public void updateCountryFromRequest(CountryUpdateRequest request, Country country) {
+    country.setName(request.getName());
+  }
 }

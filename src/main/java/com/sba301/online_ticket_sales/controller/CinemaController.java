@@ -26,11 +26,12 @@ public class CinemaController {
   CinemaService cinemaService;
 
   @PostMapping
-  public ResponseEntity<ApiResponseDTO<Long>> upsertCinema(@Valid @RequestBody CinemaRequest request) {
+  public ResponseEntity<ApiResponseDTO<Long>> upsertCinema(
+      @Valid @RequestBody CinemaRequest request) {
     Long cinemaId = cinemaService.upsertCinema(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
-                ApiResponseDTO.<Long>builder()
+            ApiResponseDTO.<Long>builder()
                 .code(HttpStatus.CREATED.value())
                 .message(request.getRequestType() + " thành công")
                 .result(cinemaId)
@@ -42,7 +43,7 @@ public class CinemaController {
     List<CinemaResponse> result = cinemaService.getAllCinemas();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
-                ApiResponseDTO.<List<CinemaResponse>>builder()
+            ApiResponseDTO.<List<CinemaResponse>>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Lấy danh sách rạp chiếu thành công " + result.size() + " rạp")
                 .result(result)
@@ -53,7 +54,7 @@ public class CinemaController {
   public ResponseEntity<ApiResponseDTO<CinemaDetailResponse>> getCinemaById(@PathVariable Long id) {
     CinemaDetailResponse result = cinemaService.getCinemaDetail(id);
     return ResponseEntity.ok(
-            ApiResponseDTO.<CinemaDetailResponse>builder()
+        ApiResponseDTO.<CinemaDetailResponse>builder()
             .code(HttpStatus.OK.value())
             .message("Lấy chi tiết rạp chiếu thành công " + result.getId())
             .result(result)
@@ -65,7 +66,7 @@ public class CinemaController {
       @PathVariable Long id, @RequestParam boolean active) {
     cinemaService.deActivate(id, active);
     return ResponseEntity.ok(
-            ApiResponseDTO.<Void>builder()
+        ApiResponseDTO.<Void>builder()
             .code(HttpStatus.OK.value())
             .message("Cập nhật trạng thái rạp chiếu thành công " + id + ", active: " + active)
             .build());

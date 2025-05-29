@@ -4,11 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
-import java.util.List;
 
 @Setter
 @Getter
@@ -19,13 +17,12 @@ import java.util.List;
 @Table(name = "roles")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role extends AbstractEntity<Integer> {
-    @Column(name = "name")
-    String name;
+  @Column(name = "name")
+  String name;
 
-    @Column(name = "description")
-    String description;
+  @Column(name = "description")
+  String description;
 
-    @ManyToMany(mappedBy = "roles")
-    List<User> users;
-
+  @ManyToMany(mappedBy = "roles")
+  List<User> users;
 }

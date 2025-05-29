@@ -6,7 +6,9 @@ import com.sba301.online_ticket_sales.dto.country.response.CountryResponse;
 import com.sba301.online_ticket_sales.entity.Country;
 
 public interface CountryMapper {
-    Country toCountry(CountryCreationRequest request);
-    CountryResponse toCountryResponse(Country country);
-    void updateCountryFromRequest(CountryUpdateRequest request, Country country);
+  Country toCountry(CountryCreationRequest request);
+
+  CountryResponse toCountryResponse(Country country);
+
+  void updateCountryFromRequest(CountryUpdateRequest request, Country country);
 }

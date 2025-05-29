@@ -27,55 +27,64 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    UserService userService;
+  UserService userService;
 
-    @Operation(
-            summary = "Lấy thông tin hồ sơ người dùng",
-            description = "Lấy thông tin hồ sơ của người dùng hiện tại dựa trên JWT token. Yêu cầu người dùng đã đăng nhập."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lấy hồ sơ thành công",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại",
-                    content = @Content)
-    })
-    @GetMapping("/profile")
-    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-    public ResponseEntity<ApiResponseDTO<UserProfileResponse>> getProfile() {
-        UserProfileResponse response = userService.getProfile();
-        return ResponseEntity.ok(ApiResponseDTO.<UserProfileResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("Lấy hồ sơ thành công")
-                .result(response)
-                .build());
-    }
+  @Operation(
+      summary = "Lấy thông tin hồ sơ người dùng",
+      description =
+          "Lấy thông tin hồ sơ của người dùng hiện tại dựa trên JWT token. Yêu cầu người dùng đã đăng nhập.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Lấy hồ sơ thành công",
+        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Chưa đăng nhập hoặc token không hợp lệ",
+        content = @Content),
+    @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
+  })
+  @GetMapping("/profile")
+  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  public ResponseEntity<ApiResponseDTO<UserProfileResponse>> getProfile() {
+    UserProfileResponse response = userService.getProfile();
+    return ResponseEntity.ok(
+        ApiResponseDTO.<UserProfileResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Lấy hồ sơ thành công")
+            .result(response)
+            .build());
+  }
 
-
-    @Operation(
-            summary = "Cập nhật thông tin hồ sơ người dùng",
-            description = "Cập nhật thông tin hồ sơ (tên, ngày sinh, giới tính) của người dùng hiện tại dựa trên JWT token. Yêu cầu người dùng đã đăng nhập."
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Cập nhật hồ sơ thành công",
-                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ",
-                    content = @Content),
-            @ApiResponse(responseCode = "401", description = "Chưa đăng nhập hoặc token không hợp lệ",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại",
-                    content = @Content)
-    })
-    @PutMapping("/profile")
-    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-    public ResponseEntity<ApiResponseDTO<UserProfileResponse>> updateProfile(
-            @Valid @RequestBody UserProfileUpdateRequest request) {
-        UserProfileResponse response = userService.updateProfile(request);
-        return ResponseEntity.ok(ApiResponseDTO.<UserProfileResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("Cập nhật hồ sơ thành công")
-                .result(response)
-                .build());
-    }
+  @Operation(
+      summary = "Cập nhật thông tin hồ sơ người dùng",
+      description =
+          "Cập nhật thông tin hồ sơ (tên, ngày sinh, giới tính) của người dùng hiện tại dựa trên JWT token. Yêu cầu người dùng đã đăng nhập.")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Cập nhật hồ sơ thành công",
+        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Dữ liệu đầu vào không hợp lệ",
+        content = @Content),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Chưa đăng nhập hoặc token không hợp lệ",
+        content = @Content),
+    @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
+  })
+  @PutMapping("/profile")
+  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  public ResponseEntity<ApiResponseDTO<UserProfileResponse>> updateProfile(
+      @Valid @RequestBody UserProfileUpdateRequest request) {
+    UserProfileResponse response = userService.updateProfile(request);
+    return ResponseEntity.ok(
+        ApiResponseDTO.<UserProfileResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Cập nhật hồ sơ thành công")
+            .result(response)
+            .build());
+  }
 }

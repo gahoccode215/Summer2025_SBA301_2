@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GenreResponse {
-    private Integer id;
-    private String name;
+  private Integer id;
+  private String name;
 }

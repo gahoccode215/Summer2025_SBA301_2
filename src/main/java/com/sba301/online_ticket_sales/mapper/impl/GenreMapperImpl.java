@@ -10,22 +10,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class GenreMapperImpl implements GenreMapper {
 
-    @Override
-    public Genre toGenre(GenreCreationRequest request) {
-        return Genre.builder()
-                .name(request.getName())
-                .build();
-    }
+  @Override
+  public Genre toGenre(GenreCreationRequest request) {
+    return Genre.builder().name(request.getName()).build();
+  }
 
-    @Override
-    public GenreResponse toGenreResponse(Genre genre) {
-        GenreResponse response = new GenreResponse();
-        response.setId(genre.getId());
-        response.setName(genre.getName());
-        return response;
-    }
-    @Override
-    public void updateGenreFromRequest(GenreUpdateRequest request, Genre genre) {
-        genre.setName(request.getName());
-    }
+  @Override
+  public GenreResponse toGenreResponse(Genre genre) {
+    GenreResponse response = new GenreResponse();
+    response.setId(genre.getId());
+    response.setName(genre.getName());
+    return response;
+  }
+
+  @Override
+  public void updateGenreFromRequest(GenreUpdateRequest request, Genre genre) {
+    genre.setName(request.getName());
+  }
 }

@@ -7,9 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CountryService {
-    CountryResponse createCountry(CountryCreationRequest request);
-    CountryResponse updateCountry(Integer id, CountryUpdateRequest request);
-    void deleteCountry(Integer id);
-    CountryResponse getCountryDetail(Integer id);
-    Page<CountryResponse> getAllCountries(Pageable pageable, String keyword);
+  CountryResponse createCountry(CountryCreationRequest request);
+
+  CountryResponse updateCountry(Integer id, CountryUpdateRequest request);
+
+  void deleteCountry(Integer id);
+
+  CountryResponse getCountryDetail(Integer id);
+
+  Page<CountryResponse> getAllCountries(Pageable pageable, String keyword);
 }
