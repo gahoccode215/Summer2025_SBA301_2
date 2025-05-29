@@ -31,7 +31,6 @@ import java.util.List;
 import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 import static com.sba301.online_ticket_sales.enums.TokenType.REFRESH_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.REFERER;
 
 @Service
 @Slf4j
