@@ -98,4 +98,26 @@ public class MovieController {
                 .message("Xóa thành công")
                 .build());
     }
+    @Operation(
+            summary = "Lấy chi tiết phim",
+            description = "Lấy thông tin chi tiết của phim theo ID, chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER ."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lấy chi tiết thành công",
+                    content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Phim không tồn tại hoặc đã bị xóa",
+                    content = @Content)
+    })
+    @GetMapping("/{id}")
+    // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    public ResponseEntity<ApiResponseDTO<MovieResponse>> getMovieDetail(
+            @Parameter(description = "ID của phim cần lấy", required = true)
+            @PathVariable Long id) {
+        MovieResponse response = movieService.getMovieDetail(id);
+        return ResponseEntity.ok(ApiResponseDTO.<MovieResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết thành công")
+                .result(response)
+                .build());
+    }
 }

@@ -57,4 +57,14 @@ public class MovieServiceImpl implements MovieService {
         movie.setDeleted(true);
         movieRepository.save(movie);
     }
+
+    @Override
+    public MovieResponse getMovieDetail(Long id) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+        if (movie.isDeleted()) {
+            throw new AppException(ErrorCode.MOVIE_NOT_FOUND);
+        }
+        return movieMapper.toMovieResponse(movie);
+    }
 }
