@@ -58,12 +58,16 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     public void deleteCountry(Integer id) {
-
+        Country country = countryRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
+        countryRepository.delete(country);
     }
 
     @Override
     public CountryResponse getCountryDetail(Integer id) {
-        return null;
+        Country country = countryRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
+        return countryMapper.toCountryResponse(country);
     }
 
     @Override
