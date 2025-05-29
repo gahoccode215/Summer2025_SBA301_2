@@ -9,12 +9,19 @@ import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CountryMapper;
 import com.sba301.online_ticket_sales.repository.CountryRepository;
 import com.sba301.online_ticket_sales.service.CountryService;
+import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -57,5 +64,18 @@ public class CountryServiceImpl implements CountryService {
     @Override
     public CountryResponse getCountryDetail(Integer id) {
         return null;
+    }
+
+    @Override
+    public Page<CountryResponse> getAllCountries(Pageable pageable, String keyword) {
+        Specification<Country> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (keyword != null && !keyword.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Page<Country> countries = countryRepository.findAll(spec, pageable);
+        return countries.map(countryMapper::toCountryResponse);
     }
 }
