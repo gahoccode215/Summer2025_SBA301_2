@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TokenResponse {
-    private String accessToken;
+  private String accessToken;
 
-    private String refreshToken;
+  private String refreshToken;
 
-    private Long userId;
+  private Long userId;
 }

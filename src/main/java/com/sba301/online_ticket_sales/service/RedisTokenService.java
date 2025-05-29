@@ -10,31 +10,32 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RedisTokenService {
-    private final RedisTokenRepository redisTokenRepository;
+  private final RedisTokenRepository redisTokenRepository;
 
-    public void save(RedisToken token) {
-        redisTokenRepository.save(token);
-    }
+  public void save(RedisToken token) {
+    redisTokenRepository.save(token);
+  }
 
-    public void remove(String id) {
-        isExists(id);
-        redisTokenRepository.deleteById(id);
-    }
+  public void remove(String id) {
+    isExists(id);
+    redisTokenRepository.deleteById(id);
+  }
 
-    public boolean isExists(String id) {
-        if (!redisTokenRepository.existsById(id)) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
-        return true;
+  public boolean isExists(String id) {
+    if (!redisTokenRepository.existsById(id)) {
+      throw new AppException(ErrorCode.INVALID_TOKEN);
     }
+    return true;
+  }
 
-    public RedisToken getById(String id) {
-        return redisTokenRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
-    }
+  public RedisToken getById(String id) {
+    return redisTokenRepository
+        .findById(id)
+        .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
+  }
 
-    public boolean isValidToken(String id, String accessToken) {
-        RedisToken redisToken = getById(id);
-        return redisToken.getAccessToken().equals(accessToken);
-    }
+  public boolean isValidToken(String id, String accessToken) {
+    RedisToken redisToken = getById(id);
+    return redisToken.getAccessToken().equals(accessToken);
+  }
 }

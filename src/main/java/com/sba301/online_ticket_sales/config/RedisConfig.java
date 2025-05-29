@@ -14,25 +14,26 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 @EnableRedisRepositories
 public class RedisConfig {
 
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
+  @Value("${spring.data.redis.host}")
+  private String redisHost;
 
-    @Bean
-    public JedisConnectionFactory jedisConnectionFactory() {
-        log.info("Connecting redis: {}:{}", redisHost, redisPort);
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(redisHost);
-        config.setPort(redisPort);
-        return new JedisConnectionFactory(config);
-    }
+  @Value("${spring.data.redis.port}")
+  private int redisPort;
 
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        log.info("Redis connected !");
-        return template;
-    }
+  @Bean
+  public JedisConnectionFactory jedisConnectionFactory() {
+    log.info("Connecting redis: {}:{}", redisHost, redisPort);
+    RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+    config.setHostName(redisHost);
+    config.setPort(redisPort);
+    return new JedisConnectionFactory(config);
+  }
+
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate() {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(jedisConnectionFactory());
+    log.info("Redis connected !");
+    return template;
+  }
 }

@@ -2,13 +2,12 @@ package com.sba301.online_ticket_sales.entity;
 
 import com.sba301.online_ticket_sales.enums.Occupation;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "persons")
@@ -20,27 +19,29 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Person extends AbstractEntity<Integer> implements Serializable {
 
-    String name;
-    String description;
-    LocalDate birthDate;
-    Double height;
-    @Enumerated(EnumType.STRING)
-    Occupation occupation;
-    String biography;
-    boolean isDeleted;
+  String name;
+  String description;
+  LocalDate birthDate;
+  Double height;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id")
-    Country country;
+  @Enumerated(EnumType.STRING)
+  Occupation occupation;
 
-    @ElementCollection
-    @CollectionTable(name = "person_images", joinColumns = @JoinColumn(name = "person_id"))
-    @Column(name = "image_url")
-    List<String> images = new ArrayList<>();
+  String biography;
+  boolean isDeleted;
 
-    @ManyToMany(mappedBy = "directors")
-    List<Movie> directedMovies = new ArrayList<>();
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "country_id")
+  Country country;
 
-    @ManyToMany(mappedBy = "actors")
-    List<Movie> actedMovies = new ArrayList<>();
+  @ElementCollection
+  @CollectionTable(name = "person_images", joinColumns = @JoinColumn(name = "person_id"))
+  @Column(name = "image_url")
+  List<String> images = new ArrayList<>();
+
+  @ManyToMany(mappedBy = "directors")
+  List<Movie> directedMovies = new ArrayList<>();
+
+  @ManyToMany(mappedBy = "actors")
+  List<Movie> actedMovies = new ArrayList<>();
 }

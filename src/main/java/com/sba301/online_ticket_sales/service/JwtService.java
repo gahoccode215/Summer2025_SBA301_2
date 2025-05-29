@@ -5,11 +5,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JwtService {
 
-    String generateToken(UserDetails user);
+  String generateToken(UserDetails user);
 
-    String generateRefreshToken(UserDetails user);
+  String generateRefreshToken(UserDetails user);
 
-    String extractEmail(String token, TokenType type);
+  String extractEmail(String token, TokenType type);
 
-    boolean isValid(String token, TokenType type, UserDetails user);
+  boolean isValid(String token, TokenType type, UserDetails user);
 }

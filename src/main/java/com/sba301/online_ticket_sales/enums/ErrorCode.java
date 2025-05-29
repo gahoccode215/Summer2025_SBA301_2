@@ -33,15 +33,18 @@ public enum ErrorCode {
     COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
     // USER EXCEPTION (1500 - 1599)
     USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
+
+    // CINEMA EXCEPTION (1200 - 1299);
+    CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND)
     ;
 
-    ErrorCode(int code, String message, HttpStatusCode statusCode) {
-        this.code = code;
-        this.message = message;
-        this.statusCode = statusCode;
-    }
+  ErrorCode(int code, String message, HttpStatusCode statusCode) {
+    this.code = code;
+    this.message = message;
+    this.statusCode = statusCode;
+  }
 
-    private final int code;
-    private final String message;
-    private final HttpStatusCode statusCode;
+  private final int code;
+  private final String message;
+  private final HttpStatusCode statusCode;
 }
