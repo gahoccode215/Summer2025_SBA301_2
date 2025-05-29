@@ -22,14 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Movie Controller")
 @RequestMapping("/api/v1/movies")
 public class MovieController {
-    MovieService movieService;
+  MovieService movieService;
 
-    @PostMapping()
-    public ResponseEntity<ApiResponse<Void>> createMovie(@RequestBody MovieCreationRequest request) {
-        movieService.createMovie(request);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.CREATED.value())
-                .message("Tạo mới phim thành công")
-                .build());
-    }
+  @PostMapping()
+  public ResponseEntity<ApiResponse<Void>> createMovie(@RequestBody MovieCreationRequest request) {
+    movieService.createMovie(request);
+    return ResponseEntity.ok(
+        ApiResponse.<Void>builder()
+            .code(HttpStatus.CREATED.value())
+            .message("Tạo mới phim thành công")
+            .build());
+  }
 }

@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,38 +22,40 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Person Controller")
 @RequestMapping("/api/v1/persons")
 public class PersonController {
-    PersonService personService;
+  PersonService personService;
 
-    @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<PersonResponse>> createPerson(@Valid @RequestBody PersonCreationRequest request) {
-        PersonResponse response = personService.createPerson(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<PersonResponse>builder()
-                        .code(HttpStatus.CREATED.value())
-                        .message("Tạo mới thành công")
-                        .result(response)
-                        .build());
-    }
-    @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<PersonResponse>> updatePerson(
-            @PathVariable Integer id,
-            @Valid @RequestBody PersonUpdateRequest request) {
-        PersonResponse response = personService.updatePerson(id, request);
-        return ResponseEntity.ok(ApiResponse.<PersonResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("Cập nhật thành công")
+  @PostMapping
+  //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  public ResponseEntity<ApiResponse<PersonResponse>> createPerson(
+      @Valid @RequestBody PersonCreationRequest request) {
+    PersonResponse response = personService.createPerson(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(
+            ApiResponse.<PersonResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Tạo mới thành công")
                 .result(response)
                 .build());
-    }
-    @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponse<Void>> deletePerson(@PathVariable Integer id) {
-        personService.deletePerson(id);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(HttpStatus.OK.value())
-                .message("Xóa thành công")
-                .build());
-    }
+  }
+
+  @PutMapping("/{id}")
+  //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  public ResponseEntity<ApiResponse<PersonResponse>> updatePerson(
+      @PathVariable Integer id, @Valid @RequestBody PersonUpdateRequest request) {
+    PersonResponse response = personService.updatePerson(id, request);
+    return ResponseEntity.ok(
+        ApiResponse.<PersonResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Cập nhật thành công")
+            .result(response)
+            .build());
+  }
+
+  @DeleteMapping("/{id}")
+  //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  public ResponseEntity<ApiResponse<Void>> deletePerson(@PathVariable Integer id) {
+    personService.deletePerson(id);
+    return ResponseEntity.ok(
+        ApiResponse.<Void>builder().code(HttpStatus.OK.value()).message("Xóa thành công").build());
+  }
 }
