@@ -18,5 +18,6 @@ public interface AuthenticationService {
 
   void changePassword(ChangePasswordRequest request);
 
-  AuthenticationResponse outboundAuthenticate(String code);;
+  AuthenticationResponse outboundAuthenticate(String code);
+  ;
 }
