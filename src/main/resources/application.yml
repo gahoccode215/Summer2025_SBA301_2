@@ -16,6 +16,15 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  cloud:
+    compatibility-verifier:
+      enabled: false
+outbound:
+  identity:
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
+    redirect-uri: "http://localhost:3000/authenticate"
+
 management:
   endpoints:
     web:
