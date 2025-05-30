@@ -3,21 +3,26 @@ package com.sba301.online_ticket_sales.service.impl;
 import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.dto.auth.request.*;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
+import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.TokenType;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
 import com.sba301.online_ticket_sales.model.RedisToken;
-import com.sba301.online_ticket_sales.repository.OutboundIdentityClient;
+import com.sba301.online_ticket_sales.repository.RoleRepository;
 import com.sba301.online_ticket_sales.repository.UserRepository;
+import com.sba301.online_ticket_sales.repository.httpclient.OutboundIdentityClient;
+import com.sba301.online_ticket_sales.repository.httpclient.OutboundUserClient;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import com.sba301.online_ticket_sales.service.JwtService;
 import com.sba301.online_ticket_sales.service.RedisTokenService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +54,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   RedisTokenService redisTokenService;
   PasswordEncoder passwordEncoder;
   OutboundIdentityClient outboundIdentityClient;
+  OutboundUserClient outboundUserClient;
+  RoleRepository roleRepository;
 
   @NonFinal
   @Value("${outbound.identity.client-id}")
@@ -198,7 +205,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public AuthenticationResponse outboundAuthenticate(String code) {
+  public TokenResponse outboundAuthenticate(String code) {
     var response =
         outboundIdentityClient.exchangeToken(
             ExchangeTokenRequest.builder()
@@ -210,7 +217,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build());
 
     log.info("TOKEN RESPONSE {}", response);
+    // Get user info
+    var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
 
-    return AuthenticationResponse.builder().token(response.getAccessToken()).build();
+    log.info("User Info {}", userInfo);
+
+    Role customerRole =
+        roleRepository
+            .findByName(PredefinedRole.CUSTOMER_ROLE)
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+    // Onboard user
+    var user =
+        userRepository
+            .findByEmail(userInfo.getEmail())
+            .orElseGet(
+                () ->
+                    userRepository.save(
+                        User.builder()
+                            .email(userInfo.getEmail())
+                            .fullName(userInfo.getName())
+                            .password("")
+                            .roles(Collections.singletonList(customerRole))
+                            .build()));
+
+    // create new access token
+    String accessToken = jwtService.generateToken(user);
+
+    // create new refresh token
+    String refreshToken = jwtService.generateRefreshToken(user);
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(user.getUsername())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
+
+    return TokenResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
   }
 }

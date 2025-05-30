@@ -1,4 +1,4 @@
-package com.sba301.online_ticket_sales.repository;
+package com.sba301.online_ticket_sales.repository.httpclient;
 
 import com.sba301.online_ticket_sales.dto.auth.request.ExchangeTokenRequest;
 import com.sba301.online_ticket_sales.dto.auth.response.ExchangeTokenResponse;

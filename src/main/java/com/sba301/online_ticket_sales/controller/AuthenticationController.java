@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.controller;
 
-import com.sba301.online_ticket_sales.dto.auth.request.AuthenticationResponse;
 import com.sba301.online_ticket_sales.dto.auth.request.ChangePasswordRequest;
 import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
@@ -105,10 +104,10 @@ public class AuthenticationController {
   }
 
   @PostMapping("/outbound/authentication")
-  ResponseEntity<ApiResponseDTO<AuthenticationResponse>> outboundAuthenticate(
+  ResponseEntity<ApiResponseDTO<TokenResponse>> outboundAuthenticate(
       @RequestParam("code") String code) {
     return ResponseEntity.ok(
-        ApiResponseDTO.<AuthenticationResponse>builder()
+        ApiResponseDTO.<TokenResponse>builder()
             .code(HttpStatus.OK.value())
             .result(authenticationService.outboundAuthenticate(code))
             .message("Login Google thành công")

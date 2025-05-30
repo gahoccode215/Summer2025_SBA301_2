@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.service;
 
-import com.sba301.online_ticket_sales.dto.auth.request.AuthenticationResponse;
 import com.sba301.online_ticket_sales.dto.auth.request.ChangePasswordRequest;
 import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
@@ -18,6 +17,6 @@ public interface AuthenticationService {
 
   void changePassword(ChangePasswordRequest request);
 
-  AuthenticationResponse outboundAuthenticate(String code);
+  TokenResponse outboundAuthenticate(String code);
   ;
 }
