@@ -20,6 +20,6 @@ public class RoomRequest {
   @NotBlank(message = "Name cannot be blank")
   private String name;
 
-  private RoomType type;
+  private RoomType roomType;
   private RequestType requestType;
 }

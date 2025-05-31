@@ -23,4 +23,8 @@ public class Room extends AbstractEntity<Long> implements Serializable {
   @ManyToOne
   @JoinColumn(name = "cinema_id", nullable = false)
   private Cinema cinema;
+
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
 }

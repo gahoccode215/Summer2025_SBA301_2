@@ -40,7 +40,7 @@ public class CinemaMapperImpl implements CinemaMapper {
               roomRequest -> {
                 Room room = new Room();
                 room.setName(roomRequest.getName());
-                room.setRoomType(roomRequest.getType());
+                room.setRoomType(roomRequest.getRoomType());
                 cinema.addRoom(room);
               });
       return cinema;
@@ -68,15 +68,16 @@ public class CinemaMapperImpl implements CinemaMapper {
 
       List<Room> existingRooms = cinema.getRooms();
 
-      existingRooms.forEach(
-          existingRoom -> {
+        existingRooms.forEach(existingRoom -> {
             RoomRequest roomReq = roomRequestMap.get(existingRoom.getId());
             if (roomReq != null) {
-              existingRoom.setName(roomReq.getName());
-              existingRoom.setRoomType(roomReq.getType());
-              roomRequestMap.remove(existingRoom.getId());
+                existingRoom.setName(roomReq.getName());
+                existingRoom.setRoomType(roomReq.getRoomType());
+                roomRequestMap.remove(existingRoom.getId());
+            } else {
+                existingRoom.setActive(false);
             }
-          });
+        });
 
       request.getRoomRequestList().stream()
           .filter(r -> r.getId() == null)
@@ -84,7 +85,7 @@ public class CinemaMapperImpl implements CinemaMapper {
               roomRequest -> {
                 Room newRoom = new Room();
                 newRoom.setName(roomRequest.getName());
-                newRoom.setRoomType(roomRequest.getType());
+                newRoom.setRoomType(roomRequest.getRoomType());
                 cinema.addRoom(newRoom);
               });
     }
@@ -114,7 +115,7 @@ public class CinemaMapperImpl implements CinemaMapper {
     response.setProvince(cinema.getProvince());
     response.setActive(cinema.isActive());
     response.setRoomResponseList(
-        cinema.getRooms().stream()
+        cinema.getRooms().stream().filter(Room::isActive)
             .map(
                 room -> {
                   RoomResponse roomResponse = new RoomResponse();
@@ -124,6 +125,9 @@ public class CinemaMapperImpl implements CinemaMapper {
                   return roomResponse;
                 })
             .toList());
+    response.setImageUrl("https://kenh14cdn.com/2017/a12-1502124775530.jpg");
+    response.setCreatedAt(cinema.getCreatedAt());
+    response.setUpdatedAt(cinema.getUpdatedAt());
     return response;
   }
 }

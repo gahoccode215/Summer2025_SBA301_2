@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.dto.cinema.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,4 +19,7 @@ public class CinemaDetailResponse {
   private String province;
   private List<RoomResponse> roomResponseList;
   private boolean isActive;
+    private String imageUrl;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
