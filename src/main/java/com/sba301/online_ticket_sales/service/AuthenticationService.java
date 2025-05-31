@@ -1,8 +1,6 @@
 package com.sba301.online_ticket_sales.service;
 
-import com.sba301.online_ticket_sales.dto.auth.request.ChangePasswordRequest;
-import com.sba301.online_ticket_sales.dto.auth.request.LoginRequest;
-import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
+import com.sba301.online_ticket_sales.dto.auth.request.*;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -16,4 +14,12 @@ public interface AuthenticationService {
   TokenResponse refreshToken(HttpServletRequest request);
 
   void changePassword(ChangePasswordRequest request);
+
+  void sendForgotPasswordOtp(ForgotPasswordRequest request);
+
+  String confirmOTP(ConfirmOTPRequest request);
+
+    void resendOTP(ResendOTPRequest request);
+
+  TokenResponse resetPassword(ResetPasswordRequest request);
 }
