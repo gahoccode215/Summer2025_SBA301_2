@@ -101,6 +101,18 @@ public class AuthenticationController {
             .build());
   }
 
+<<<<<<< minh
+  @PostMapping("/outbound/authentication")
+  ResponseEntity<ApiResponseDTO<TokenResponse>> outboundAuthenticate(
+      @RequestParam("code") String code) {
+    return ResponseEntity.ok(
+        ApiResponseDTO.<TokenResponse>builder()
+            .code(HttpStatus.OK.value())
+            .result(authenticationService.outboundAuthenticate(code))
+            .message("Login Google thành công")
+            .build());
+  }
+=======
 
   @Operation(
           summary = "Quên mật khẩu",
@@ -202,4 +214,5 @@ public class AuthenticationController {
 
 
 
+>>>>>>> dev
 }

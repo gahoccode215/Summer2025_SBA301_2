@@ -16,6 +16,16 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+<<<<<<< minh
+  cloud:
+    compatibility-verifier:
+      enabled: false
+outbound:
+  identity:
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
+    redirect-uri: "http://localhost:3000/authenticate"
+=======
 
   mail:
     host: smtp.gmail.com
@@ -28,6 +38,7 @@ spring:
           auth: true
           starttls:
             enable: true
+>>>>>>> dev
 
 management:
   endpoints:

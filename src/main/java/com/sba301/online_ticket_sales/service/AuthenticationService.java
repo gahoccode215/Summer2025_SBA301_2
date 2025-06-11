@@ -15,6 +15,7 @@ public interface AuthenticationService {
 
   void changePassword(ChangePasswordRequest request);
 
+  TokenResponse outboundAuthenticate(String code);
   void sendForgotPasswordOtp(ForgotPasswordRequest request);
 
   String confirmOTP(ConfirmOTPRequest request);
