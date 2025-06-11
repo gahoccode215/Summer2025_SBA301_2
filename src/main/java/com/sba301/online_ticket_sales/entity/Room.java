@@ -20,6 +20,14 @@ public class Room extends AbstractEntity<Long> implements Serializable {
   @Enumerated(EnumType.STRING)
   private RoomType roomType;
 
+  @Column(name = "row_count", nullable = false)
+  @Builder.Default
+  private Integer rowCount = 0;
+
+  @Column(name = "seat_count", nullable = false)
+  @Builder.Default
+  private Integer seatCount = 0;
+
   @ManyToOne
   @JoinColumn(name = "cinema_id", nullable = false)
   private Cinema cinema;
