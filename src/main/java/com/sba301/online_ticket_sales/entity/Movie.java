@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.entity;
 
+import com.sba301.online_ticket_sales.enums.AgeRestriction;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import jakarta.persistence.*;
 import java.io.Serializable;
@@ -23,9 +24,13 @@ public class Movie extends AbstractEntity<Long> implements Serializable {
   Integer duration;
   LocalDate releaseDate;
   String trailerUrl;
+  String image;
 
   @Enumerated(EnumType.STRING)
   MovieStatus movieStatus;
+
+  @Enumerated(EnumType.STRING)
+  AgeRestriction ageRestriction;
 
   boolean isDeleted;
 

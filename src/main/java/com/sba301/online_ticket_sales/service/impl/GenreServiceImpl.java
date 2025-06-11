@@ -4,10 +4,12 @@ import com.sba301.online_ticket_sales.dto.genre.request.GenreCreationRequest;
 import com.sba301.online_ticket_sales.dto.genre.request.GenreUpdateRequest;
 import com.sba301.online_ticket_sales.dto.genre.response.GenreResponse;
 import com.sba301.online_ticket_sales.entity.Genre;
+import com.sba301.online_ticket_sales.entity.Movie;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.GenreMapper;
 import com.sba301.online_ticket_sales.repository.GenreRepository;
+import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.service.GenreService;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ public class GenreServiceImpl implements GenreService {
 
   GenreRepository genreRepository;
   GenreMapper genreMapper;
+  MovieRepository movieRepository;
 
   @Override
   public GenreResponse createGenre(GenreCreationRequest request) {
@@ -59,8 +62,21 @@ public class GenreServiceImpl implements GenreService {
 
   @Override
   public void deleteGenre(Integer id) {
-    Genre genre =
-        genreRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+    Genre genre = genreRepository.findById(id)
+            .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+
+    // Tìm tất cả các Movie liên quan đến Genre này
+    List<Movie> movies = genreRepository.findMoviesByGenreId(id);
+
+    // Xóa Genre khỏi danh sách genres của các Movie
+    for (Movie movie : movies) {
+      movie.getGenres().remove(genre);
+    }
+
+    // Lưu lại các Movie đã cập nhật
+    movieRepository.saveAll(movies);
+
+    // Xóa Genre
     genreRepository.delete(genre);
     log.info("Deleted genre: {}", genre.getName());
   }
