@@ -12,4 +12,7 @@ public class RoomResponse {
   private Long id;
   private String name;
   private RoomType roomType;
+    private Integer seatCount;
+    private Integer rowCount;
+    private boolean isActive;
 }

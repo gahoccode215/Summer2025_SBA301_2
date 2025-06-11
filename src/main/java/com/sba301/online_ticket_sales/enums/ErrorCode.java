@@ -37,7 +37,11 @@ public enum ErrorCode {
   USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
 
   // CINEMA EXCEPTION (1200 - 1299);
-  CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND);
+  CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
+
+  // OTP EXCEPTION ()
+  SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),
+  SECRET_KEY_EXPIRED(2101, "Secret Key not found or expired", HttpStatus.NOT_FOUND);
 
   ErrorCode(int code, String message, HttpStatusCode statusCode) {
     this.code = code;

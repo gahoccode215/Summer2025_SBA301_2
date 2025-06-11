@@ -21,3 +21,7 @@ Run MySQL on port 3306
 ### Prometheus
 
 `http://localhost:9090/targets`
+
+### RabbitMQ - Run before starting the app
+docker run --rm -it -p 15672:15672 -p 5672:5672 --name SBA_Cinema -d rabbitmq:3-management
+
