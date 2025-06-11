@@ -28,6 +28,7 @@ public class CinemaController {
   @PostMapping
   public ResponseEntity<ApiResponseDTO<Long>> upsertCinema(
       @Valid @RequestBody CinemaRequest request) {
+
     Long cinemaId = cinemaService.upsertCinema(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
