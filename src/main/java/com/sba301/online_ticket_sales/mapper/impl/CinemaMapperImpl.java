@@ -7,7 +7,6 @@ import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.RoomResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
 import com.sba301.online_ticket_sales.entity.Room;
-import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
@@ -16,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -73,18 +70,19 @@ public class CinemaMapperImpl implements CinemaMapper {
 
       List<Room> existingRooms = cinema.getRooms();
 
-        existingRooms.forEach(existingRoom -> {
+      existingRooms.forEach(
+          existingRoom -> {
             RoomRequest roomReq = roomRequestMap.get(existingRoom.getId());
             if (roomReq != null) {
-                existingRoom.setName(roomReq.getName());
-                existingRoom.setRowCount(roomReq.getRowCount());
-                existingRoom.setSeatCount(roomReq.getSeatCount());
-                existingRoom.setRoomType(roomReq.getRoomType());
-                roomRequestMap.remove(existingRoom.getId());
+              existingRoom.setName(roomReq.getName());
+              existingRoom.setRowCount(roomReq.getRowCount());
+              existingRoom.setSeatCount(roomReq.getSeatCount());
+              existingRoom.setRoomType(roomReq.getRoomType());
+              roomRequestMap.remove(existingRoom.getId());
             } else {
-                existingRoom.setActive(false);
+              existingRoom.setActive(false);
             }
-        });
+          });
 
       request.getRoomRequestList().stream()
           .filter(r -> r.getId() == null)
@@ -131,9 +129,9 @@ public class CinemaMapperImpl implements CinemaMapper {
                   roomResponse.setId(room.getId());
                   roomResponse.setName(room.getName());
                   roomResponse.setRoomType(room.getRoomType());
-                    roomResponse.setRowCount(room.getRowCount());
-                    roomResponse.setSeatCount(room.getSeatCount());
-                    roomResponse.setActive(room.isActive());
+                  roomResponse.setRowCount(room.getRowCount());
+                  roomResponse.setSeatCount(room.getSeatCount());
+                  roomResponse.setActive(room.isActive());
                   return roomResponse;
                 })
             .toList());

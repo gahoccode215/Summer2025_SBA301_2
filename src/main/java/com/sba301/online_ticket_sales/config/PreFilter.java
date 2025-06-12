@@ -5,9 +5,9 @@ import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.model.RedisToken;
+import com.sba301.online_ticket_sales.repository.UserRepository;
 import com.sba301.online_ticket_sales.service.JwtService;
 import com.sba301.online_ticket_sales.service.RedisTokenService;
-import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +21,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,7 +34,7 @@ public class PreFilter extends OncePerRequestFilter {
   private static final String BEARER_PREFIX = "Bearer ";
   private static final String UNAUTHORIZED_MESSAGE = "Token is invalid or has been logged out";
 
-  private final UserService userService;
+  private final UserRepository userRepository;
   private final JwtService jwtService;
   private final RedisTokenService redisTokenService;
 
@@ -115,21 +116,31 @@ public class PreFilter extends OncePerRequestFilter {
   }
 
   /** Xác thực người dùng và thiết lập SecurityContext nếu chưa được xác thực. */
-  private void authenticateUser(String email, String token, HttpServletRequest request) {
+  private void authenticateUser(String identifier, String token, HttpServletRequest request) {
     if (SecurityContextHolder.getContext().getAuthentication() != null) {
-      log.debug("User already authenticated for email: {}", email);
+      log.debug("User already authenticated for identifier: {}", identifier);
       return;
     }
+    try {
+      // Tìm user theo username hoặc email
+      UserDetails userDetails =
+          userRepository
+              .findByUsernameOrEmail(identifier)
+              .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
 
-    UserDetails userDetails = userService.userDetailsService().loadUserByUsername(email);
-    if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
-      UsernamePasswordAuthenticationToken authToken =
-          new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-      authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-      SecurityContextHolder.getContext().setAuthentication(authToken);
-      log.debug("Successfully authenticated user: {}", email);
-    } else {
-      log.warn("JWT token is invalid for email: {}", email);
+      if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
+        UsernamePasswordAuthenticationToken authToken =
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.debug("Successfully authenticated user: {}", identifier);
+      } else {
+        log.warn("JWT token is invalid for identifier: {}", identifier);
+        throw new AppException(ErrorCode.UNAUTHENTICATED);
+      }
+    } catch (UsernameNotFoundException e) {
+      log.warn("User not found for identifier: {}", identifier);
       throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
   }

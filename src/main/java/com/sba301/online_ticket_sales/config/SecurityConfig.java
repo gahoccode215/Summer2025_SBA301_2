@@ -1,6 +1,6 @@
 package com.sba301.online_ticket_sales.config;
 
-import com.sba301.online_ticket_sales.service.UserService;
+import com.sba301.online_ticket_sales.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,7 +28,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final UserService userService;
+  private final UserRepository userRepository;
   private final PreFilter preFilter;
 
   private final String[] PUBLIC_ENDPOINTS = {"/api/v1/auth/**", "/**"};
@@ -85,9 +87,23 @@ public class SecurityConfig {
   @Bean
   public AuthenticationProvider provider() {
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userService.userDetailsService());
+    provider.setUserDetailsService(userDetailsService());
     provider.setPasswordEncoder(getPasswordEncoder());
 
     return provider;
+  }
+
+  @Bean
+  public UserDetailsService userDetailsService() {
+    return identifier -> {
+
+      // Tìm user theo username hoặc email
+      return userRepository
+          .findByUsernameOrEmail(identifier)
+          .orElseThrow(
+              () -> {
+                return new UsernameNotFoundException("User not found: " + identifier);
+              });
+    };
   }
 }

@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.entity;
 
+import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.enums.Gender;
 import com.sba301.online_ticket_sales.enums.UserStatus;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
@@ -29,7 +32,7 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   @Column(name = "full_name")
   String fullName;
 
-  @Column(name = "email", unique = true, nullable = false)
+  @Column(name = "email", unique = true)
   String email;
 
   @Enumerated(EnumType.STRING)
@@ -48,29 +51,38 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   @Column(name = "phone")
   String phone;
 
-  @ManyToMany()
+  @Column(name = "username", unique = true)
+  String username;
+
+  @Column(name = "address")
+  String address;
+
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_has_role",
       joinColumns = @JoinColumn(name = "user_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   List<Role> roles;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-          name = "user_manage_cinema",
-          joinColumns = @JoinColumn(name = "user_id"),
-          inverseJoinColumns = @JoinColumn(name = "cinema_id")
-  )
+      name = "user_manage_cinema",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "cinema_id"))
   private List<Cinema> managedCinemas;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of();
+    return roles.stream()
+        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+        .collect(Collectors.toList());
   }
 
   @Override
   public String getUsername() {
-    return this.email;
+    // Nếu có username thì dùng username (tài khoản quản trị)
+    // Nếu không có username thì dùng email (customer)
+    return this.username != null ? this.username : this.email;
   }
 
   @Override
@@ -98,5 +110,29 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
     if (status == null) {
       status = UserStatus.ACTIVE;
     }
+  }
+
+  public boolean hasRole(String roleName) {
+    return roles.stream().anyMatch(role -> role.getName().equals(roleName));
+  }
+
+  public boolean isAdmin() {
+    return hasRole(PredefinedRole.ADMIN_ROLE);
+  }
+
+  public boolean isManager() {
+    return hasRole(PredefinedRole.MANAGER_ROLE);
+  }
+
+  public boolean isStaff() {
+    return hasRole(PredefinedRole.STAFF);
+  }
+
+  public boolean isAdminAccount() {
+    return this.username != null && (isAdmin() || isManager() || isStaff());
+  }
+
+  public boolean isCustomerAccount() {
+    return this.username == null || (!isAdmin() && !isManager() && !isStaff());
   }
 }

@@ -22,10 +22,11 @@ public class RoomRequest {
 
   private RoomType roomType;
 
-    @NotNull(message = "seatCount type cannot be null")
+  @NotNull(message = "seatCount type cannot be null")
   private Integer seatCount;
+
   @NotNull(message = "rowCount type cannot be null")
-    private Integer rowCount;
+  private Integer rowCount;
 
   private RequestType requestType;
 }

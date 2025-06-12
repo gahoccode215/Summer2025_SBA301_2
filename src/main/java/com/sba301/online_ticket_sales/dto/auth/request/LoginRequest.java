@@ -4,6 +4,6 @@ import lombok.*;
 
 @Getter
 public class LoginRequest {
-  private String email;
+  private String identifier;
   private String password;
 }

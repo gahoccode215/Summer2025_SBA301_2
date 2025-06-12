@@ -12,19 +12,19 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserMailQueueProducerImpl implements UserMailQueueProducer {
-    private final RabbitTemplate rabbitTemplate;
+  private final RabbitTemplate rabbitTemplate;
 
-    @Value("${rabbitmq.exchangeName}")
-    private String exchange;
+  @Value("${rabbitmq.exchangeName}")
+  private String exchange;
 
-    @Value("${rabbitmq.user-mail-routing-key}")
-    private String userMailQueueRoutingKey;
+  @Value("${rabbitmq.user-mail-routing-key}")
+  private String userMailQueueRoutingKey;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserMailQueueProducerImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UserMailQueueProducerImpl.class);
 
-    @Override
-    public void sendMailMessage(OTPMailDTO mailDTO) {
-        LOGGER.info("Sending mail message to queue: " + mailDTO.getReceiverMail());
-        rabbitTemplate.convertAndSend(exchange, userMailQueueRoutingKey, mailDTO);
-    }
+  @Override
+  public void sendMailMessage(OTPMailDTO mailDTO) {
+    LOGGER.info("Sending mail message to queue: " + mailDTO.getReceiverMail());
+    rabbitTemplate.convertAndSend(exchange, userMailQueueRoutingKey, mailDTO);
+  }
 }

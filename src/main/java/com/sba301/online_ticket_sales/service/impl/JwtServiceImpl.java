@@ -50,16 +50,16 @@ public class JwtServiceImpl implements JwtService {
     return generateRefreshToken(new HashMap<>(), user);
   }
 
-  //    @Override
-  //    public String generateResetToken(UserDetails user) {
-  //        return generateResetToken(new HashMap<>(), user);
-  //    }
-
   @Override
   public String extractEmail(String token, TokenType type) {
     log.info("TOKEN EMAIL {}", token);
     log.info("extract email  {}", extractClaim(token, type, Claims::getSubject));
     return extractClaim(token, type, Claims::getSubject);
+  }
+
+  @Override
+  public String extractSubject(String token, TokenType tokenType) {
+    return extractClaim(token, tokenType, Claims::getSubject);
   }
 
   @Override

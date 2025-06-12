@@ -5,6 +5,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JwtService {
 
+  String extractSubject(String token, TokenType tokenType);
+
   String generateToken(UserDetails user);
 
   String generateRefreshToken(UserDetails user);

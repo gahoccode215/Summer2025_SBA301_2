@@ -1,8 +1,10 @@
 package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
+import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
+import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
 import com.sba301.online_ticket_sales.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -86,5 +89,38 @@ public class UserController {
             .message("Cập nhật hồ sơ thành công")
             .result(response)
             .build());
+  }
+
+  @PostMapping("/managers")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "ADMIN tạo tài khoản MANAGER",
+      description = "ADMIN tạo tài khoản MANAGER và gán rạp quản lý")
+  public ResponseEntity<UserResponse> createManager(
+      @Valid @RequestBody CreateUserAccountRequest request) {
+    UserResponse response = userService.createManagerAccount(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/staffs")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "ADMIN tạo tài khoản STAFF",
+      description = "ADMIN tạo tài khoản STAFF và gán rạp làm việc")
+  public ResponseEntity<UserResponse> createStaff(
+      @Valid @RequestBody CreateUserAccountRequest request) {
+    UserResponse response = userService.createStaffAccount(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/staff/by-manager")
+  @PreAuthorize("hasRole('MANAGER')")
+  @Operation(
+      summary = "MANAGER tạo tài khoản STAFF",
+      description = "MANAGER tạo tài khoản STAFF trong rạp mình quản lý")
+  public ResponseEntity<UserResponse> createStaffByManager(
+      @Valid @RequestBody CreateUserAccountRequest request) {
+    UserResponse response = userService.createStaffByManager(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 }

@@ -12,14 +12,13 @@ import org.springframework.data.redis.core.RedisHash;
 @NoArgsConstructor
 @ToString
 public class RedisSecretKey {
-    @Id
-    private String id;
-    private String secretKey;
-    private String email;
-    private long createdAt;
-    private long expiresAt;
+  @Id private String id;
+  private String secretKey;
+  private String email;
+  private long createdAt;
+  private long expiresAt;
 
-    public boolean isExpired() {
-        return System.currentTimeMillis() > expiresAt;
-    }
+  public boolean isExpired() {
+    return System.currentTimeMillis() > expiresAt;
+  }
 }

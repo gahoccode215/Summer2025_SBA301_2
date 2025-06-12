@@ -10,7 +10,7 @@ public enum ErrorCode {
   // AUTHENTICATION EXCEPTION (1000 - 1099)
   UNAUTHENTICATED(1000, "Vui lòng đăng nhập để sử dụng chức năng này", HttpStatus.UNAUTHORIZED),
   UNAUTHORIZED(1001, "Không thể thực hiện chức năng này", HttpStatus.FORBIDDEN),
-  EMAIL_EXSITED(1002, "Email đã tồn tại", HttpStatus.BAD_REQUEST),
+  EMAIL_ALREADY_EXISTS(1002, "Email đã tồn tại", HttpStatus.BAD_REQUEST),
   EMAIL_OR_PASSWORD_NOT_CORRECT(
       1003, "Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
   ACCOUNT_HAS_BEEN_DISABLE(
@@ -19,6 +19,8 @@ public enum ErrorCode {
   ROLE_NOT_FOUND(1006, "Role not found", HttpStatus.BAD_REQUEST),
   INCORRECT_PASSWORD(1007, "Current password is incorrect", HttpStatus.BAD_REQUEST),
   PASSWORD_MISMATCH(1008, "New password and confirm password do not match", HttpStatus.BAD_REQUEST),
+  ACCESS_DENIED(1009, "Access Deinied", HttpStatus.UNAUTHORIZED),
+  INVALID_KEY(1010, "Invalid key", HttpStatus.BAD_REQUEST),
   // PERSON EXCEPTION (1100 - 1199)
   PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
   COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
@@ -35,9 +37,14 @@ public enum ErrorCode {
   COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
   // USER EXCEPTION (1500 - 1599)
   USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
+  USERNAME_ALREADY_EXISTS(1501, "Username already exists", HttpStatus.BAD_REQUEST),
+  INVALID_ROLES(1502, "Invalid roles", HttpStatus.BAD_REQUEST),
+  MANAGER_CANNOT_ASSIGN_TO_OTHER_CINEMA(
+      1503, "Manager cannot assign to other cinema", HttpStatus.BAD_REQUEST),
 
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
+  SOME_CINEMAS_NOT_FOUND(2001, "Some cinemas not found", HttpStatus.BAD_REQUEST),
 
   // OTP EXCEPTION ()
   SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),

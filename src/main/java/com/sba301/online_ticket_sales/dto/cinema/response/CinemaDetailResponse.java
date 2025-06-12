@@ -19,7 +19,7 @@ public class CinemaDetailResponse {
   private String province;
   private List<RoomResponse> roomResponseList;
   private boolean isActive;
-    private String imageUrl;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+  private String imageUrl;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

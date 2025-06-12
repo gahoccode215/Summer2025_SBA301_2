@@ -62,8 +62,8 @@ public class GenreServiceImpl implements GenreService {
 
   @Override
   public void deleteGenre(Integer id) {
-    Genre genre = genreRepository.findById(id)
-            .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+    Genre genre =
+        genreRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
 
     // Tìm tất cả các Movie liên quan đến Genre này
     List<Movie> movies = genreRepository.findMoviesByGenreId(id);
