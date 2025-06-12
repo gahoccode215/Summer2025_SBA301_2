@@ -34,9 +34,7 @@ outbound:
   identity:
     client-id: ${OAUTH_GOOGLE_CLIENT_ID}
     client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
-    redirect-uri: "http://localhost:3000/authenticate"
-
-
+    redirect-uri: "http://localhost:5173/authenticate"
 
 management:
   endpoints:
