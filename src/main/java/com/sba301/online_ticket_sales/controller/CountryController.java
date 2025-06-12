@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -48,7 +49,7 @@ public class CountryController {
         content = @Content)
   })
   @PostMapping
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<CountryResponse>> createCountry(
       @Valid @RequestBody CountryCreationRequest request) {
     CountryResponse response = countryService.createCountry(request);
@@ -76,7 +77,7 @@ public class CountryController {
     @ApiResponse(responseCode = "404", description = "Quốc gia không tồn tại", content = @Content)
   })
   @PutMapping("/{id}")
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<CountryResponse>> updateCountry(
       @Parameter(description = "ID của quốc gia cần cập nhật", required = true) @PathVariable
           Integer id,
@@ -102,7 +103,7 @@ public class CountryController {
     @ApiResponse(responseCode = "404", description = "Quốc gia không tồn tại", content = @Content)
   })
   @DeleteMapping("/{id}")
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<Void>> deleteCountry(
       @Parameter(description = "ID của quốc gia cần xóa", required = true) @PathVariable
           Integer id) {
@@ -126,7 +127,7 @@ public class CountryController {
     @ApiResponse(responseCode = "404", description = "Quốc gia không tồn tại", content = @Content)
   })
   @GetMapping("/{id}")
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   public ResponseEntity<ApiResponseDTO<CountryResponse>> getCountryDetail(
       @Parameter(description = "ID của quốc gia cần lấy", required = true) @PathVariable
           Integer id) {
@@ -150,7 +151,7 @@ public class CountryController {
         content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
   })
   @GetMapping
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   public ResponseEntity<ApiResponseDTO<Page<CountryResponse>>> getAllCountries(
       @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
           @RequestParam(defaultValue = "0")

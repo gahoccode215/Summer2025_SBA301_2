@@ -48,7 +48,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
   })
   @GetMapping("/profile")
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<UserProfileResponse>> getProfile() {
     UserProfileResponse response = userService.getProfile();
     return ResponseEntity.ok(
@@ -79,7 +79,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
   })
   @PutMapping("/profile")
-  // @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<UserProfileResponse>> updateProfile(
       @Valid @RequestBody UserProfileUpdateRequest request) {
     UserProfileResponse response = userService.updateProfile(request);
