@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum MovieStatus {
-//  @JsonProperty("PHIM SẮP CHIẾU")
+  //  @JsonProperty("PHIM SẮP CHIẾU")
   UPCOMING,
-//  @JsonProperty("PHIM ĐANG CHIẾU")
+  //  @JsonProperty("PHIM ĐANG CHIẾU")
   NOW_SHOWING,
-//  @JsonProperty("NGƯNG CHIẾU")
+  //  @JsonProperty("NGƯNG CHIẾU")
   ENDED,
-//  @JsonProperty("PHIM IMAX")
+  //  @JsonProperty("PHIM IMAX")
   IMAX;
 }

@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.config;
 
-
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -15,39 +14,39 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-    @Value("${rabbitmq.exchangeName}")
-    private String exchange;
+  @Value("${rabbitmq.exchangeName}")
+  private String exchange;
 
-    @Value("${rabbitmq.user-mail-queue}")
-    private String userMailQueue;
+  @Value("${rabbitmq.user-mail-queue}")
+  private String userMailQueue;
 
-    @Value("${rabbitmq.user-mail-routing-key}")
-    private String userMailRoutingKey;
+  @Value("${rabbitmq.user-mail-routing-key}")
+  private String userMailRoutingKey;
 
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchange);
-    }
+  @Bean
+  public TopicExchange exchange() {
+    return new TopicExchange(exchange);
+  }
 
-    @Bean
-    public Queue userMailQueue() {
-        return new Queue(userMailQueue);
-    }
+  @Bean
+  public Queue userMailQueue() {
+    return new Queue(userMailQueue);
+  }
 
-    @Bean
-    public Binding userMailBinding() {
-        return BindingBuilder.bind(userMailQueue()).to(exchange()).with(userMailRoutingKey);
-    }
+  @Bean
+  public Binding userMailBinding() {
+    return BindingBuilder.bind(userMailQueue()).to(exchange()).with(userMailRoutingKey);
+  }
 
-    @Bean
-    public MessageConverter converter() {
-        return new Jackson2JsonMessageConverter();
-    }
+  @Bean
+  public MessageConverter converter() {
+    return new Jackson2JsonMessageConverter();
+  }
 
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(converter());
-        return rabbitTemplate;
-    }
+  @Bean
+  public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+    rabbitTemplate.setMessageConverter(converter());
+    return rabbitTemplate;
+  }
 }

@@ -6,10 +6,8 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.dto.auth.request.*;
 import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
-import com.sba301.online_ticket_sales.entity.Role;
-import com.sba301.online_ticket_sales.dto.auth.request.*;
-import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import com.sba301.online_ticket_sales.dto.common.OTPMailDTO;
+import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.OTPType;
@@ -21,20 +19,17 @@ import com.sba301.online_ticket_sales.repository.RoleRepository;
 import com.sba301.online_ticket_sales.repository.UserRepository;
 import com.sba301.online_ticket_sales.repository.httpclient.OutboundIdentityClient;
 import com.sba301.online_ticket_sales.repository.httpclient.OutboundUserClient;
+import com.sba301.online_ticket_sales.service.*;
 import com.sba301.online_ticket_sales.service.AuthenticationService;
 import com.sba301.online_ticket_sales.service.JwtService;
 import com.sba301.online_ticket_sales.service.RedisTokenService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import com.sba301.online_ticket_sales.service.*;
-import jakarta.servlet.http.HttpServletRequest;
-
+import jakarta.transaction.Transactional;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -256,15 +251,38 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .password("")
                             .roles(Collections.singletonList(customerRole))
                             .build()));
+    // create new access token
+    String accessToken = jwtService.generateToken(user);
+
+    // create new refresh token
+    String refreshToken = jwtService.generateRefreshToken(user);
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(user.getUsername())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
+
+    return TokenResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
   }
+
   public void sendForgotPasswordOtp(ForgotPasswordRequest request) {
-      log.info("Forgot password OTP to email: {}", request.getEmail());
+    log.info("Forgot password OTP to email: {}", request.getEmail());
     User user = userService.getByEmail(request.getEmail());
     String otpCode = generateOtp();
     String otpKey = OTP_KEY + user.getId();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(OTPMailDTO.builder().otpCode(otpCode).receiverMail(request.getEmail()).type(OTPType.FORGOT_PASSWORD).build());
+    userMailQueueProducer.sendMailMessage(
+        OTPMailDTO.builder()
+            .otpCode(otpCode)
+            .receiverMail(request.getEmail())
+            .type(OTPType.FORGOT_PASSWORD)
+            .build());
   }
 
   @Override
@@ -295,7 +313,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(OTPMailDTO.builder()
+    userMailQueueProducer.sendMailMessage(
+        OTPMailDTO.builder()
             .otpCode(otpCode)
             .receiverMail(request.getEmail())
             .type(request.getOtpType())
@@ -308,14 +327,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     log.info("Resetting password for email: {}", request.getEmail());
     User user = userService.getByEmail(request.getEmail());
     String resetPasswordKey = RESET_PASSWORD_KEY + user.getId();
-    if(!redisSecretService.isValidSecretKey(resetPasswordKey, request.getResetKey())) {
+    if (!redisSecretService.isValidSecretKey(resetPasswordKey, request.getResetKey())) {
       throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
     }
     redisSecretService.removeSecretKey(resetPasswordKey);
 
     boolean isPasswordMismatch = !request.getNewPassword().equals(request.getConfirmPassword());
-    if (isPasswordMismatch)
-      throw new AppException(ErrorCode.PASSWORD_MISMATCH);
+    if (isPasswordMismatch) throw new AppException(ErrorCode.PASSWORD_MISMATCH);
 
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
@@ -326,6 +344,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     // create new refresh token
     String refreshToken = jwtService.generateRefreshToken(user);
+    log.info(
+        "REDIS TOKEN {}",
+        RedisToken.builder()
+            .id(user.getUsername())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
     redisTokenService.save(
         RedisToken.builder()
             .id(user.getUsername())
@@ -338,25 +363,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .refreshToken(refreshToken)
         .userId(user.getId())
         .build();
-    log.info(
-            "REDIS TOKEN {}",
-            RedisToken.builder()
-                    .id(user.getUsername())
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build());
-    redisTokenService.save(
-            RedisToken.builder()
-                    .id(user.getUsername())
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build());
-
-    return TokenResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .userId(user.getId())
-            .build();
   }
 
   private String generateOtp() {
