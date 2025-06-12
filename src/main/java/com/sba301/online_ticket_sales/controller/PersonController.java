@@ -102,7 +102,7 @@ public class PersonController {
   @Operation(
       summary = "Xóa Person (xóa mềm)",
       description =
-          "Xóa mềm Person theo ID bằng cách đặt isDeleted = true, xóa liên kết với Movie và Country. Yêu cầu quyền ADMIN hoặc MANAGER ")
+          "Xóa mềm Person theo ID bằng cách đặt isDeleted = true, xóa liên kết với Movie và Country. Yêu cầu quyền ADMIN hoặc MANAGER")
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",

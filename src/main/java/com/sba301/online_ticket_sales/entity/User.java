@@ -55,6 +55,14 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
       inverseJoinColumns = @JoinColumn(name = "role_id"))
   List<Role> roles;
 
+  @ManyToMany
+  @JoinTable(
+          name = "user_manage_cinema",
+          joinColumns = @JoinColumn(name = "user_id"),
+          inverseJoinColumns = @JoinColumn(name = "cinema_id")
+  )
+  private List<Cinema> managedCinemas;
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of();

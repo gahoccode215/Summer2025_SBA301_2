@@ -4,14 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum MovieStatus {
-  UPCOMING("PHIM SẮP CHIẾU"),
-  NOW_SHOWING("PHIM ĐANG CHIẾU"),
-  ENDED("NGƯNG CHIẾU"),
-  IMAX("PHIM IMAX");
-
-  private final String displayName;
-
-  MovieStatus(String displayName) {
-    this.displayName = displayName;
-  }
+  //  @JsonProperty("PHIM SẮP CHIẾU")
+  UPCOMING,
+  //  @JsonProperty("PHIM ĐANG CHIẾU")
+  NOW_SHOWING,
+  //  @JsonProperty("NGƯNG CHIẾU")
+  ENDED,
+  //  @JsonProperty("PHIM IMAX")
+  IMAX;
 }
