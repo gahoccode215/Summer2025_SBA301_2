@@ -28,11 +28,17 @@ public enum ErrorCode {
   // GENRE EXCEPTION (1200 - 1299)
   GENRE_ALREADY_EXISTS(1200, "Genre name already exists", HttpStatus.BAD_REQUEST),
   GENRE_NOT_FOUND(1201, "Genre not found", HttpStatus.NOT_FOUND),
+  GENRE_IN_USE(1202, "Genre in use", HttpStatus.BAD_REQUEST),
   // MOVIE EXCEPTION (1300 - 1399)
   INVALID_COUNTRY(1300, "Invalid country ID", HttpStatus.BAD_REQUEST),
   INVALID_GENRE(1301, "One or more genre IDs are invalid", HttpStatus.BAD_REQUEST),
   INVALID_PERSON(1302, "One or more person IDs are invalid", HttpStatus.BAD_REQUEST),
   MOVIE_NOT_FOUND(1303, "Movie not found", HttpStatus.NOT_FOUND),
+  MOVIE_TITLE_ALREADY_EXISTS(1304, "Tiêu đề phim đã tồn tại", HttpStatus.BAD_REQUEST),
+  INVALID_PREMIERE_DATE(1305, "Ngày công chiếu phải sau hoặc bằng ngày phát hành", HttpStatus.BAD_REQUEST),
+  INVALID_END_DATE(1306, "Ngày kết thúc chiếu phải sau hoặc bằng ngày công chiếu", HttpStatus.BAD_REQUEST),
+  MOVIE_MISSING_REQUIRED_FORMAT(1307, "Sai định dạng chiếu", HttpStatus.BAD_REQUEST),
+  MOVIE_ALREADY_DELETED(1308, "Movie already deleted", HttpStatus.BAD_REQUEST),
   // COUNTRY EXCEPTION (1400 - 1499)
   COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
   // USER EXCEPTION (1500 - 1599)

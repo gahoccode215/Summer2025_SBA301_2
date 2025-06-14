@@ -134,7 +134,7 @@ public class MovieController {
                     content = @Content)
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
     public ResponseEntity<ApiResponseDTO<MovieResponse>> getMovieDetail(
             @Parameter(description = "ID của phim cần lấy", required = true) @PathVariable Long id) {
         MovieResponse response = movieService.getMovieDetail(id);
@@ -157,7 +157,7 @@ public class MovieController {
                     content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
     })
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
     public ResponseEntity<ApiResponseDTO<Page<MovieResponse>>> getAllMovies(
             @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
             @RequestParam(defaultValue = "0")

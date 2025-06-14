@@ -36,7 +36,6 @@ public class PersonServiceImpl implements PersonService {
     Person person = personMapper.toPerson(request);
     person.setDeleted(false);
     Person savedPerson = personRepository.save(person);
-    log.info("Created person: {}", savedPerson.getName());
     return personMapper.toPersonResponse(savedPerson);
   }
 
@@ -51,7 +50,6 @@ public class PersonServiceImpl implements PersonService {
     }
     personMapper.updatePersonFromRequest(request, person);
     Person updatedPerson = personRepository.save(person);
-    log.info("Updated person: {}", updatedPerson.getName());
     return personMapper.toPersonResponse(updatedPerson);
   }
 
