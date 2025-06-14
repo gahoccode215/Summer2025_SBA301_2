@@ -11,15 +11,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MovieUpdateRequest {
+  private String image;
   private String title;
   private String description;
-  private String image;
-
-  @Positive(message = "Duration must be positive")
   private Integer duration;
-
-  private LocalDate releaseDate;
   private AgeRestriction ageRestriction;
+  private LocalDate releaseDate;
+  private LocalDate premiereDate;
   private String trailerUrl;
   private MovieStatus movieStatus;
   private Integer countryId;

@@ -16,6 +16,7 @@ public class MovieCreationRequest {
   private Integer duration;
   private AgeRestriction ageRestriction;
   private LocalDate releaseDate;
+  private LocalDate premiereDate;
   private String trailerUrl;
   private MovieStatus movieStatus;
   private Integer countryId;
