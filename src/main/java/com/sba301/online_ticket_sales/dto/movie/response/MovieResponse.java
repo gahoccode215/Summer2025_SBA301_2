@@ -4,27 +4,46 @@ import com.sba301.online_ticket_sales.dto.country.response.CountryResponse;
 import com.sba301.online_ticket_sales.dto.genre.response.GenreResponse;
 import com.sba301.online_ticket_sales.dto.person.response.PersonResponse;
 import com.sba301.online_ticket_sales.enums.AgeRestriction;
+import com.sba301.online_ticket_sales.enums.MovieFormat;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
-import java.time.LocalDate;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MovieResponse {
-  private Long id;
-  private String title;
-  private String description;
-  private Integer duration;
-  private LocalDate releaseDate;
-  private AgeRestriction ageRestriction;
-  private String trailerUrl;
-  private String director;
-  private MovieStatus movieStatus;
-  private String image;
-  private CountryResponse country;
-  private List<GenreResponse> genres;
-  private List<PersonResponse> directors;
-  private List<PersonResponse> actors;
+
+  Long id;
+  String title;
+  String description;
+  Integer duration;
+
+  LocalDate releaseDate;
+  LocalDate premiereDate;
+  LocalDate endDate;
+
+  String thumbnailUrl;
+  String trailerUrl;
+
+  MovieStatus movieStatus;
+  AgeRestriction ageRestriction;
+  List<MovieFormat> availableFormats;
+
+  Boolean isDeleted;
+  Boolean isPublished;
+
+  LocalDateTime createdAt;
+  LocalDateTime updatedAt;
+
+  CountryResponse country;
+  List<GenreResponse> genres;
+  List<PersonResponse> directors;
+  List<PersonResponse> actors;
 }
