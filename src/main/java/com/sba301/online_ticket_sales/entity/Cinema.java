@@ -43,8 +43,17 @@ public class Cinema extends AbstractEntity<Long> implements Serializable {
   @ManyToMany(mappedBy = "managedCinemas")
   private List<User> managers;
 
+  @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<TicketPrice> ticketPrices = new ArrayList<>();
+
   public void addRoom(Room room) {
     rooms.add(room);
     room.setCinema(this);
+  }
+
+  public void addTicketPrice(TicketPrice ticketPrice) {
+    ticketPrice.assignCinema(this);
+    this.ticketPrices.add(ticketPrice);
   }
 }

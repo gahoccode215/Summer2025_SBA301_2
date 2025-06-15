@@ -56,6 +56,8 @@ public enum ErrorCode {
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
   SOME_CINEMAS_NOT_FOUND(2001, "Some cinemas not found", HttpStatus.BAD_REQUEST),
+  CINEMA_UPSERT_PERMISSION_DENIED(
+      2002, "You do not have permission to create or update a cinema", HttpStatus.FORBIDDEN),
 
   // OTP EXCEPTION ()
   SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),

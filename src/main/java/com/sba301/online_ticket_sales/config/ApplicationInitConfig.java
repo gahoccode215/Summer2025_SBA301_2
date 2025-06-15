@@ -119,13 +119,13 @@ public class ApplicationInitConfig {
       User user =
           User.builder()
               .username(username)
+              .email("" + username + "@example.com") // Email giả định
               .password(passwordEncoder.encode(username)) // Password giống username
               .fullName(generateFullName(username, roleName))
               .status(UserStatus.ACTIVE)
               .roles(List.of(role))
               .build();
-
-      // Lưu user vào database
+      role.getUsers().add(user);
       userRepository.save(user);
       log.info("Created {} account: username='{}', password='{}'", roleName, username, username);
     }
