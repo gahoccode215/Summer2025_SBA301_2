@@ -12,17 +12,15 @@ import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.UserMapper;
+import com.sba301.online_ticket_sales.repository.CinemaRepository;
+import com.sba301.online_ticket_sales.repository.RoleRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.sba301.online_ticket_sales.repository.CinemaRepository;
-import com.sba301.online_ticket_sales.repository.RoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -118,11 +116,12 @@ public class UserMapperImpl implements UserMapper {
         .updatedAt(user.getUpdatedAt())
         .build();
   }
+
   @Override
   public void updateUserFromRequest(UserUpdateRequest request, User user) {
     Optional.ofNullable(request.getFullName())
-            .filter(name -> !name.isBlank())
-            .ifPresent(user::setFullName);
+        .filter(name -> !name.isBlank())
+        .ifPresent(user::setFullName);
     Optional.ofNullable(request.getPhone()).ifPresent(user::setPhone);
     Optional.ofNullable(request.getGender()).ifPresent(user::setGender);
     Optional.ofNullable(request.getBirthDate()).ifPresent(user::setBirthDate);

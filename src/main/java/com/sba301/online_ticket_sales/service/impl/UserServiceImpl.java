@@ -23,7 +23,6 @@ import com.sba301.online_ticket_sales.specification.UserSpecification;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -180,7 +179,10 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserResponse getUserAccountDetail(Long userId) {
-    User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     return userMapper.toUserResponse(user);
   }
 
@@ -188,7 +190,9 @@ public class UserServiceImpl implements UserService {
   @Transactional
   public UserResponse updateUser(Long userId, UserUpdateRequest request) {
 
-    User user = userRepository.findById(userId)
+    User user =
+        userRepository
+            .findById(userId)
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
     validateUserUpdate(user, request);
@@ -199,6 +203,7 @@ public class UserServiceImpl implements UserService {
 
     return userMapper.toUserResponse(updatedUser);
   }
+
   private void validateUserUpdate(User existingUser, UserUpdateRequest request) {
     User currentUser = getUserAuthenticated();
 
@@ -208,11 +213,11 @@ public class UserServiceImpl implements UserService {
     }
 
     // Validate phone uniqueness
-//    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
-//      if (userRepository.existsByPhoneAndIdNot(request.getPhone(), existingUser.getId())) {
-//        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
-//      }
-//    }
+    //    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
+    //      if (userRepository.existsByPhoneAndIdNot(request.getPhone(), existingUser.getId())) {
+    //        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+    //      }
+    //    }
 
     // Validate status change
     if (request.getStatus() != null) {
@@ -251,12 +256,11 @@ public class UserServiceImpl implements UserService {
   }
 
   private boolean isUserInManagerCinemas(User user, User manager) {
-    List<Long> managerCinemaIds = manager.getManagedCinemas().stream()
-            .map(Cinema::getId)
-            .collect(Collectors.toList());
+    List<Long> managerCinemaIds =
+        manager.getManagedCinemas().stream().map(Cinema::getId).collect(Collectors.toList());
 
     return user.getManagedCinemas().stream()
-            .anyMatch(cinema -> managerCinemaIds.contains(cinema.getId()));
+        .anyMatch(cinema -> managerCinemaIds.contains(cinema.getId()));
   }
 
   private User getUserAuthenticated() {
