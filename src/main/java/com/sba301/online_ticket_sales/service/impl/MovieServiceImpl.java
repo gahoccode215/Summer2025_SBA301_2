@@ -168,10 +168,9 @@ public class MovieServiceImpl implements MovieService {
               "movies/thumbnails"
       );
 
-      // Lưu public_id để có thể delete sau này
-      String publicId = uploadResult.get("public_id");
+      String secureUrl = uploadResult.get("secure_url");
 
-      return publicId;
+      return secureUrl;
 
     } catch (Exception e) {
       log.error("Failed to upload thumbnail image", e);

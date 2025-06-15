@@ -27,10 +27,12 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             var uploadResult = cloudinaryConfig.cloudinary().uploader().upload(image, params);
             String assetId = uploadResult.get("asset_id").toString();
             String publicId = uploadResult.get("public_id").toString();
+            String secureUrl = uploadResult.get("secure_url").toString();
 
             Map<String, String> result = new HashMap<>();
             result.put("asset_id", assetId);
             result.put("public_id", publicId);
+            result.put("secure_url", secureUrl);
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -102,8 +102,7 @@ public class MovieMapperImpl implements MovieMapper {
                 .releaseDate(movie.getReleaseDate())
                 .premiereDate(movie.getPremiereDate())
                 .endDate(movie.getEndDate())
-                .thumbnailUrl(movie.getThumbnailUrl() != null ?
-                        cloudinaryService.getImageUrl(movie.getThumbnailUrl()) : null)
+                .thumbnailUrl(movie.getThumbnailUrl())
                 .trailerUrl(movie.getTrailerUrl())
                 .movieStatus(movie.getMovieStatus())
                 .ageRestriction(movie.getAgeRestriction())
