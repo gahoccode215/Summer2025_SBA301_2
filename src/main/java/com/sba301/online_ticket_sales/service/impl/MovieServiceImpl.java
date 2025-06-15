@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -57,7 +56,8 @@ public class MovieServiceImpl implements MovieService {
 
   @Override
   @Transactional
-  public MovieResponse updateMovie(Long id, MovieUpdateRequest request, MultipartFile thumbnailFile) {
+  public MovieResponse updateMovie(
+      Long id, MovieUpdateRequest request, MultipartFile thumbnailFile) {
 
     Movie movie =
         movieRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
@@ -153,6 +153,7 @@ public class MovieServiceImpl implements MovieService {
 
     return movies.map(movieMapper::toMovieResponse);
   }
+
   private String uploadThumbnailImage(MultipartFile thumbnailFile) {
     try {
 
@@ -163,10 +164,8 @@ public class MovieServiceImpl implements MovieService {
       byte[] imageBytes = thumbnailFile.getBytes();
 
       // Upload to Cloudinary
-      Map<String, String> uploadResult = cloudinaryService.uploadImage(
-              imageBytes,
-              "movies/thumbnails"
-      );
+      Map<String, String> uploadResult =
+          cloudinaryService.uploadImage(imageBytes, "movies/thumbnails");
 
       String secureUrl = uploadResult.get("secure_url");
 

@@ -54,7 +54,7 @@ public enum ErrorCode {
   CANNOT_MODIFY_ADMIN(1505, "Cannot modify admin", HttpStatus.BAD_REQUEST),
   // IMAGE EXCEPTION (1600 - 1699)
   IMAGE_UPLOAD_FAILED(1600, "Image upload failed", HttpStatus.BAD_REQUEST),
-  INVALID_IMAGE_FILE(1601,"Invalid image file", HttpStatus.BAD_REQUEST),
+  INVALID_IMAGE_FILE(1601, "Invalid image file", HttpStatus.BAD_REQUEST),
   INVALID_IMAGE_FORMAT(1602, "Invalid image format", HttpStatus.BAD_REQUEST),
   FILE_TOO_LARGE(1603, "File too large", HttpStatus.BAD_REQUEST),
   UNSUPPORTED_IMAGE_FORMAT(1604, "Unsupported image format", HttpStatus.BAD_REQUEST),

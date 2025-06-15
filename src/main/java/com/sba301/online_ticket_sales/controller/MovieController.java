@@ -55,8 +55,8 @@ public class MovieController {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> createMovie(
-          @RequestPart("movie") @Valid MovieCreationRequest request,
-          @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+      @RequestPart("movie") @Valid MovieCreationRequest request,
+      @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
     MovieResponse response = movieService.createMovie(request, thumbnailFile);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(

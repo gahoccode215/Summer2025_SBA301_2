@@ -185,18 +185,18 @@ public class CinemaMapperImpl implements CinemaMapper {
     response.setCreatedAt(cinema.getCreatedAt());
     response.setUpdatedAt(cinema.getUpdatedAt());
 
-      List<TickerPriceResponse> ticketPriceResponses =
-              cinema.getTicketPrices().stream()
-                      .map(
-                              ticketPrice ->
-                                      TickerPriceResponse.builder()
-                                              .priceId(ticketPrice.getId())
-                                              .dateType(ticketPrice.getDateType())
-                                              .price(ticketPrice.getPrice())
-                                              .createAt(ticketPrice.getCreatedAt())
-                                              .isActive(ticketPrice.isActive())
-                                              .build())
-                      .toList();
+    List<TickerPriceResponse> ticketPriceResponses =
+        cinema.getTicketPrices().stream()
+            .map(
+                ticketPrice ->
+                    TickerPriceResponse.builder()
+                        .priceId(ticketPrice.getId())
+                        .dateType(ticketPrice.getDateType())
+                        .price(ticketPrice.getPrice())
+                        .createAt(ticketPrice.getCreatedAt())
+                        .isActive(ticketPrice.isActive())
+                        .build())
+            .toList();
     response.setTicketPrices(ticketPriceResponses);
     return response;
   }

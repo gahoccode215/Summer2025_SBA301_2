@@ -37,8 +37,8 @@ public class MovieUpdateRequest {
   @FutureOrPresent(message = "Ngày kết thúc chiếu phải là ngày hiện tại hoặc tương lai")
   LocalDate endDate;
 
-//  @URL(message = "URL thumbnail không hợp lệ")
-//  String thumbnailUrl;
+  //  @URL(message = "URL thumbnail không hợp lệ")
+  //  String thumbnailUrl;
 
   @URL(message = "URL trailer không hợp lệ")
   String trailerUrl;
