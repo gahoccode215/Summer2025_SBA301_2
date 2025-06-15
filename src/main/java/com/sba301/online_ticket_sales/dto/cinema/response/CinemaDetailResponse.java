@@ -22,4 +22,5 @@ public class CinemaDetailResponse {
   private String imageUrl;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+  private List<TickerPriceResponse> ticketPrices;
 }

@@ -8,9 +8,11 @@ import java.util.List;
 public interface CinemaService {
   Long upsertCinema(CinemaRequest request);
 
-  List<CinemaResponse> getAllCinemas();
+  List<CinemaResponse> getAllCinemasWithAuthentication();
 
   CinemaDetailResponse getCinemaDetail(Long id);
 
   void deActivate(Long id, boolean active);
+
+  List<CinemaResponse> getAllCinemasForCustomer();
 }

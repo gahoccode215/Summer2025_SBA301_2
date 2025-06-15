@@ -5,14 +5,17 @@ import com.sba301.online_ticket_sales.dto.cinema.request.RoomRequest;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaDetailResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.RoomResponse;
+import com.sba301.online_ticket_sales.dto.cinema.response.TickerPriceResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
 import com.sba301.online_ticket_sales.entity.Room;
+import com.sba301.online_ticket_sales.entity.TicketPrice;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -44,6 +47,18 @@ public class CinemaMapperImpl implements CinemaMapper {
                 room.setSeatCount(roomRequest.getSeatCount());
                 room.setRoomType(roomRequest.getRoomType());
                 cinema.addRoom(room);
+              });
+
+      request
+          .getTicketPriceRequests()
+          .forEach(
+              ticketPriceRequest -> {
+                TicketPrice ticketPrice =
+                    TicketPrice.builder()
+                        .dateType(ticketPriceRequest.getDateType())
+                        .price(ticketPriceRequest.getPrice())
+                        .build();
+                cinema.addTicketPrice(ticketPrice);
               });
       return cinema;
     }
@@ -97,6 +112,37 @@ public class CinemaMapperImpl implements CinemaMapper {
               });
     }
 
+    if (request.getTicketPriceRequests() != null) {
+      request
+          .getTicketPriceRequests()
+          .forEach(
+              ticketPriceRequest -> {
+                Optional<TicketPrice> existingActive =
+                    cinema.getTicketPrices().stream()
+                        .filter(
+                            tp ->
+                                tp.getDateType() == ticketPriceRequest.getDateType()
+                                    && tp.isActive())
+                        .findFirst();
+
+                if (existingActive.isPresent()
+                    && existingActive.get().getPrice().compareTo(ticketPriceRequest.getPrice())
+                        == 0) {
+                  return;
+                }
+
+                existingActive.ifPresent(tp -> tp.setActive(false));
+
+                TicketPrice newTicketPrice =
+                    TicketPrice.builder()
+                        .dateType(ticketPriceRequest.getDateType())
+                        .price(ticketPriceRequest.getPrice())
+                        .build();
+
+                cinema.addTicketPrice(newTicketPrice);
+              });
+    }
+
     return cinema;
   }
 
@@ -138,6 +184,20 @@ public class CinemaMapperImpl implements CinemaMapper {
     response.setImageUrl("https://kenh14cdn.com/2017/a12-1502124775530.jpg");
     response.setCreatedAt(cinema.getCreatedAt());
     response.setUpdatedAt(cinema.getUpdatedAt());
+
+      List<TickerPriceResponse> ticketPriceResponses =
+              cinema.getTicketPrices().stream()
+                      .map(
+                              ticketPrice ->
+                                      TickerPriceResponse.builder()
+                                              .priceId(ticketPrice.getId())
+                                              .dateType(ticketPrice.getDateType())
+                                              .price(ticketPrice.getPrice())
+                                              .createAt(ticketPrice.getCreatedAt())
+                                              .isActive(ticketPrice.isActive())
+                                              .build())
+                      .toList();
+    response.setTicketPrices(ticketPriceResponses);
     return response;
   }
 }

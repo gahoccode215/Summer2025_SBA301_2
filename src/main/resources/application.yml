@@ -30,6 +30,16 @@ spring:
           auth: true
           starttls:
             enable: true
+
+  cloudinary:
+#    cloudName: ${CLOUDINARY_CLOUD_NAME}
+    cloudName: aaaa
+#    apiKey: ${CLOUDINARY_API_KEY}
+    apiKey: aaaa
+#    apiSecret: ${CLOUDINARY_API_SECRET}
+    apiSecret: aaaa
+
+
 outbound:
   identity:
     client-id: ${OAUTH_GOOGLE_CLIENT_ID}
@@ -71,3 +81,6 @@ rabbitmq:
   exchangeName: sba.exchange
   user-mail-queue: userMailQueue
   user-mail-routing-key: userMailQueueRoutingKey
+
+app:
+  defaultImage: https://media.licdn.com/dms/image/v2/C5112AQEw1fXuabCTyQ/article-inline_image-shrink_1500_2232/article-inline_image-shrink_1500_2232/0/1581099611064?e=1755129600&v=beta&t=uOI9KdstVt77LeFfmofOTwfgEbtAZ3LyR3aLwR70slw

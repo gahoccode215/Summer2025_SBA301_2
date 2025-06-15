@@ -1,8 +1,10 @@
 package com.sba301.online_ticket_sales.dto.cinema.request;
 
 import com.sba301.online_ticket_sales.enums.RequestType;
+import com.sba301.online_ticket_sales.helper.ValidTicketPrices;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ValidTicketPrices
 public class CinemaRequest {
 
   private Long id;
@@ -36,4 +39,8 @@ public class CinemaRequest {
   private RequestType requestType;
 
   private List<RoomRequest> roomRequestList;
+
+  @NotNull(message = "Ticket prices cannot be null")
+  @Size(min = 2, max = 2, message = "Must provide exactly 2 ticket prices (WEEKDAY and WEEKEND)")
+  private List<TicketPriceRequest> ticketPriceRequests;
 }
