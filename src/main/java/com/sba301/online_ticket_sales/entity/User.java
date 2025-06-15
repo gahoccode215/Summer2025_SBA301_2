@@ -74,7 +74,7 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return roles.stream()
-        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+        .map(role -> new SimpleGrantedAuthority(role.getName()))
         .collect(Collectors.toList());
   }
 
@@ -125,7 +125,7 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   }
 
   public boolean isStaff() {
-    return hasRole(PredefinedRole.STAFF);
+    return hasRole(PredefinedRole.STAFF_ROLE);
   }
 
   public boolean isAdminAccount() {

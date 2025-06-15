@@ -57,11 +57,12 @@ public class ApplicationInitConfig {
                 PredefinedRole.CUSTOMER_ROLE,
                 PredefinedRole.ADMIN_ROLE,
                 PredefinedRole.MANAGER_ROLE,
-                PredefinedRole.STAFF);
+                PredefinedRole.STAFF_ROLE);
         for (String role : roles) {
           roleRepository.save(Role.builder().name(role).build());
         }
       }
+
       initializeAdminAccounts();
       log.info("Application initialization completed .....");
     };
@@ -81,8 +82,8 @@ public class ApplicationInitConfig {
             .orElseThrow(() -> new RuntimeException("MANAGER role not found"));
     Role staffRole =
         roleRepository
-            .findByName(PredefinedRole.STAFF)
-            .orElseThrow(() -> new RuntimeException("STAFF role not found"));
+            .findByName(PredefinedRole.STAFF_ROLE)
+            .orElseThrow(() -> new RuntimeException("STAFF_ROLE role not found"));
 
     // Danh sách tài khoản ADMIN
     List<String> adminUsernames = List.of("minhadmin", "phuocadmin", "thanhadmin");
@@ -92,9 +93,9 @@ public class ApplicationInitConfig {
     List<String> managerUsernames = List.of("minhmanager", "phuocmanager", "thanhmanager");
     createAccountsForRole(managerUsernames, managerRole, "MANAGER");
 
-    // Danh sách tài khoản STAFF
+    // Danh sách tài khoản STAFF_ROLE
     List<String> staffUsernames = List.of("minhstaff", "phuocstaff", "thanhstaff");
-    createAccountsForRole(staffUsernames, staffRole, "STAFF");
+    createAccountsForRole(staffUsernames, staffRole, "STAFF_ROLE");
 
     log.info("Admin accounts initialization completed");
   }

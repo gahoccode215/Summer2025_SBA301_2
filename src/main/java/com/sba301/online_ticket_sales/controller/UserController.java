@@ -2,9 +2,12 @@ package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
+import com.sba301.online_ticket_sales.dto.user.request.UserListFilterRequest;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
+import com.sba301.online_ticket_sales.enums.UserStatus;
 import com.sba301.online_ticket_sales.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,10 +16,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,7 +59,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
   })
   @GetMapping("/profile")
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<UserProfileResponse>> getProfile() {
     UserProfileResponse response = userService.getProfile();
     return ResponseEntity.ok(
@@ -79,7 +90,7 @@ public class UserController {
     @ApiResponse(responseCode = "404", description = "Người dùng không tồn tại", content = @Content)
   })
   @PutMapping("/profile")
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<UserProfileResponse>> updateProfile(
       @Valid @RequestBody UserProfileUpdateRequest request) {
     UserProfileResponse response = userService.updateProfile(request);
@@ -105,8 +116,8 @@ public class UserController {
   @PostMapping("/staffs")
   @PreAuthorize("hasRole('ADMIN')")
   @Operation(
-      summary = "ADMIN tạo tài khoản STAFF",
-      description = "ADMIN tạo tài khoản STAFF và gán rạp làm việc")
+      summary = "ADMIN tạo tài khoản STAFF_ROLE",
+      description = "ADMIN tạo tài khoản STAFF_ROLE và gán rạp làm việc")
   public ResponseEntity<UserResponse> createStaff(
       @Valid @RequestBody CreateUserAccountRequest request) {
     UserResponse response = userService.createStaffAccount(request);
@@ -116,11 +127,59 @@ public class UserController {
   @PostMapping("/staff/by-manager")
   @PreAuthorize("hasRole('MANAGER')")
   @Operation(
-      summary = "MANAGER tạo tài khoản STAFF",
-      description = "MANAGER tạo tài khoản STAFF trong rạp mình quản lý")
+      summary = "MANAGER tạo tài khoản STAFF_ROLE",
+      description = "MANAGER tạo tài khoản STAFF_ROLE trong rạp mình quản lý")
   public ResponseEntity<UserResponse> createStaffByManager(
       @Valid @RequestBody CreateUserAccountRequest request) {
     UserResponse response = userService.createStaffByManager(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @GetMapping
+  @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+  @Operation(summary = "Lấy danh sách tài khoản")
+  public ResponseEntity<ApiResponseDTO<Page<UserListResponse>>> getAllUsers(
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) UserStatus status,
+      @RequestParam(required = false) String roleName,
+      @RequestParam(required = false) Long cinemaId,
+      @RequestParam(required = false) String province,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate createdFrom,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate createdTo,
+
+      // Pagination parameters
+      @RequestParam(defaultValue = "0") @Min(0) int page,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+      @RequestParam(defaultValue = "createdAt") String sortBy,
+      @RequestParam(defaultValue = "desc") String sortDir) {
+
+    // Tạo Pageable từ parameters
+    Sort sort =
+        Sort.by(
+            sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+    Pageable pageable = PageRequest.of(page, size, sort);
+
+    // Tạo filter object
+    UserListFilterRequest filter =
+        UserListFilterRequest.builder()
+            .keyword(keyword)
+            .status(status)
+            .roleName(roleName)
+            .cinemaId(cinemaId)
+            .province(province)
+            .createdFrom(createdFrom)
+            .createdTo(createdTo)
+            .build();
+
+    Page<UserListResponse> users = userService.getAllUsers(filter, pageable);
+
+    return ResponseEntity.ok(
+        ApiResponseDTO.<Page<UserListResponse>>builder()
+            .code(HttpStatus.OK.value())
+            .message("Lấy danh sách tài khoản thành công")
+            .result(users)
+            .build());
   }
 }

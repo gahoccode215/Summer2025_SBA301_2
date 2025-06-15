@@ -4,12 +4,11 @@ import com.sba301.online_ticket_sales.enums.AgeRestriction;
 import com.sba301.online_ticket_sales.enums.MovieFormat;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.URL;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Builder
@@ -97,7 +96,7 @@ public class MovieCreationRequest {
     if (availableFormats == null || availableFormats.isEmpty()) {
       return false;
     }
-    return availableFormats.contains(MovieFormat.IMAX) ||
-            availableFormats.contains(MovieFormat.IMAX_3D);
+    return availableFormats.contains(MovieFormat.IMAX)
+        || availableFormats.contains(MovieFormat.IMAX_3D);
   }
 }

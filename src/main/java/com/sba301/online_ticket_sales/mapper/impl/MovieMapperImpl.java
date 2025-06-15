@@ -16,11 +16,9 @@ import com.sba301.online_ticket_sales.mapper.MovieMapper;
 import com.sba301.online_ticket_sales.repository.CountryRepository;
 import com.sba301.online_ticket_sales.repository.GenreRepository;
 import com.sba301.online_ticket_sales.repository.PersonRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,13 +29,13 @@ public class MovieMapperImpl implements MovieMapper {
   private final GenreRepository genreRepository;
   private final PersonRepository personRepository;
 
-
   @Override
   public Movie toMovie(MovieCreationRequest request) {
     // Validate và lấy Country
     Country country = null;
     if (request.getCountryId() != null) {
-      country = countryRepository
+      country =
+          countryRepository
               .findById(request.getCountryId())
               .orElseThrow(() -> new AppException(ErrorCode.INVALID_COUNTRY));
     }
@@ -70,60 +68,66 @@ public class MovieMapperImpl implements MovieMapper {
     }
 
     return Movie.builder()
-            .title(request.getTitle())
-            .description(request.getDescription())
-            .duration(request.getDuration())
-            .releaseDate(request.getReleaseDate())
-            .premiereDate(request.getPremiereDate())
-            .endDate(request.getEndDate())
-            .thumbnailUrl(request.getThumbnailUrl())
-            .trailerUrl(request.getTrailerUrl())
-            .movieStatus(request.getMovieStatus())
-            .ageRestriction(request.getAgeRestriction())
-            .availableFormats(request.getAvailableFormats())
-            .isDeleted(false)
-            .isPublished(true)
-            .country(country)
-            .genres(genres)
-            .directors(directors)
-            .actors(actors)
-            .build();
+        .title(request.getTitle())
+        .description(request.getDescription())
+        .duration(request.getDuration())
+        .releaseDate(request.getReleaseDate())
+        .premiereDate(request.getPremiereDate())
+        .endDate(request.getEndDate())
+        .thumbnailUrl(request.getThumbnailUrl())
+        .trailerUrl(request.getTrailerUrl())
+        .movieStatus(request.getMovieStatus())
+        .ageRestriction(request.getAgeRestriction())
+        .availableFormats(request.getAvailableFormats())
+        .isDeleted(false)
+        .isPublished(true)
+        .country(country)
+        .genres(genres)
+        .directors(directors)
+        .actors(actors)
+        .build();
   }
 
   @Override
   public MovieResponse toMovieResponse(Movie movie) {
     return MovieResponse.builder()
-            .id(movie.getId())
-            .title(movie.getTitle())
-            .description(movie.getDescription())
-            .duration(movie.getDuration())
-            .releaseDate(movie.getReleaseDate())
-            .premiereDate(movie.getPremiereDate())
-            .endDate(movie.getEndDate())
-            .thumbnailUrl(movie.getThumbnailUrl())
-            .trailerUrl(movie.getTrailerUrl())
-            .movieStatus(movie.getMovieStatus())
-            .ageRestriction(movie.getAgeRestriction())
-            .availableFormats(movie.getAvailableFormats())
-            .isDeleted(movie.getIsDeleted())
-            .isPublished(movie.getIsPublished())
-            .createdAt(movie.getCreatedAt())
-            .updatedAt(movie.getUpdatedAt())
-            .country(movie.getCountry() != null ? toCountryResponse(movie.getCountry()) : null)
-            .genres(movie.getGenres() != null ?
-                    movie.getGenres().stream().map(this::toGenreResponse).toList() : List.of())
-            .directors(movie.getDirectors() != null ?
-                    movie.getDirectors().stream().map(this::toPersonResponse).toList() : List.of())
-            .actors(movie.getActors() != null ?
-                    movie.getActors().stream().map(this::toPersonResponse).toList() : List.of())
-            .build();
+        .id(movie.getId())
+        .title(movie.getTitle())
+        .description(movie.getDescription())
+        .duration(movie.getDuration())
+        .releaseDate(movie.getReleaseDate())
+        .premiereDate(movie.getPremiereDate())
+        .endDate(movie.getEndDate())
+        .thumbnailUrl(movie.getThumbnailUrl())
+        .trailerUrl(movie.getTrailerUrl())
+        .movieStatus(movie.getMovieStatus())
+        .ageRestriction(movie.getAgeRestriction())
+        .availableFormats(movie.getAvailableFormats())
+        .isDeleted(movie.getIsDeleted())
+        .isPublished(movie.getIsPublished())
+        .createdAt(movie.getCreatedAt())
+        .updatedAt(movie.getUpdatedAt())
+        .country(movie.getCountry() != null ? toCountryResponse(movie.getCountry()) : null)
+        .genres(
+            movie.getGenres() != null
+                ? movie.getGenres().stream().map(this::toGenreResponse).toList()
+                : List.of())
+        .directors(
+            movie.getDirectors() != null
+                ? movie.getDirectors().stream().map(this::toPersonResponse).toList()
+                : List.of())
+        .actors(
+            movie.getActors() != null
+                ? movie.getActors().stream().map(this::toPersonResponse).toList()
+                : List.of())
+        .build();
   }
 
   @Override
   public void updateMovieFromRequest(MovieUpdateRequest request, Movie movie) {
     Optional.ofNullable(request.getTitle())
-            .filter(title -> !title.isBlank())
-            .ifPresent(movie::setTitle);
+        .filter(title -> !title.isBlank())
+        .ifPresent(movie::setTitle);
     Optional.ofNullable(request.getDescription()).ifPresent(movie::setDescription);
     Optional.ofNullable(request.getDuration()).ifPresent(movie::setDuration);
 
@@ -143,7 +147,8 @@ public class MovieMapperImpl implements MovieMapper {
     Optional.ofNullable(request.getIsPublished()).ifPresent(movie::setIsPublished);
 
     if (request.getCountryId() != null) {
-      Country country = countryRepository
+      Country country =
+          countryRepository
               .findById(request.getCountryId())
               .orElseThrow(() -> new AppException(ErrorCode.INVALID_COUNTRY));
       movie.setCountry(country);

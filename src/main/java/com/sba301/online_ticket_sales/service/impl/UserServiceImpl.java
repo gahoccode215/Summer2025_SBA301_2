@@ -2,7 +2,9 @@ package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
+import com.sba301.online_ticket_sales.dto.user.request.UserListFilterRequest;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
@@ -16,11 +18,16 @@ import com.sba301.online_ticket_sales.repository.CinemaRepository;
 import com.sba301.online_ticket_sales.repository.RoleRepository;
 import com.sba301.online_ticket_sales.repository.UserRepository;
 import com.sba301.online_ticket_sales.service.UserService;
+import com.sba301.online_ticket_sales.specification.UserSpecification;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,7 +93,7 @@ public class UserServiceImpl implements UserService {
       throw new AppException(ErrorCode.ACCESS_DENIED);
     }
 
-    User createdUser = createUserAccount(request, PredefinedRole.STAFF);
+    User createdUser = createUserAccount(request, PredefinedRole.STAFF_ROLE);
     return userMapper.toUserResponse(createdUser);
   }
 
@@ -103,7 +110,7 @@ public class UserServiceImpl implements UserService {
     List<Long> managerCinemaIds =
         currentManager.getManagedCinemas().stream().map(Cinema::getId).collect(Collectors.toList());
 
-    // Kiểm tra rạp được gán cho STAFF có nằm trong danh sách rạp của MANAGER không
+    // Kiểm tra rạp được gán cho STAFF_ROLE có nằm trong danh sách rạp của MANAGER không
     if (request.getAssignedCinemaIds() != null && !request.getAssignedCinemaIds().isEmpty()) {
       for (Long cinemaId : request.getAssignedCinemaIds()) {
         if (!managerCinemaIds.contains(cinemaId)) {
@@ -115,8 +122,88 @@ public class UserServiceImpl implements UserService {
       request.setAssignedCinemaIds(managerCinemaIds);
     }
 
-    User createdUser = createUserAccount(request, PredefinedRole.STAFF);
+    User createdUser = createUserAccount(request, PredefinedRole.STAFF_ROLE);
     return userMapper.toUserResponse(createdUser);
+  }
+
+  @Override
+  public Page<UserListResponse> getAllUsers(UserListFilterRequest filter, Pageable pageable) {
+
+    User currentUser = getUserAuthenticated();
+
+    // Build base specification
+    Specification<User> spec = Specification.where(null);
+
+    // Add common filters
+    spec =
+        spec.and(UserSpecification.hasKeyword(filter.getKeyword()))
+            .and(UserSpecification.hasStatus(filter.getStatus()))
+            .and(UserSpecification.hasRole(filter.getRoleName()));
+
+    // Add date range filter
+    LocalDateTime createdFrom =
+        filter.getCreatedFrom() != null ? filter.getCreatedFrom().atStartOfDay() : null;
+    LocalDateTime createdTo =
+        filter.getCreatedTo() != null ? filter.getCreatedTo().atTime(23, 59, 59) : null;
+    spec = spec.and(UserSpecification.createdBetween(createdFrom, createdTo));
+
+    // Apply role-based filtering
+    if (currentUser.isAdmin()) {
+      // ADMIN: Có thể filter theo cinema và province
+      spec =
+          spec.and(UserSpecification.belongsToCinema(filter.getCinemaId()))
+              .and(UserSpecification.inProvince(filter.getProvince()));
+    } else if (currentUser.isManager()) {
+      // MANAGER: Chỉ xem users trong rạp mình quản lý
+      List<Long> managerCinemaIds =
+          currentUser.getManagedCinemas().stream().map(Cinema::getId).collect(Collectors.toList());
+
+      if (managerCinemaIds.isEmpty()) {
+        return Page.empty(pageable);
+      }
+
+      spec =
+          spec.and(UserSpecification.belongsToCinemas(managerCinemaIds))
+              .and(
+                  UserSpecification.hasRole(PredefinedRole.STAFF_ROLE)
+                      .or(UserSpecification.hasRole(PredefinedRole.CUSTOMER_ROLE)));
+    } else {
+      throw new AppException(ErrorCode.ACCESS_DENIED);
+    }
+
+    // Execute query
+    Page<User> users = userRepository.findAll(spec, pageable);
+    return users.map(userMapper::mapToUserListResponse);
+  }
+
+  private Page<User> getUsersForAdmin(UserListFilterRequest filter, Pageable pageable) {
+    LocalDateTime createdFrom =
+        filter.getCreatedFrom() != null ? filter.getCreatedFrom().atStartOfDay() : null;
+    LocalDateTime createdTo =
+        filter.getCreatedTo() != null ? filter.getCreatedTo().atTime(23, 59, 59) : null;
+
+    return userRepository.findUsersWithFilters(
+        filter.getKeyword(),
+        filter.getStatus(),
+        filter.getRoleName(),
+        filter.getCinemaId(),
+        filter.getProvince(),
+        createdFrom,
+        createdTo,
+        pageable);
+  }
+
+  private Page<User> getUsersForManager(
+      User manager, UserListFilterRequest filter, Pageable pageable) {
+    List<Long> managerCinemaIds =
+        manager.getManagedCinemas().stream().map(Cinema::getId).collect(Collectors.toList());
+
+    if (managerCinemaIds.isEmpty()) {
+      return Page.empty(pageable);
+    }
+
+    return userRepository.findUsersByCinemaIds(
+        managerCinemaIds, filter.getKeyword(), filter.getStatus(), filter.getRoleName(), pageable);
   }
 
   private User getUserAuthenticated() {

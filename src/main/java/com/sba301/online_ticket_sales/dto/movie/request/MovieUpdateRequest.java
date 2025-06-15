@@ -4,12 +4,11 @@ import com.sba301.online_ticket_sales.enums.AgeRestriction;
 import com.sba301.online_ticket_sales.enums.MovieFormat;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.URL;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Builder
@@ -92,8 +91,8 @@ public class MovieUpdateRequest {
     if (availableFormats == null || availableFormats.isEmpty()) {
       return true;
     }
-    return availableFormats.contains(MovieFormat.IMAX) ||
-            availableFormats.contains(MovieFormat.IMAX_3D);
+    return availableFormats.contains(MovieFormat.IMAX)
+        || availableFormats.contains(MovieFormat.IMAX_3D);
   }
 
   @AssertTrue(message = "Không thể xóa phim đang có lịch chiếu")
@@ -113,12 +112,23 @@ public class MovieUpdateRequest {
   }
 
   public boolean hasUpdates() {
-    return title != null || description != null || duration != null ||
-            releaseDate != null || premiereDate != null || endDate != null ||
-            thumbnailUrl != null || trailerUrl != null || movieStatus != null ||
-            ageRestriction != null || availableFormats != null || countryId != null ||
-            genreIds != null || directorIds != null || actorIds != null ||
-            isDeleted != null || isPublished != null;
+    return title != null
+        || description != null
+        || duration != null
+        || releaseDate != null
+        || premiereDate != null
+        || endDate != null
+        || thumbnailUrl != null
+        || trailerUrl != null
+        || movieStatus != null
+        || ageRestriction != null
+        || availableFormats != null
+        || countryId != null
+        || genreIds != null
+        || directorIds != null
+        || actorIds != null
+        || isDeleted != null
+        || isPublished != null;
   }
 
   public boolean hasCriticalUpdates() {

@@ -12,6 +12,7 @@ public interface GenreRepository
     extends JpaRepository<Genre, Integer>, JpaSpecificationExecutor<Genre> {
   @Query("SELECT m FROM Movie m JOIN m.genres g WHERE g.id = :genreId")
   List<Movie> findMoviesByGenreId(Integer genreId);
+
   @Query("SELECT COUNT(m) > 0 FROM Movie m JOIN m.genres g WHERE g.id = :genreId")
   boolean isGenreInUse(@Param("genreId") Integer genreId);
 }

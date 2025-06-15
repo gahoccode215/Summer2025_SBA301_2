@@ -36,7 +36,7 @@ public class CreateUserAccountRequest {
   @NotEmpty(message = "Phải chọn ít nhất một vai trò")
   List<Long> roleIds;
 
-  // Chỉ áp dụng cho MANAGER và STAFF - rạp được gán
+  // Chỉ áp dụng cho MANAGER và STAFF_ROLE - rạp được gán
   List<Long> assignedCinemaIds;
 
   List<CinemaResponse> workingCinemas;

@@ -4,12 +4,10 @@ import com.sba301.online_ticket_sales.dto.genre.request.GenreCreationRequest;
 import com.sba301.online_ticket_sales.dto.genre.request.GenreUpdateRequest;
 import com.sba301.online_ticket_sales.dto.genre.response.GenreResponse;
 import com.sba301.online_ticket_sales.entity.Genre;
-import com.sba301.online_ticket_sales.entity.Movie;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.GenreMapper;
 import com.sba301.online_ticket_sales.repository.GenreRepository;
-import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.service.GenreService;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
@@ -64,8 +62,8 @@ public class GenreServiceImpl implements GenreService {
   @Transactional
   public void deleteGenre(Integer id) {
 
-    Genre genre = genreRepository.findById(id)
-            .orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
+    Genre genre =
+        genreRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.GENRE_NOT_FOUND));
 
     if (genreRepository.isGenreInUse(id)) {
       throw new AppException(ErrorCode.GENRE_IN_USE);

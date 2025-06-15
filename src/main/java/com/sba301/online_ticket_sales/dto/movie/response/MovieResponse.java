@@ -6,12 +6,11 @@ import com.sba301.online_ticket_sales.dto.person.response.PersonResponse;
 import com.sba301.online_ticket_sales.enums.AgeRestriction;
 import com.sba301.online_ticket_sales.enums.MovieFormat;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder

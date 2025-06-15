@@ -2,6 +2,7 @@ package com.sba301.online_ticket_sales.mapper.impl;
 
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
@@ -72,6 +73,40 @@ public class UserMapperImpl implements UserMapper {
     response.setWorkingCinemas(mapCinemasToResponseList(user.getManagedCinemas()));
 
     return response;
+  }
+
+  @Override
+  public UserListResponse mapToUserListResponse(User user) {
+    List<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
+
+    List<UserListResponse.CinemaInfo> cinemaInfos =
+        user.getManagedCinemas().stream()
+            .map(
+                cinema ->
+                    UserListResponse.CinemaInfo.builder()
+                        .id(cinema.getId())
+                        .name(cinema.getName())
+                        .address(cinema.getAddress())
+                        .province(cinema.getProvince())
+                        .isActive(cinema.isActive())
+                        .build())
+            .collect(Collectors.toList());
+
+    return UserListResponse.builder()
+        .id(user.getId())
+        .fullName(user.getFullName())
+        .username(user.getUsername())
+        .email(user.getEmail())
+        .phone(user.getPhone())
+        .gender(user.getGender())
+        .status(user.getStatus())
+        .birthDate(user.getBirthDate())
+        .address(user.getAddress())
+        .roles(roles)
+        .workingCinemas(cinemaInfos)
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .build();
   }
 
   /** Map roles từ List<Role> sang List<String> */

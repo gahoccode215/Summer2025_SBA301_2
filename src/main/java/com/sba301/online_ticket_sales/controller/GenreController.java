@@ -50,7 +50,7 @@ public class GenreController {
         content = @Content)
   })
   @PostMapping
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<GenreResponse>> createGenre(
       @Valid @RequestBody GenreCreationRequest request) {
     GenreResponse response = genreService.createGenre(request);
@@ -78,7 +78,7 @@ public class GenreController {
     @ApiResponse(responseCode = "404", description = "Thể loại không tồn tại", content = @Content)
   })
   @PutMapping("/{id}")
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<GenreResponse>> updateGenre(
       @Parameter(description = "ID của thể loại cần cập nhật", required = true) @PathVariable
           Integer id,
@@ -104,7 +104,7 @@ public class GenreController {
     @ApiResponse(responseCode = "404", description = "Thể loại không tồn tại", content = @Content)
   })
   @DeleteMapping("/{id}")
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<Void>> deleteGenre(
       @Parameter(description = "ID của thể loại cần xóa", required = true) @PathVariable
           Integer id) {
@@ -128,7 +128,7 @@ public class GenreController {
     @ApiResponse(responseCode = "404", description = "Thể loại không tồn tại", content = @Content)
   })
   @GetMapping("/{id}")
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   public ResponseEntity<ApiResponseDTO<GenreResponse>> getGenreDetail(
       @Parameter(description = "ID của thể loại cần lấy", required = true) @PathVariable
           Integer id) {
@@ -152,7 +152,7 @@ public class GenreController {
         content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
   })
   @GetMapping
-   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   public ResponseEntity<ApiResponseDTO<Page<GenreResponse>>> getAllGenres(
       @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
           @RequestParam(defaultValue = "0")
