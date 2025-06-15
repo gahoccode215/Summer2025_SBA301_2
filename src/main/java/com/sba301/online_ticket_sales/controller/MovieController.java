@@ -23,9 +23,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,11 +52,12 @@ public class MovieController {
         description = "Dữ liệu đầu vào không hợp lệ hoặc ID liên kết không tồn tại",
         content = @Content)
   })
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> createMovie(
-      @Valid @RequestBody MovieCreationRequest request) {
-    MovieResponse response = movieService.createMovie(request);
+          @RequestPart("movie") @Valid MovieCreationRequest request,
+          @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+    MovieResponse response = movieService.createMovie(request, thumbnailFile);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             ApiResponseDTO.<MovieResponse>builder()
@@ -79,12 +82,13 @@ public class MovieController {
         content = @Content),
     @ApiResponse(responseCode = "404", description = "Phim không tồn tại", content = @Content)
   })
-  @PutMapping("/{id}")
+  @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> updateMovie(
       @Parameter(description = "ID của phim cần cập nhật", required = true) @PathVariable Long id,
-      @Valid @RequestBody MovieUpdateRequest request) {
-    MovieResponse response = movieService.updateMovie(id, request);
+      @Valid @RequestBody MovieUpdateRequest request,
+      @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+    MovieResponse response = movieService.updateMovie(id, request, thumbnailFile);
     return ResponseEntity.ok(
         ApiResponseDTO.<MovieResponse>builder()
             .code(HttpStatus.OK.value())

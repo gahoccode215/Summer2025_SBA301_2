@@ -11,11 +11,14 @@ import com.sba301.online_ticket_sales.enums.MovieStatus;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.MovieMapper;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
+import com.sba301.online_ticket_sales.service.CloudinaryService;
 import com.sba301.online_ticket_sales.service.MovieService;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Slf4j
@@ -36,17 +40,24 @@ public class MovieServiceImpl implements MovieService {
 
   MovieRepository movieRepository;
   MovieMapper movieMapper;
+  CloudinaryService cloudinaryService;
 
   @Override
   @Transactional
-  public MovieResponse createMovie(MovieCreationRequest request) {
+  public MovieResponse createMovie(MovieCreationRequest request, MultipartFile thumbnailFile) {
     validateMovieCreation(request);
-    return movieMapper.toMovieResponse(movieRepository.save(movieMapper.toMovie(request)));
+    Movie movie = movieMapper.toMovie(request);
+    String thumbnailUrl = null;
+    if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+      thumbnailUrl = uploadThumbnailImage(thumbnailFile);
+      movie.setThumbnailUrl(thumbnailUrl);
+    }
+    return movieMapper.toMovieResponse(movieRepository.save(movie));
   }
 
   @Override
   @Transactional
-  public MovieResponse updateMovie(Long id, MovieUpdateRequest request) {
+  public MovieResponse updateMovie(Long id, MovieUpdateRequest request, MultipartFile thumbnailFile) {
 
     Movie movie =
         movieRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
@@ -54,6 +65,12 @@ public class MovieServiceImpl implements MovieService {
     validateMovieUpdate(movie, request);
 
     movieMapper.updateMovieFromRequest(request, movie);
+
+    String thumbnailUrl = null;
+    if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+      thumbnailUrl = uploadThumbnailImage(thumbnailFile);
+      movie.setThumbnailUrl(thumbnailUrl);
+    }
 
     Movie updatedMovie = movieRepository.save(movie);
 
@@ -135,6 +152,55 @@ public class MovieServiceImpl implements MovieService {
     Page<Movie> movies = movieRepository.findAll(spec, pageable);
 
     return movies.map(movieMapper::toMovieResponse);
+  }
+  private String uploadThumbnailImage(MultipartFile thumbnailFile) {
+    try {
+
+      // Validate file
+      validateImageFile(thumbnailFile);
+
+      // Convert to byte array
+      byte[] imageBytes = thumbnailFile.getBytes();
+
+      // Upload to Cloudinary
+      Map<String, String> uploadResult = cloudinaryService.uploadImage(
+              imageBytes,
+              "movies/thumbnails"
+      );
+
+      // Lưu public_id để có thể delete sau này
+      String publicId = uploadResult.get("public_id");
+
+      return publicId;
+
+    } catch (Exception e) {
+      log.error("Failed to upload thumbnail image", e);
+      throw new AppException(ErrorCode.IMAGE_UPLOAD_FAILED);
+    }
+  }
+
+  private void validateImageFile(MultipartFile file) {
+    // Kiểm tra file không null và không empty
+    if (file == null || file.isEmpty()) {
+      throw new AppException(ErrorCode.INVALID_IMAGE_FILE);
+    }
+
+    // Kiểm tra định dạng file
+    String contentType = file.getContentType();
+    if (contentType == null || !contentType.startsWith("image/")) {
+      throw new AppException(ErrorCode.INVALID_IMAGE_FORMAT);
+    }
+
+    // Kiểm tra kích thước file (max 5MB)
+    if (file.getSize() > 5 * 1024 * 1024) {
+      throw new AppException(ErrorCode.FILE_TOO_LARGE);
+    }
+
+    // Kiểm tra định dạng cụ thể
+    List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/webp");
+    if (!allowedTypes.contains(contentType)) {
+      throw new AppException(ErrorCode.UNSUPPORTED_IMAGE_FORMAT);
+    }
   }
 
   private void validateMovieCreation(MovieCreationRequest request) {

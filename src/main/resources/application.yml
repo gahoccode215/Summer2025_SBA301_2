@@ -32,12 +32,9 @@ spring:
             enable: true
 
   cloudinary:
-#    cloudName: ${CLOUDINARY_CLOUD_NAME}
-    cloudName: aaaa
-#    apiKey: ${CLOUDINARY_API_KEY}
-    apiKey: aaaa
-#    apiSecret: ${CLOUDINARY_API_SECRET}
-    apiSecret: aaaa
+    cloudName: ${CLOUDINARY_CLOUD_NAME}
+    apiKey: ${CLOUDINARY_API_KEY}
+    apiSecret: ${CLOUDINARY_API_SECRET}
 
 
 outbound:
