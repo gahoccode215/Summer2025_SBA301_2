@@ -2,26 +2,36 @@ package com.sba301.online_ticket_sales.mapper.impl;
 
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.request.UserUpdateRequest;
 import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
 import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.UserMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.sba301.online_ticket_sales.repository.CinemaRepository;
+import com.sba301.online_ticket_sales.repository.RoleRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserMapperImpl implements UserMapper {
 
-  private final PasswordEncoder passwordEncoder;
+  RoleRepository roleRepository;
+  CinemaRepository cinemaRepository;
 
   @Override
   public UserProfileResponse toUserProfileResponse(User user) {
@@ -107,6 +117,43 @@ public class UserMapperImpl implements UserMapper {
         .createdAt(user.getCreatedAt())
         .updatedAt(user.getUpdatedAt())
         .build();
+  }
+  @Override
+  public void updateUserFromRequest(UserUpdateRequest request, User user) {
+    Optional.ofNullable(request.getFullName())
+            .filter(name -> !name.isBlank())
+            .ifPresent(user::setFullName);
+    Optional.ofNullable(request.getPhone()).ifPresent(user::setPhone);
+    Optional.ofNullable(request.getGender()).ifPresent(user::setGender);
+    Optional.ofNullable(request.getBirthDate()).ifPresent(user::setBirthDate);
+    Optional.ofNullable(request.getAddress()).ifPresent(user::setAddress);
+    Optional.ofNullable(request.getStatus()).ifPresent(user::setStatus);
+    if (request.getRoleIds() != null) {
+      updateUserRoles(user, request.getRoleIds());
+    }
+    if (request.getAssignedCinemaIds() != null) {
+      updateManagedCinemas(user, request.getAssignedCinemaIds());
+    }
+  }
+
+  private void updateUserRoles(User user, List<Integer> roleIds) {
+    List<Role> roles = roleRepository.findAllById(roleIds);
+    if (roles.size() != roleIds.size()) {
+      throw new AppException(ErrorCode.INVALID_ROLES);
+    }
+    user.setRoles(roles);
+  }
+
+  private void updateManagedCinemas(User user, List<Long> cinemaIds) {
+    if (cinemaIds.isEmpty()) {
+      user.setManagedCinemas(new ArrayList<>());
+    } else {
+      List<Cinema> cinemas = cinemaRepository.findAllById(cinemaIds);
+      if (cinemas.size() != cinemaIds.size()) {
+        throw new AppException(ErrorCode.SOME_CINEMAS_NOT_FOUND);
+      }
+      user.setManagedCinemas(cinemas);
+    }
   }
 
   /** Map roles từ List<Role> sang List<String> */

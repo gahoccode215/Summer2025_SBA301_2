@@ -21,6 +21,7 @@ public enum ErrorCode {
   PASSWORD_MISMATCH(1008, "New password and confirm password do not match", HttpStatus.BAD_REQUEST),
   ACCESS_DENIED(1009, "Access Deinied", HttpStatus.UNAUTHORIZED),
   INVALID_KEY(1010, "Invalid key", HttpStatus.BAD_REQUEST),
+  INSUFFICIENT_PERMISSION(1011, "Invalid insufficient permission", HttpStatus.BAD_REQUEST),
   // PERSON EXCEPTION (1100 - 1199)
   PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
   COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
@@ -49,6 +50,8 @@ public enum ErrorCode {
   INVALID_ROLES(1502, "Invalid roles", HttpStatus.BAD_REQUEST),
   MANAGER_CANNOT_ASSIGN_TO_OTHER_CINEMA(
       1503, "Manager cannot assign to other cinema", HttpStatus.BAD_REQUEST),
+  CANNOT_DISABLE_SELF(1504, "Cannot disable self", HttpStatus.BAD_REQUEST),
+  CANNOT_MODIFY_ADMIN(1505, "Cannot modify admin", HttpStatus.BAD_REQUEST),
 
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),

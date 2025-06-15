@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
 import com.sba301.online_ticket_sales.dto.user.request.UserListFilterRequest;
 import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.request.UserUpdateRequest;
 import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
@@ -22,6 +23,7 @@ import com.sba301.online_ticket_sales.specification.UserSpecification;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -176,34 +178,85 @@ public class UserServiceImpl implements UserService {
     return users.map(userMapper::mapToUserListResponse);
   }
 
-  private Page<User> getUsersForAdmin(UserListFilterRequest filter, Pageable pageable) {
-    LocalDateTime createdFrom =
-        filter.getCreatedFrom() != null ? filter.getCreatedFrom().atStartOfDay() : null;
-    LocalDateTime createdTo =
-        filter.getCreatedTo() != null ? filter.getCreatedTo().atTime(23, 59, 59) : null;
-
-    return userRepository.findUsersWithFilters(
-        filter.getKeyword(),
-        filter.getStatus(),
-        filter.getRoleName(),
-        filter.getCinemaId(),
-        filter.getProvince(),
-        createdFrom,
-        createdTo,
-        pageable);
+  @Override
+  public UserResponse getUserAccountDetail(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    return userMapper.toUserResponse(user);
   }
 
-  private Page<User> getUsersForManager(
-      User manager, UserListFilterRequest filter, Pageable pageable) {
-    List<Long> managerCinemaIds =
-        manager.getManagedCinemas().stream().map(Cinema::getId).collect(Collectors.toList());
+  @Override
+  @Transactional
+  public UserResponse updateUser(Long userId, UserUpdateRequest request) {
 
-    if (managerCinemaIds.isEmpty()) {
-      return Page.empty(pageable);
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    validateUserUpdate(user, request);
+
+    userMapper.updateUserFromRequest(request, user);
+
+    User updatedUser = userRepository.save(user);
+
+    return userMapper.toUserResponse(updatedUser);
+  }
+  private void validateUserUpdate(User existingUser, UserUpdateRequest request) {
+    User currentUser = getUserAuthenticated();
+
+    // Kiểm tra quyền update
+    if (!canUpdateUser(currentUser, existingUser)) {
+      throw new AppException(ErrorCode.ACCESS_DENIED);
     }
 
-    return userRepository.findUsersByCinemaIds(
-        managerCinemaIds, filter.getKeyword(), filter.getStatus(), filter.getRoleName(), pageable);
+    // Validate phone uniqueness
+//    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
+//      if (userRepository.existsByPhoneAndIdNot(request.getPhone(), existingUser.getId())) {
+//        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+//      }
+//    }
+
+    // Validate status change
+    if (request.getStatus() != null) {
+      validateStatusChange(existingUser, request.getStatus(), currentUser);
+    }
+
+    // Validate role changes
+    if (request.getRoleIds() != null && !currentUser.isAdmin()) {
+      throw new AppException(ErrorCode.INSUFFICIENT_PERMISSION);
+    }
+  }
+
+  // THIẾU: Helper methods
+  private boolean canUpdateUser(User currentUser, User targetUser) {
+    if (currentUser.isAdmin()) {
+      return true;
+    }
+
+    if (currentUser.isManager() && targetUser.isStaff()) {
+      return isUserInManagerCinemas(targetUser, currentUser);
+    }
+
+    return currentUser.getId().equals(targetUser.getId());
+  }
+
+  private void validateStatusChange(User existingUser, UserStatus newStatus, User currentUser) {
+    // Không thể tự disable chính mình
+    if (existingUser.getId().equals(currentUser.getId()) && newStatus == UserStatus.INACTIVE) {
+      throw new AppException(ErrorCode.CANNOT_DISABLE_SELF);
+    }
+
+    // Chỉ ADMIN mới có thể disable/active ADMIN khác
+    if (existingUser.isAdmin() && !currentUser.isAdmin()) {
+      throw new AppException(ErrorCode.CANNOT_MODIFY_ADMIN);
+    }
+  }
+
+  private boolean isUserInManagerCinemas(User user, User manager) {
+    List<Long> managerCinemaIds = manager.getManagedCinemas().stream()
+            .map(Cinema::getId)
+            .collect(Collectors.toList());
+
+    return user.getManagedCinemas().stream()
+            .anyMatch(cinema -> managerCinemaIds.contains(cinema.getId()));
   }
 
   private User getUserAuthenticated() {
