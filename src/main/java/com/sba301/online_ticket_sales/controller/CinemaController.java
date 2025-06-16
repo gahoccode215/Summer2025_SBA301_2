@@ -14,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class CinemaController {
   CinemaService cinemaService;
 
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
   @Operation(
@@ -35,9 +37,11 @@ public class CinemaController {
       description =
           "Upsert a cinema with the provided details. If the cinema does not exist, it will be created. If it exists, it will be updated.")
   public ResponseEntity<ApiResponseDTO<Long>> upsertCinema(
-      @Valid @RequestBody CinemaRequest request) {
+          @RequestPart("cinema") @Valid CinemaRequest request,
+          @RequestPart(value = "thumbnail", required = false) MultipartFile multipartFile
+          ) {
 
-    Long cinemaId = cinemaService.upsertCinema(request);
+    Long cinemaId = cinemaService.upsertCinema(request, multipartFile);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             ApiResponseDTO.<Long>builder()
