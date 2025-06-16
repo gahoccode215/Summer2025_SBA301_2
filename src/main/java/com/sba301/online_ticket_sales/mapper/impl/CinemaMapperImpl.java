@@ -41,8 +41,6 @@ public class CinemaMapperImpl implements CinemaMapper {
               roomRequest -> {
                 Room room = new Room();
                 room.setName(roomRequest.getName());
-                room.setRowCount(roomRequest.getRowCount());
-                room.setSeatCount(roomRequest.getSeatCount());
                 room.setRoomType(roomRequest.getRoomType());
                 cinema.addRoom(room);
               });
@@ -77,8 +75,6 @@ public class CinemaMapperImpl implements CinemaMapper {
             RoomRequest roomReq = roomRequestMap.get(existingRoom.getId());
             if (roomReq != null) {
               existingRoom.setName(roomReq.getName());
-              existingRoom.setRowCount(roomReq.getRowCount());
-              existingRoom.setSeatCount(roomReq.getSeatCount());
               existingRoom.setRoomType(roomReq.getRoomType());
               roomRequestMap.remove(existingRoom.getId());
             } else {
@@ -92,8 +88,6 @@ public class CinemaMapperImpl implements CinemaMapper {
               roomRequest -> {
                 Room newRoom = new Room();
                 newRoom.setName(roomRequest.getName());
-                newRoom.setRowCount(roomRequest.getRowCount());
-                newRoom.setSeatCount(roomRequest.getSeatCount());
                 newRoom.setRoomType(roomRequest.getRoomType());
                 cinema.addRoom(newRoom);
               });
@@ -132,13 +126,13 @@ public class CinemaMapperImpl implements CinemaMapper {
                   roomResponse.setId(room.getId());
                   roomResponse.setName(room.getName());
                   roomResponse.setRoomType(room.getRoomType());
-                  roomResponse.setRowCount(room.getRowCount());
-                  roomResponse.setSeatCount(room.getSeatCount());
+                  roomResponse.setRowCount(room.getRoomType().getRows());
+                  roomResponse.setColumnCount(room.getRoomType().getColumns());
                   roomResponse.setActive(room.isActive());
                   return roomResponse;
                 })
             .toList());
-    response.setImageUrl("https://kenh14cdn.com/2017/a12-1502124775530.jpg");
+    response.setImageUrl(cinema.getMediaKey() != null ? cinema.getMediaKey() :  "https://kenh14cdn.com/2017/a12-1502124775530.jpg");
     response.setCreatedAt(cinema.getCreatedAt());
     response.setUpdatedAt(cinema.getUpdatedAt());
     return response;

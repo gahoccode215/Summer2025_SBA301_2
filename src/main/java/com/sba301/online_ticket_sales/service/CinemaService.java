@@ -3,10 +3,12 @@ package com.sba301.online_ticket_sales.service;
 import com.sba301.online_ticket_sales.dto.cinema.request.CinemaRequest;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaDetailResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 public interface CinemaService {
-  Long upsertCinema(CinemaRequest request);
+  Long upsertCinema(CinemaRequest request, MultipartFile file);
 
   List<CinemaResponse> getAllCinemasWithAuthentication();
 
