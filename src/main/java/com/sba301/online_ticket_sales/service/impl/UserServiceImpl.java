@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public List<String> getAllRolesByUserId(long userId) {
-    return userRepository.findAllRolesByUserId(userId);
+    return userRepository.getAllRolesByUserId(userId);
   }
 
   @Override

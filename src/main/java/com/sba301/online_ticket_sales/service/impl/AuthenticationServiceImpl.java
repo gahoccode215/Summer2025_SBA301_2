@@ -119,6 +119,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     List<SimpleGrantedAuthority> authorities =
         roles.stream().map(SimpleGrantedAuthority::new).toList();
 
+    log.info("authorities: {}", authorities);
+
     try {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
@@ -145,6 +147,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .userId(user.getId())
+        .roleNames(roles)
         .build();
   }
 

@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.dto.auth.response;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,4 +12,6 @@ public class TokenResponse {
   private String refreshToken;
 
   private Long userId;
+
+  private List<String> roleNames;
 }

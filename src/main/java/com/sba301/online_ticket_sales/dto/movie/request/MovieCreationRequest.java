@@ -71,32 +71,4 @@ public class MovieCreationRequest {
   @NotEmpty(message = "Phim phải có ít nhất một diễn viên")
   @Size(max = 20, message = "Phim không được có quá 20 diễn viên")
   List<@Positive(message = "ID diễn viên phải là số dương") Integer> actorIds;
-
-  @AssertTrue(message = "Ngày công chiếu phải sau hoặc bằng ngày phát hành")
-  private boolean isPremiereDateValid() {
-    if (releaseDate == null || premiereDate == null) {
-      return true;
-    }
-    return !premiereDate.isBefore(releaseDate);
-  }
-
-  @AssertTrue(message = "Ngày kết thúc chiếu phải sau ngày công chiếu")
-  private boolean isEndDateValid() {
-    if (premiereDate == null || endDate == null) {
-      return true;
-    }
-    return !endDate.isBefore(premiereDate);
-  }
-
-  @AssertTrue(message = "Phim IMAX phải có định dạng IMAX hoặc IMAX_3D")
-  private boolean isImaxFormatValid() {
-    if (movieStatus != MovieStatus.IMAX) {
-      return true;
-    }
-    if (availableFormats == null || availableFormats.isEmpty()) {
-      return false;
-    }
-    return availableFormats.contains(MovieFormat.IMAX)
-        || availableFormats.contains(MovieFormat.IMAX_3D);
-  }
 }

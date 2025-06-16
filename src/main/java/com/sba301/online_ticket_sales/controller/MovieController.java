@@ -86,7 +86,7 @@ public class MovieController {
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> updateMovie(
       @Parameter(description = "ID của phim cần cập nhật", required = true) @PathVariable Long id,
-      @Valid @RequestBody MovieUpdateRequest request,
+      @Valid @RequestPart("movie") MovieUpdateRequest request,
       @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
     MovieResponse response = movieService.updateMovie(id, request, thumbnailFile);
     return ResponseEntity.ok(

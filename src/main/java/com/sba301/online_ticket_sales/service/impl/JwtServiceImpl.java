@@ -12,9 +12,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,6 +69,11 @@ public class JwtServiceImpl implements JwtService {
 
   private String generateToken(Map<String, Object> claims, UserDetails userDetails) {
     log.info("---------- generateToken ----------");
+    //    Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+    //    List<String> roles = authorities.stream()
+    //            .map(GrantedAuthority::getAuthority)
+    //            .collect(Collectors.toList());
+    //    claims.put("roles", roles);
     return Jwts.builder()
         .setClaims(claims)
         .setSubject(userDetails.getUsername())

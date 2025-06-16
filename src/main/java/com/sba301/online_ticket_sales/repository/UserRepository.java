@@ -17,8 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
   Optional<User> findByUsername(String username);
 
-  @Query(value = "select r.name from Role r inner join User u on r.id = u.id where u.id= :userId")
-  List<String> findAllRolesByUserId(Long userId);
+  @Query("SELECT r.name FROM User u JOIN u.roles r WHERE u.id = :userId")
+  List<String> getAllRolesByUserId(@Param("userId") Long userId);
 
   boolean existsByUsername(String username);
 

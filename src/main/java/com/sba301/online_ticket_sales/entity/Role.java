@@ -1,9 +1,6 @@
 package com.sba301.online_ticket_sales.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.util.List;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +20,6 @@ public class Role extends AbstractEntity<Integer> {
   @Column(name = "description")
   String description;
 
-  @ManyToMany(mappedBy = "roles")
+  @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
   List<User> users;
 }
