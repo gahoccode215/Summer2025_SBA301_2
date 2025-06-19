@@ -203,6 +203,7 @@ public class MovieServiceImpl implements MovieService {
 
   private void validateMovieCreation(MovieCreationRequest request) {
     // Kiểm tra title đã tồn tại chưa
+
     if (movieRepository.existsByTitleIgnoreCase(request.getTitle())) {
       throw new AppException(ErrorCode.MOVIE_TITLE_ALREADY_EXISTS);
     }

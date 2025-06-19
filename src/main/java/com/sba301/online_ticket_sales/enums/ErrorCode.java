@@ -58,12 +58,20 @@ public enum ErrorCode {
   INVALID_IMAGE_FORMAT(1602, "Invalid image format", HttpStatus.BAD_REQUEST),
   FILE_TOO_LARGE(1603, "File too large", HttpStatus.BAD_REQUEST),
   UNSUPPORTED_IMAGE_FORMAT(1604, "Unsupported image format", HttpStatus.BAD_REQUEST),
+  // BOOKING EXCEPTION (1700 - 1799)
+  TICKET_CANNOT_NULL(1700, "Danh sách vé không được để trống", HttpStatus.BAD_REQUEST),
+  TICKET_DUPLICATE_SEAT(1701, "Danh sách vé có ghế trùng lặp", HttpStatus.BAD_REQUEST),
+  SEAT_CANNOT_NULL(1702, "Số ghế không được để trống", HttpStatus.BAD_REQUEST),
+  INVALID_SEAT_CODE(1703, "Định dạng số ghế không hợp lệ", HttpStatus.BAD_REQUEST),
+  SEAT_CANNOT_FOUND(1704, "Một hoặc nhiều suất chiếu không tồn tại", HttpStatus.BAD_REQUEST),
+  MOVIESCREEN_NOT_WORKING(1705, "Suất chiếu không hoạt động", HttpStatus.BAD_REQUEST),
 
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
   SOME_CINEMAS_NOT_FOUND(2001, "Some cinemas not found", HttpStatus.BAD_REQUEST),
   CINEMA_UPSERT_PERMISSION_DENIED(
       2002, "You do not have permission to create or update a cinema", HttpStatus.FORBIDDEN),
+  SEAT_ALREADY_BOOKED(2003, "Seat already booked", HttpStatus.BAD_REQUEST),
 
   // OTP EXCEPTION ()
   SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),

@@ -11,11 +11,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+    mongodb:
+      uri: mongodb://localhost:27017/online_ticket_sales_mongo
+      database: online_ticket_sales_mongo
+      auto-index-creation: true
   cloud:
     compatibility-verifier:
       enabled: false
