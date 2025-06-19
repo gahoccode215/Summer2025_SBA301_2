@@ -13,7 +13,6 @@ import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -93,7 +92,6 @@ public class CinemaMapperImpl implements CinemaMapper {
               });
     }
 
-
     return cinema;
   }
 
@@ -132,7 +130,10 @@ public class CinemaMapperImpl implements CinemaMapper {
                   return roomResponse;
                 })
             .toList());
-    response.setImageUrl(cinema.getMediaKey() != null ? cinema.getMediaKey() :  "https://kenh14cdn.com/2017/a12-1502124775530.jpg");
+    response.setImageUrl(
+        cinema.getMediaKey() != null
+            ? cinema.getMediaKey()
+            : "https://kenh14cdn.com/2017/a12-1502124775530.jpg");
     response.setCreatedAt(cinema.getCreatedAt());
     response.setUpdatedAt(cinema.getUpdatedAt());
     return response;

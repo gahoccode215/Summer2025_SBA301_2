@@ -1,25 +1,23 @@
 package com.sba301.online_ticket_sales.config;
 
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class VNPayConfig {
   @Value("${vnpay.url}")
   public static String vnpPayUrl;
+
   @Value("${vnpay.return-url}")
   public static String vnpReturnUrl;
+
   @Value("${vnpay.tmn-code}")
   public static String vnpTmnCode;
+
   @Value("${vnpay.hash-secret}")
   public static String vnpHashSecret;
 
@@ -41,6 +39,7 @@ public class VNPayConfig {
       return "";
     }
   }
+
   public static String hashAllFields(Map<String, String> fields) {
     List<String> fieldNames = new ArrayList<>(fields.keySet());
     Collections.sort(fieldNames);

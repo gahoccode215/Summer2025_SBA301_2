@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public  class CinemaBasicInfo {
-    private Long id;
-    private String name;
-    private String address;
-    private String province;
+public class CinemaBasicInfo {
+  private Long id;
+  private String name;
+  private String address;
+  private String province;
 }

@@ -3,7 +3,6 @@ package com.sba301.online_ticket_sales.dto.cinema.request;
 import com.sba301.online_ticket_sales.enums.RequestType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

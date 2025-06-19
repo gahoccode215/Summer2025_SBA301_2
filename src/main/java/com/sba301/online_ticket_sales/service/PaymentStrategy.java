@@ -6,7 +6,9 @@ import com.sba301.online_ticket_sales.dto.payment.response.PaymentResult;
 import com.sba301.online_ticket_sales.dto.payment.response.PaymentVerificationResult;
 
 public interface PaymentStrategy {
-    PaymentResult createPayment(PaymentRequest request);
-    PaymentVerificationResult verifyPayment(PaymentVerificationRequest request);
-    String getPaymentMethod();
+  PaymentResult createPayment(PaymentRequest request);
+
+  PaymentVerificationResult verifyPayment(PaymentVerificationRequest request);
+
+  String getPaymentMethod();
 }

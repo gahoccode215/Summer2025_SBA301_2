@@ -44,6 +44,8 @@ public enum ErrorCode {
   MOVIE_ALREADY_DELETED(1308, "Movie already deleted", HttpStatus.BAD_REQUEST),
   // COUNTRY EXCEPTION (1400 - 1499)
   COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
+  REVIEW_NOT_FOUND_OR_UNAUTHORIZED(1401, "Review not found or unauthorized", HttpStatus.BAD_REQUEST),
+  REVIEW_ALREADY_EXISTS(1402, "Review already exists", HttpStatus.BAD_REQUEST),
   // USER EXCEPTION (1500 - 1599)
   USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
   USERNAME_ALREADY_EXISTS(1501, "Username already exists", HttpStatus.BAD_REQUEST),
@@ -65,6 +67,7 @@ public enum ErrorCode {
   INVALID_SEAT_CODE(1703, "Định dạng số ghế không hợp lệ", HttpStatus.BAD_REQUEST),
   SEAT_CANNOT_FOUND(1704, "Một hoặc nhiều suất chiếu không tồn tại", HttpStatus.BAD_REQUEST),
   MOVIESCREEN_NOT_WORKING(1705, "Suất chiếu không hoạt động", HttpStatus.BAD_REQUEST),
+
 
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MovieReviewResponse {
+  private String id;
   private Long movieId;
 
   private Long userId;

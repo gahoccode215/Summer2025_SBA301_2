@@ -37,9 +37,8 @@ public class CinemaController {
       description =
           "Upsert a cinema with the provided details. If the cinema does not exist, it will be created. If it exists, it will be updated.")
   public ResponseEntity<ApiResponseDTO<Long>> upsertCinema(
-          @RequestPart("cinema") @Valid CinemaRequest request,
-          @RequestPart(value = "thumbnail", required = false) MultipartFile multipartFile
-          ) {
+      @RequestPart("cinema") @Valid CinemaRequest request,
+      @RequestPart(value = "thumbnail", required = false) MultipartFile multipartFile) {
 
     Long cinemaId = cinemaService.upsertCinema(request, multipartFile);
     return ResponseEntity.status(HttpStatus.CREATED)

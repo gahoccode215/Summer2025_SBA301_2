@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketRequest {
-    @NotNull(message = "ID suất chiếu không được để trống")
-    private Long movieScreenId;
+  @NotNull(message = "ID suất chiếu không được để trống")
+  private Long movieScreenId;
 
-    @NotBlank(message = "Số ghế không được để trống")
-    private String seatNumber;
+  @NotBlank(message = "Số ghế không được để trống")
+  private String seatNumber;
 }

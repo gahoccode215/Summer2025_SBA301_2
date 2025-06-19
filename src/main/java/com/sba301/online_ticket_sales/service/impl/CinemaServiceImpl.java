@@ -11,10 +11,9 @@ import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
 import com.sba301.online_ticket_sales.service.CinemaService;
+import com.sba301.online_ticket_sales.service.CloudinaryService;
 import java.util.List;
 import java.util.Map;
-
-import com.sba301.online_ticket_sales.service.CloudinaryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -57,8 +56,7 @@ public class CinemaServiceImpl implements CinemaService {
     Cinema cinema = cinemaMapper.toCinema(request);
     try {
       if (file != null && !file.isEmpty()) {
-        Map<String, String> accessKey =
-                this.cloudinaryService.uploadImage(file.getBytes(), folder);
+        Map<String, String> accessKey = this.cloudinaryService.uploadImage(file.getBytes(), folder);
         cinema.setMediaKey(cloudinaryService.getImageUrl(accessKey.get("asset_id")));
         cinema.setPublicId(accessKey.get("public_id"));
       }

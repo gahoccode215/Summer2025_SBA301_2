@@ -43,11 +43,8 @@ public class Cinema extends AbstractEntity<Long> implements Serializable {
   @ManyToMany(mappedBy = "managedCinemas")
   private List<User> managers;
 
-
-
   public void addRoom(Room room) {
     rooms.add(room);
     room.setCinema(this);
   }
-
 }

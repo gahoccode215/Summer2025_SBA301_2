@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 @Builder
 public class PaymentVerificationResult {
-    private boolean valid;
-    private PaymentStatus status;
-    private String transactionId;
-    private String errorMessage;
+  private boolean valid;
+  private PaymentStatus status;
+  private String transactionId;
+  private String errorMessage;
 }
