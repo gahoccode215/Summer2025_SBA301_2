@@ -1,16 +1,16 @@
 package com.sba301.online_ticket_sales.config;
 
+import static org.springframework.amqp.core.QueueBuilder.LeaderLocator.random;
+
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
-import com.sba301.online_ticket_sales.entity.Country;
-import com.sba301.online_ticket_sales.entity.Genre;
-import com.sba301.online_ticket_sales.entity.Role;
-import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.UserStatus;
-import com.sba301.online_ticket_sales.repository.CountryRepository;
-import com.sba301.online_ticket_sales.repository.GenreRepository;
-import com.sba301.online_ticket_sales.repository.RoleRepository;
-import com.sba301.online_ticket_sales.repository.UserRepository;
+import com.sba301.online_ticket_sales.repository.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +31,11 @@ public class ApplicationInitConfig {
   RoleRepository roleRepository;
   PasswordEncoder passwordEncoder;
   UserRepository userRepository;
+  MovieRepository movieRepository;
+  RoomRepository roomRepository;
+  MovieScreenRepository movieScreenRepository;
+
+  private final Random random = new Random();
 
   @Bean
   ApplicationRunner applicationRunner() {
@@ -64,8 +69,57 @@ public class ApplicationInitConfig {
       }
 
       initializeAdminAccounts();
+      //      seedMovieScreens(7);
       log.info("Application initialization completed .....");
     };
+  }
+
+  public void seedMovieScreens(int totalDays) {
+    List<Movie> movies = movieRepository.findAll();
+    List<Room> rooms = roomRepository.findAll();
+
+    LocalDateTime now = LocalDateTime.now();
+
+    for (Room room : rooms) {
+      for (int i = 0; i < totalDays; i++) {
+        LocalDateTime dayStart = now.plusDays(i).withHour(8).withMinute(0);
+
+        int screensToday = random.nextInt(3) + 3; // 3–5 suất/ngày
+        for (int j = 0; j < screensToday; j++) {
+          Optional<MovieScreen> created = tryCreateNonConflictMovieScreen(dayStart, room, movies);
+          created.ifPresent(movieScreenRepository::save);
+        }
+      }
+    }
+  }
+
+  private Optional<MovieScreen> tryCreateNonConflictMovieScreen(
+      LocalDateTime dayStart, Room room, List<Movie> movies) {
+
+    int retry = 0;
+    while (retry < 10) {
+      Movie movie = movies.get(random.nextInt(movies.size()));
+      int startHour = 8 + random.nextInt(10);
+      int startMinute = random.nextInt(2) * 30;
+
+      LocalDateTime startTime = dayStart.withHour(startHour).withMinute(startMinute);
+      LocalDateTime endTime = startTime.plusMinutes(movie.getDuration());
+
+      int conflict = movieScreenRepository.hasConflictSchedule(room.getId(), startTime, endTime);
+      if (conflict == 0) {
+        BigDecimal ticketPrice = BigDecimal.valueOf(60 + random.nextInt(41));
+        MovieScreen screen =
+            MovieScreen.builder()
+                .room(room)
+                .movie(movie)
+                .showtime(startTime)
+                .ticketPrice(ticketPrice)
+                .build();
+        return Optional.of(screen);
+      }
+      retry++;
+    }
+    return Optional.empty();
   }
 
   private void initializeAdminAccounts() {

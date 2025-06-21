@@ -16,7 +16,7 @@ public class Room extends AbstractEntity<Long> implements Serializable {
   @Column(name = "name", nullable = false, length = 10)
   private String name;
 
-  @Column(name = "rom_type", nullable = false)
+  @Column(name = "room_type", nullable = false)
   @Enumerated(EnumType.STRING)
   private RoomType roomType;
 

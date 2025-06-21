@@ -1,10 +1,10 @@
 package com.sba301.online_ticket_sales.entity;
 
+import com.sba301.online_ticket_sales.enums.MovieScreenStatus;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -17,33 +17,22 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MovieScreen extends AbstractEntity<Long> implements Serializable {
-  @Column(nullable = false)
-  String title;
 
   @Column(name = "ticket_price")
   BigDecimal ticketPrice;
 
-  @Column(name = "screen_date")
-  LocalDate screenDate;
+  @Column(name = "showtime", nullable = false)
+  LocalDateTime showtime;
 
-  @Column(name = "screen_time")
-  LocalTime screenTime;
-
-  // Nếu có relationship với Movie và Cinema
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "movie_id")
   Movie movie;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cinema_id")
-  Cinema cinema;
+  @ManyToOne
+  @JoinColumn(name = "room_id", nullable = false)
+  private Room room;
 
-  @Column(name = "total_seats")
-  Integer totalSeats;
-
-  @Column(name = "available_seats")
-  Integer availableSeats;
-
-  @Column(name = "status")
-  String status; // ACTIVE, INACTIVE, CANCELLED
+  @Column(name = "status", nullable = false)
+  @Enumerated(EnumType.STRING)
+  MovieScreenStatus status;
 }
