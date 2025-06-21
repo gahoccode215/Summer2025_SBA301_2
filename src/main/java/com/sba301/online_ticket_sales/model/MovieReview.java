@@ -21,5 +21,4 @@ public class MovieReview {
   private String fullName;
   private String comment;
   private LocalDateTime createdAt;
-
 }

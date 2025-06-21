@@ -31,7 +31,15 @@ public class SecurityConfig {
   private final UserRepository userRepository;
   private final PreFilter preFilter;
 
-  private final String[] PUBLIC_ENDPOINTS = {"/api/v1/auth/**", "/**"};
+  private final String[] PUBLIC_ENDPOINTS = {
+    "/api/v1/auth/**",
+    "/**",
+    "/api/v1/movies/**",
+    "/api/v1/schedules/**",
+    "/api/v1/cinemas/**",
+    "/api/v1/rooms/**",
+    "/api/v1/payments/**",
+  };
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

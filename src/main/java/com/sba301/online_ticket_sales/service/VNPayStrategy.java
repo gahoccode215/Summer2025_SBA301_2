@@ -1,188 +1,123 @@
 package com.sba301.online_ticket_sales.service;
 
-import com.sba301.online_ticket_sales.config.VNPayConfig;
-import com.sba301.online_ticket_sales.dto.payment.request.PaymentRequest;
-import com.sba301.online_ticket_sales.dto.payment.request.PaymentVerificationRequest;
-import com.sba301.online_ticket_sales.dto.payment.response.PaymentResult;
-import com.sba301.online_ticket_sales.dto.payment.response.PaymentVerificationResult;
-import com.sba301.online_ticket_sales.enums.PaymentStatus;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class VNPayStrategy implements PaymentStrategy {
-  private static final String PAYMENT_METHOD = "VNPAY";
-  private static final String VERSION = "2.1.0";
-  private static final String COMMAND = "pay";
-  private static final String ORDER_TYPE = "billpayment";
-  private static final String CURRENCY_CODE = "VND";
-  private static final int PAYMENT_TIMEOUT_MINUTES = 15;
+
+  @Value("${vnpay.pay-url}")
+  private String vnpPayUrl;
+
+  @Value("${vnpay.return-url}")
+  private String vnpReturnUrl;
+
+  @Value("${vnpay.tmn-code}")
+  private String vnpTmnCode;
+
+  @Value("${vnpay.hash-secret}")
+  private String secretKey;
+
+  @Value("${vnpay.api-url}")
+  private String vnpApiUrl;
+
+  @Value("${vnpay.version}")
+  private String vnPayVersion;
+
+  @Value("${vnpay.command}")
+  private String vnPayCommand;
 
   @Override
-  public PaymentResult createPayment(PaymentRequest request) {
+  public String hmacSHA512(String data) {
     try {
-      String paymentUrl = buildPaymentUrl(request);
+      final Mac hmac512 = Mac.getInstance("HmacSHA512");
+      byte[] hmacKeyBytes = secretKey.getBytes();
+      final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
+      hmac512.init(secretKey);
+      byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+      byte[] result = hmac512.doFinal(dataBytes);
+      StringBuilder sb = new StringBuilder(2 * result.length);
+      for (byte b : result) {
+        sb.append(String.format("%02x", b & 0xff));
+      }
+      return sb.toString();
 
-      return PaymentResult.builder()
-          .success(true)
-          .paymentUrl(paymentUrl)
-          .transactionId(String.valueOf(request.getBookingId()))
-          .status(PaymentStatus.PENDING)
-          .build();
-
-    } catch (Exception e) {
-      log.error(
-          "Error creating VNPay payment for booking {}: {}",
-          request.getBookingId(),
-          e.getMessage());
-
-      return PaymentResult.builder()
-          .success(false)
-          .errorMessage("Không thể tạo liên kết thanh toán")
-          .status(PaymentStatus.FAILED)
-          .build();
+    } catch (Exception ex) {
+      return "";
     }
   }
 
   @Override
-  public PaymentVerificationResult verifyPayment(PaymentVerificationRequest request) {
-    try {
-      // Remove hash fields for verification
-      Map<String, String> verifyParams = new HashMap<>(request.getParameters());
-      verifyParams.remove("vnp_SecureHashType");
-      verifyParams.remove("vnp_SecureHash");
+  public Map<String, String> buildVnPayParams(
+      Long amount, String code, HttpServletRequest request) {
+    var vnpTxnRef = code;
 
-      String calculatedHash = VNPayConfig.hashAllFields(verifyParams);
-      boolean isValidSignature = calculatedHash.equals(request.getSecureHash());
+    Map<String, String> vnpParams = new HashMap<>();
+    vnpParams.put("vnp_Version", vnPayVersion);
+    vnpParams.put("vnp_Command", vnPayCommand);
+    vnpParams.put("vnp_TmnCode", vnpTmnCode);
+    vnpParams.put("vnp_Amount", String.valueOf(amount));
+    vnpParams.put("vnp_CurrCode", "VND");
+    vnpParams.put("vnp_BankCode", "NCB");
+    vnpParams.put("vnp_TxnRef", vnpTxnRef);
+    vnpParams.put("vnp_OrderInfo", "Payment for " + vnpTxnRef);
+    vnpParams.put("vnp_Locale", "vn");
+    vnpParams.put("vnp_ReturnUrl", vnpReturnUrl);
+    vnpParams.put("vnp_OrderType", "billpayment");
+    vnpParams.put("vnp_IpAddr", getClientIp(request));
 
-      if (!isValidSignature) {
-        return PaymentVerificationResult.builder()
-            .valid(false)
-            .status(PaymentStatus.FAILED)
-            .errorMessage("Chữ ký không hợp lệ")
-            .build();
+    ZoneId hcmZone = ZoneId.of("Asia/Ho_Chi_Minh");
+    ZonedDateTime now = ZonedDateTime.now(hcmZone);
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    String vnpCreateDate = now.format(formatter);
+    vnpParams.put("vnp_CreateDate", vnpCreateDate);
+
+    ZonedDateTime expireTime = now.plusMinutes(15);
+    String vnpExpireDate = expireTime.format(formatter);
+    vnpParams.put("vnp_ExpireDate", vnpExpireDate);
+
+    return vnpParams;
+  }
+
+  public static String getClientIp(HttpServletRequest request) {
+    String remoteAddr = "";
+
+    if (request != null) {
+      remoteAddr = request.getHeader("X-Forwarded-For");
+      if (remoteAddr == null || "".equals(remoteAddr)) {
+        remoteAddr = request.getHeader("Proxy-Client-IP");
       }
-
-      PaymentStatus status = mapTransactionStatus(request.getTransactionStatus());
-
-      return PaymentVerificationResult.builder()
-          .valid(true)
-          .status(status)
-          .transactionId(request.getTransactionId())
-          .build();
-
-    } catch (Exception e) {
-      log.error("Error verifying VNPay payment: {}", e.getMessage());
-
-      return PaymentVerificationResult.builder()
-          .valid(false)
-          .status(PaymentStatus.FAILED)
-          .errorMessage("Lỗi xác thực thanh toán")
-          .build();
+      if (remoteAddr == null || "".equals(remoteAddr)) {
+        remoteAddr = request.getHeader("WL-Proxy-Client-IP");
+      }
+      if (remoteAddr == null || "".equals(remoteAddr)) {
+        remoteAddr = request.getHeader("HTTP_CLIENT_IP");
+      }
+      if (remoteAddr == null || "".equals(remoteAddr)) {
+        remoteAddr = request.getHeader("HTTP_X_FORWARDED_FOR");
+      }
+      if (remoteAddr == null || "".equals(remoteAddr)) {
+        remoteAddr = request.getRemoteAddr();
+      }
     }
+
+    return remoteAddr;
   }
 
   @Override
-  public String getPaymentMethod() {
-    return PAYMENT_METHOD;
-  }
-
-  private String buildPaymentUrl(PaymentRequest request) {
-    Map<String, String> params = buildPaymentParams(request);
-    String queryString = buildQueryString(params);
-    String secureHash = createSecureHash(params);
-
-    return VNPayConfig.vnpPayUrl + "?" + queryString + "&vnp_SecureHash=" + secureHash;
-  }
-
-  private Map<String, String> buildPaymentParams(PaymentRequest request) {
-    Map<String, String> params = new HashMap<>();
-
-    params.put("vnp_Version", VERSION);
-    params.put("vnp_Command", COMMAND);
-    params.put("vnp_TmnCode", VNPayConfig.vnpTmnCode);
-    params.put("vnp_Amount", formatAmount(request.getAmount()));
-    params.put("vnp_CurrCode", CURRENCY_CODE);
-    params.put("vnp_TxnRef", String.valueOf(request.getBookingId()));
-    params.put("vnp_OrderInfo", request.getOrderInfo());
-    params.put("vnp_OrderType", ORDER_TYPE);
-    params.put("vnp_Locale", request.getLocale());
-    params.put("vnp_ReturnUrl", request.getReturnUrl());
-
-    // Add timestamps
-    addTimestamps(params);
-
-    return params;
-  }
-
-  private String formatAmount(BigDecimal amount) {
-    return String.valueOf(amount.multiply(new BigDecimal(100)).longValue());
-  }
-
-  private void addTimestamps(Map<String, String> params) {
-    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-
-    String createDate = formatter.format(calendar.getTime());
-    params.put("vnp_CreateDate", createDate);
-
-    calendar.add(Calendar.MINUTE, PAYMENT_TIMEOUT_MINUTES);
-    String expireDate = formatter.format(calendar.getTime());
-    params.put("vnp_ExpireDate", expireDate);
-  }
-
-  private String buildQueryString(Map<String, String> params) {
-    List<String> fieldNames = new ArrayList<>(params.keySet());
-    Collections.sort(fieldNames);
-
-    StringBuilder query = new StringBuilder();
-    for (int i = 0; i < fieldNames.size(); i++) {
-      String fieldName = fieldNames.get(i);
-      String fieldValue = params.get(fieldName);
-
-      if (fieldValue != null && !fieldValue.isEmpty()) {
-        query.append(fieldName).append('=').append(fieldValue);
-        if (i < fieldNames.size() - 1) {
-          query.append('&');
-        }
-      }
-    }
-
-    return query.toString();
-  }
-
-  private String createSecureHash(Map<String, String> params) {
-    List<String> fieldNames = new ArrayList<>(params.keySet());
-    Collections.sort(fieldNames);
-
-    StringBuilder hashData = new StringBuilder();
-    for (int i = 0; i < fieldNames.size(); i++) {
-      String fieldName = fieldNames.get(i);
-      String fieldValue = params.get(fieldName);
-
-      if (fieldValue != null && !fieldValue.isEmpty()) {
-        hashData.append(fieldName).append('=').append(fieldValue);
-        if (i < fieldNames.size() - 1) {
-          hashData.append('&');
-        }
-      }
-    }
-
-    return VNPayConfig.hmacSHA512(VNPayConfig.vnpHashSecret, hashData.toString());
-  }
-
-  private PaymentStatus mapTransactionStatus(String vnpayStatus) {
-    return switch (vnpayStatus) {
-      case "00" -> PaymentStatus.SUCCESS;
-      case "24" -> PaymentStatus.CANCELLED;
-      case "02" -> PaymentStatus.EXPIRED;
-      default -> PaymentStatus.FAILED;
-    };
+  public String getPaymentUrl(String queryUrl) {
+    return String.format("%s?%s", vnpPayUrl, queryUrl);
   }
 }

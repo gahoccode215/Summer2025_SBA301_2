@@ -1,14 +1,12 @@
 package com.sba301.online_ticket_sales.service;
 
-import com.sba301.online_ticket_sales.dto.payment.request.PaymentRequest;
-import com.sba301.online_ticket_sales.dto.payment.request.PaymentVerificationRequest;
-import com.sba301.online_ticket_sales.dto.payment.response.PaymentResult;
-import com.sba301.online_ticket_sales.dto.payment.response.PaymentVerificationResult;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 public interface PaymentStrategy {
-  PaymentResult createPayment(PaymentRequest request);
+  String hmacSHA512(String data);
 
-  PaymentVerificationResult verifyPayment(PaymentVerificationRequest request);
+  Map<String, String> buildVnPayParams(Long amount, String orderCode, HttpServletRequest request);
 
-  String getPaymentMethod();
+  String getPaymentUrl(String queryUrl);
 }

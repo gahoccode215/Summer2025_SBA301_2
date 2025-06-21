@@ -14,7 +14,6 @@ import com.sba301.online_ticket_sales.service.ReviewService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,7 +64,8 @@ public class ReviewServiceImpl implements ReviewService {
   @Transactional
   public MovieReviewResponse updateReview(UpdateReviewRequest request) {
     User user = getUserAuthenticated();
-    MovieReview existingReview = movieReviewRepository
+    MovieReview existingReview =
+        movieReviewRepository
             .findByIdAndUserId(request.getId(), user.getId())
             .orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND_OR_UNAUTHORIZED));
 
@@ -78,32 +78,30 @@ public class ReviewServiceImpl implements ReviewService {
     }
     MovieReview updatedReview = movieReviewRepository.save(existingReview);
     return MovieReviewResponse.builder()
-            .movieId(updatedReview.getMovieId())
-            .fullName(updatedReview.getFullName())
-            .rating(updatedReview.getRating())
-            .comment(updatedReview.getComment())
-            .userId(updatedReview.getUserId())
-            .build();
+        .movieId(updatedReview.getMovieId())
+        .fullName(updatedReview.getFullName())
+        .rating(updatedReview.getRating())
+        .comment(updatedReview.getComment())
+        .userId(updatedReview.getUserId())
+        .build();
   }
 
   @Override
   @Transactional
   public void deleteReview(String reviewId) {
     User user = getUserAuthenticated();
-    MovieReview review = movieReviewRepository
+    MovieReview review =
+        movieReviewRepository
             .findByIdAndUserId(reviewId, user.getId())
             .orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND_OR_UNAUTHORIZED));
 
     movieReviewRepository.delete(review);
-
   }
 
   @Override
   public List<MovieReviewResponse> getMovieReviews(Long movieId) {
     List<MovieReview> reviews = movieReviewRepository.findByMovieIdOrderByCreatedAtDesc(movieId);
-    return reviews.stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
+    return reviews.stream().map(this::mapToResponse).collect(Collectors.toList());
   }
 
   @Override
@@ -121,14 +119,15 @@ public class ReviewServiceImpl implements ReviewService {
     }
     return (User) authentication.getPrincipal();
   }
+
   private MovieReviewResponse mapToResponse(MovieReview review) {
     return MovieReviewResponse.builder()
-            .id(review.getId())
-            .userId(review.getUserId())
-            .fullName(review.getFullName())
-            .movieId(review.getMovieId())
-            .rating(review.getRating())
-            .comment(review.getComment())
-            .build();
+        .id(review.getId())
+        .userId(review.getUserId())
+        .fullName(review.getFullName())
+        .movieId(review.getMovieId())
+        .rating(review.getRating())
+        .comment(review.getComment())
+        .build();
   }
 }

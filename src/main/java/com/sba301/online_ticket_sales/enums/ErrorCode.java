@@ -44,7 +44,8 @@ public enum ErrorCode {
   MOVIE_ALREADY_DELETED(1308, "Movie already deleted", HttpStatus.BAD_REQUEST),
   // COUNTRY EXCEPTION (1400 - 1499)
   COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
-  REVIEW_NOT_FOUND_OR_UNAUTHORIZED(1401, "Review not found or unauthorized", HttpStatus.BAD_REQUEST),
+  REVIEW_NOT_FOUND_OR_UNAUTHORIZED(
+      1401, "Review not found or unauthorized", HttpStatus.BAD_REQUEST),
   REVIEW_ALREADY_EXISTS(1402, "Review already exists", HttpStatus.BAD_REQUEST),
   // USER EXCEPTION (1500 - 1599)
   USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
@@ -68,17 +69,36 @@ public enum ErrorCode {
   SEAT_CANNOT_FOUND(1704, "Một hoặc nhiều suất chiếu không tồn tại", HttpStatus.BAD_REQUEST),
   MOVIESCREEN_NOT_WORKING(1705, "Suất chiếu không hoạt động", HttpStatus.BAD_REQUEST),
 
-
   // CINEMA EXCEPTION (1200 - 1299);
   CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
   SOME_CINEMAS_NOT_FOUND(2001, "Some cinemas not found", HttpStatus.BAD_REQUEST),
   CINEMA_UPSERT_PERMISSION_DENIED(
       2002, "You do not have permission to create or update a cinema", HttpStatus.FORBIDDEN),
-  SEAT_ALREADY_BOOKED(2003, "Seat already booked", HttpStatus.BAD_REQUEST),
+  ROOM_NOT_FOUND(2004, "Room not found", HttpStatus.NOT_FOUND),
+  ROOM_OR_MOVIE_NOT_ACTIVE(2005, "Room or movie is not active", HttpStatus.BAD_REQUEST),
 
   // OTP EXCEPTION ()
   SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),
-  SECRET_KEY_EXPIRED(2101, "Secret Key not found or expired", HttpStatus.NOT_FOUND);
+  SECRET_KEY_EXPIRED(2101, "Secret Key not found or expired", HttpStatus.NOT_FOUND),
+
+  // SCHEDULE EXCEPTION (2200 - 2299)
+  SCHEDULE_NOT_FOUND(2200, "Schedule not found", HttpStatus.NOT_FOUND),
+  SCHEDULE_ALREADY_EXISTS(2201, "Schedule already exists", HttpStatus.BAD_REQUEST),
+  SCHEDULE_NOT_ACTIVE(2202, "Schedule is not active", HttpStatus.BAD_REQUEST),
+  SCHEDULE_NO_PERMISSION(
+      2203, "You do not have permission to create or update a schedule", HttpStatus.FORBIDDEN),
+
+  // BOOKING
+  TICKET_ORDER_NOT_FOUND_CACHE(8000, "Ticket order not found in cache", HttpStatus.NOT_FOUND),
+  TICKET_PRICE_NOT_FOUND(
+      8001, "Ticket price not found for the given cinema and date type", HttpStatus.NOT_FOUND),
+  SEAT_ALREADY_BOOKED(8002, "Seat is already booked for this showtime", HttpStatus.BAD_REQUEST),
+  INVALID_TICKET_PRICE(8003, "Ticket price cannot be negative", HttpStatus.BAD_REQUEST),
+  FAILED_TO_CREATE_ORDER(8004, "Failed to create ticket order", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  // PAYMENT EXCEPTION (9000 - 9099)
+  PAYMENT_ERROR(9000, "Payment error", HttpStatus.BAD_REQUEST),
+  PAYMENT_FAILED_OR_EXPIRED(9001, "Payment failed or expired", HttpStatus.BAD_REQUEST);
 
   ErrorCode(int code, String message, HttpStatusCode statusCode) {
     this.code = code;

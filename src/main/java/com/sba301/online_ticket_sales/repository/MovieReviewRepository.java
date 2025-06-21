@@ -3,7 +3,6 @@ package com.sba301.online_ticket_sales.repository;
 import com.sba301.online_ticket_sales.model.MovieReview;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
