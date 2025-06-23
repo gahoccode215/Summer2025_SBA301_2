@@ -103,7 +103,7 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     m.thumbnail_url AS moviePosterUrl,
                     m.duration AS movieDuration,
                     m.age_restriction AS movieRating,
-                    m.release_date AS movieReleaseDate
+                    CAST(m.release_date AS DATETIME) AS movieReleaseDate
                   FROM movie_screens ms
                   JOIN rooms r ON ms.room_id = r.id
                   JOIN movies m ON ms.movie_id = m.id
