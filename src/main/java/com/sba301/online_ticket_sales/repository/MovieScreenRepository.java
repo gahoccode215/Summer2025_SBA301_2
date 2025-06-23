@@ -100,9 +100,9 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     ms.showtime AS showTime,
                     m.id AS movieId,
                     m.title AS movieName,
-                    m.image AS moviePosterUrl,
+                    m.thumbnail_url AS moviePosterUrl,
                     m.duration AS movieDuration,
-                    m.age_rated AS movieRating,
+                    m.age_restriction AS movieRating,
                     m.release_date AS movieReleaseDate
                   FROM movie_screens ms
                   JOIN rooms r ON ms.room_id = r.id
