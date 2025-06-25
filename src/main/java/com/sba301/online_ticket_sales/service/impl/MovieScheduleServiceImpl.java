@@ -16,7 +16,10 @@ import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
 import com.sba301.online_ticket_sales.repository.RoomRepository;
 import com.sba301.online_ticket_sales.service.MovieScheduleService;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -159,11 +162,15 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
 
   @Override
   public List<CinemaShowTimeResponse> getMovieShowTimes(Long movieId, LocalDateTime date) {
-
     log.info("Fetching show times for movie ID: {} on date: {}", movieId, date);
-    LocalDateTime queryTime = resolveQueryTime(date);
+
+    // Lấy đầu ngày và cuối ngày của ngày được chọn
+    LocalDate queryDate = (date != null) ? date.toLocalDate() : LocalDate.now();
+    LocalDateTime startOfDay = queryDate.atStartOfDay();
+    LocalDateTime endOfDay = queryDate.atTime(LocalTime.MAX);
+
     List<CinemaShowtimeDTO> showTimes =
-        movieScreenRepository.findShowTimesByMovie(movieId, queryTime);
+            movieScreenRepository.findShowTimesByMovie(movieId, startOfDay, endOfDay);
 
     if (showTimes.isEmpty()) {
       log.info("No show times found for movie ID: {}", movieId);
@@ -175,40 +182,41 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
 
     for (CinemaShowtimeDTO dto : showTimes) {
       ShowTimeResponse showTime =
-          ShowTimeResponse.builder()
-              .showTimeId(dto.getShowTimeId())
-              .roomId(dto.getRoomId())
-              .showTime(dto.getShowTime())
-              .roomType(RoomType.valueOf(dto.getRoomType()))
-              .build();
+              ShowTimeResponse.builder()
+                      .showTimeId(dto.getShowTimeId())
+                      .roomId(dto.getRoomId())
+                      .showTime(dto.getShowTime())
+                      .roomType(RoomType.valueOf(dto.getRoomType()))
+                      .build();
 
       showTimeMap.computeIfAbsent(dto.getCinemaId(), id -> new ArrayList<>()).add(showTime);
 
       cinemaInfoMap.putIfAbsent(
-          dto.getCinemaId(),
-          CinemaShowTimeResponse.builder()
-              .cinemaId(dto.getCinemaId())
-              .cinemaName(dto.getCinemaName())
-              .cinemaAddress(dto.getCinemaAddress())
-              .showTimes(null)
-              .build());
+              dto.getCinemaId(),
+              CinemaShowTimeResponse.builder()
+                      .cinemaId(dto.getCinemaId())
+                      .cinemaName(dto.getCinemaName())
+                      .cinemaAddress(dto.getCinemaAddress())
+                      .showTimes(null)
+                      .build());
     }
 
     List<CinemaShowTimeResponse> result =
-        showTimeMap.entrySet().stream()
-            .map(
-                entry -> {
-                  CinemaShowTimeResponse base = cinemaInfoMap.get(entry.getKey());
-                  return CinemaShowTimeResponse.builder()
-                      .cinemaId(base.getCinemaId())
-                      .cinemaName(base.getCinemaName())
-                      .cinemaAddress(base.getCinemaAddress())
-                      .showTimes(entry.getValue())
-                      .build();
-                })
-            .toList();
+            showTimeMap.entrySet().stream()
+                    .map(
+                            entry -> {
+                              CinemaShowTimeResponse base = cinemaInfoMap.get(entry.getKey());
+                              return CinemaShowTimeResponse.builder()
+                                      .cinemaId(base.getCinemaId())
+                                      .cinemaName(base.getCinemaName())
+                                      .cinemaAddress(base.getCinemaAddress())
+                                      .showTimes(entry.getValue())
+                                      .build();
+                            })
+                    .toList();
     return result;
   }
+
 
   private LocalDateTime resolveQueryTime(LocalDateTime inputDateTime) {
     LocalDateTime now = LocalDateTime.now();

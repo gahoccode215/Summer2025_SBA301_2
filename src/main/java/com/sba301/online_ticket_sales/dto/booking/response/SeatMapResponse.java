@@ -28,6 +28,8 @@ public class SeatMapResponse {
   private Long roomId;
   private RoomType roomType;
   private String roomName;
+  private int rowNumber;
+  private int columnNumber;
 
   private BigDecimal ticketPrice;
 

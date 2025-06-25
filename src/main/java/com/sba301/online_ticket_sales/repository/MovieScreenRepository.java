@@ -67,8 +67,8 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
       @Param("endTime") LocalDateTime endTime);
 
   @Query(
-      value =
-          """
+          value =
+                  """
                   SELECT
                     c.id AS cinema_id,
                     c.name AS cinema_name,
@@ -82,13 +82,17 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                   JOIN rooms r ON ms.room_id = r.id
                   JOIN cinemas c ON r.cinema_id = c.id
                   WHERE m.id = :movieId
-                    AND ms.showtime >= :dateTime
+                    AND ms.showtime BETWEEN :startOfDay AND :endOfDay
                     AND ms.status = 'ACTIVE'
                   ORDER BY c.id, ms.showtime
                   """,
-      nativeQuery = true)
+          nativeQuery = true)
   List<CinemaShowtimeDTO> findShowTimesByMovie(
-      @Param("movieId") Long movieId, @Param("dateTime") LocalDateTime dateTime);
+          @Param("movieId") Long movieId,
+          @Param("startOfDay") LocalDateTime startOfDay,
+          @Param("endOfDay") LocalDateTime endOfDay
+  );
+
 
   @Query(
       value =

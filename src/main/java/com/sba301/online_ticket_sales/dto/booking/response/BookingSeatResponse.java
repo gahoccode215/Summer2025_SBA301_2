@@ -30,6 +30,8 @@ public class BookingSeatResponse {
   private Long roomId;
   private RoomType roomType;
   private String roomName;
+  private int roomNumber;
+  private int columnNumber;
 
   private String rewardCode;
   private String rewardName;

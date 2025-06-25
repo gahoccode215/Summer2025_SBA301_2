@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum RoomType {
-  STANDARD(10, 15, 100),
-  VIP(8, 12, 120),
-  IMAX(12, 20, 150);
+  STANDARD(6, 6, 100),
+  VIP(7, 5, 120),
+  IMAX(7, 6, 150);
 
   private final int rows;
   private final int columns;

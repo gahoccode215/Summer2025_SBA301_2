@@ -11,15 +11,11 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-    mongodb:
-      uri: mongodb://localhost:27017/online_ticket_sales_mongo
-      database: online_ticket_sales_mongo
-      auto-index-creation: true
   cloud:
     compatibility-verifier:
       enabled: false
@@ -36,15 +32,15 @@ spring:
             enable: true
 
   cloudinary:
-    cloudName: ${CLOUDINARY_CLOUD_NAME:1d3k4h5}
-    apiKey: ${CLOUDINARY_API_KEY:1234567890}
-    apiSecret: ${CLOUDINARY_API_SECRET:abcdefg1234567}
+    cloudName: ${CLOUDINARY_CLOUD_NAME}
+    apiKey: ${CLOUDINARY_API_KEY}
+    apiSecret: ${CLOUDINARY_API_SECRET}
 
 
 outbound:
   identity:
-    client-id: ${OAUTH_GOOGLE_CLIENT_ID:1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com}
-    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:abcdefg1234567}
+    client-id: ${OAUTH_GOOGLE_CLIENT_ID}
+    client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
     redirect-uri: "http://localhost:5173/authenticate"
 
 management:
@@ -87,11 +83,12 @@ app:
   defaultImage: https://media.licdn.com/dms/image/v2/C5112AQEw1fXuabCTyQ/article-inline_image-shrink_1500_2232/article-inline_image-shrink_1500_2232/0/1581099611064?e=1755129600&v=beta&t=uOI9KdstVt77LeFfmofOTwfgEbtAZ3LyR3aLwR70slw
 
 vnpay:
-  pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-  return-url: https://ngrok/api/v1/payments/callback
-  tmn-code: ${VNPAY_TMN_CODE:5XE6N5LP}
-  hash-secret: ${VNPAY_HASH_SECRET:4A0AGR2YWOBPZMFV8GKN8BD23SQ7EIJG}
+  tmn-code: ${VNP_TMN_CODE}
+  hash-secret: ${VNP_HASHSECRET}
+  url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
   api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+  return-url: http://localhost:5173/payments/success
   version: 2.1.0
   command: pay
   order-type: other
+  currency-code: VND

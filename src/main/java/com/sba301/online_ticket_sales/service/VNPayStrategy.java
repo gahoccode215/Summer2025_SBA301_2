@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class VNPayStrategy implements PaymentStrategy {
 
-  @Value("${vnpay.pay-url}")
+  @Value("${vnpay.url}")
   private String vnpPayUrl;
 
   @Value("${vnpay.return-url}")

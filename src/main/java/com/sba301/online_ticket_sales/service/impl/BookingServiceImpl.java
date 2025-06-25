@@ -62,6 +62,8 @@ public class BookingServiceImpl implements BookingService {
             .moviePosterUrl(movieScreen.getMovie().getThumbnailUrl())
             .roomId(movieScreen.getRoom().getId())
             .roomType(movieScreen.getRoom().getRoomType())
+                .rowNumber(movieScreen.getRoom().getRoomType().getColumns())
+                .columnNumber(movieScreen.getRoom().getRoomType().getRows())
             .roomName(movieScreen.getRoom().getName())
             .ticketPrice(movieScreen.getTicketPrice())
             .totalSeatBooked(bookedSeats.size())
@@ -141,6 +143,8 @@ public class BookingServiceImpl implements BookingService {
             .movieName(movieScreen.getMovie().getTitle())
             .roomId(movieScreen.getRoom().getId())
             .roomType(movieScreen.getRoom().getRoomType())
+                .columnNumber(movieScreen.getRoom().getRoomType().getColumns())
+                .roomNumber(movieScreen.getRoom().getRoomType().getColumns())
             .roomName(movieScreen.getRoom().getName())
             .build();
     return bookingSeatResponse;
