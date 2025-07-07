@@ -16,13 +16,13 @@ import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
 import com.sba301.online_ticket_sales.repository.RoomRepository;
 import com.sba301.online_ticket_sales.service.MovieScheduleService;
 import jakarta.transaction.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -42,12 +42,19 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
-    List<RoleEnum> roles =
-        authentication.getAuthorities().stream()
-            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-            .toList();
-    if (!roles.contains(RoleEnum.ADMIN) && !roles.contains(RoleEnum.MANAGER))
-      throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
+    //    List<RoleEnum> roles =
+    //        authentication.getAuthorities().stream()
+    //            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
+    //            .toList();
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    boolean isAdmin =
+        roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN")
+            || roleNames.contains("MANAGER");
+    //    if (!roles.contains(RoleEnum.ADMIN) && !roles.contains(RoleEnum.MANAGER))
+    //      throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
+    if (!isAdmin) throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     Movie movie =
         movieRepository
@@ -170,7 +177,7 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
     LocalDateTime endOfDay = queryDate.atTime(LocalTime.MAX);
 
     List<CinemaShowtimeDTO> showTimes =
-            movieScreenRepository.findShowTimesByMovie(movieId, startOfDay, endOfDay);
+        movieScreenRepository.findShowTimesByMovie(movieId, startOfDay, endOfDay);
 
     if (showTimes.isEmpty()) {
       log.info("No show times found for movie ID: {}", movieId);
@@ -182,41 +189,40 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
 
     for (CinemaShowtimeDTO dto : showTimes) {
       ShowTimeResponse showTime =
-              ShowTimeResponse.builder()
-                      .showTimeId(dto.getShowTimeId())
-                      .roomId(dto.getRoomId())
-                      .showTime(dto.getShowTime())
-                      .roomType(RoomType.valueOf(dto.getRoomType()))
-                      .build();
+          ShowTimeResponse.builder()
+              .showTimeId(dto.getShowTimeId())
+              .roomId(dto.getRoomId())
+              .showTime(dto.getShowTime())
+              .roomType(RoomType.valueOf(dto.getRoomType()))
+              .build();
 
       showTimeMap.computeIfAbsent(dto.getCinemaId(), id -> new ArrayList<>()).add(showTime);
 
       cinemaInfoMap.putIfAbsent(
-              dto.getCinemaId(),
-              CinemaShowTimeResponse.builder()
-                      .cinemaId(dto.getCinemaId())
-                      .cinemaName(dto.getCinemaName())
-                      .cinemaAddress(dto.getCinemaAddress())
-                      .showTimes(null)
-                      .build());
+          dto.getCinemaId(),
+          CinemaShowTimeResponse.builder()
+              .cinemaId(dto.getCinemaId())
+              .cinemaName(dto.getCinemaName())
+              .cinemaAddress(dto.getCinemaAddress())
+              .showTimes(null)
+              .build());
     }
 
     List<CinemaShowTimeResponse> result =
-            showTimeMap.entrySet().stream()
-                    .map(
-                            entry -> {
-                              CinemaShowTimeResponse base = cinemaInfoMap.get(entry.getKey());
-                              return CinemaShowTimeResponse.builder()
-                                      .cinemaId(base.getCinemaId())
-                                      .cinemaName(base.getCinemaName())
-                                      .cinemaAddress(base.getCinemaAddress())
-                                      .showTimes(entry.getValue())
-                                      .build();
-                            })
-                    .toList();
+        showTimeMap.entrySet().stream()
+            .map(
+                entry -> {
+                  CinemaShowTimeResponse base = cinemaInfoMap.get(entry.getKey());
+                  return CinemaShowTimeResponse.builder()
+                      .cinemaId(base.getCinemaId())
+                      .cinemaName(base.getCinemaName())
+                      .cinemaAddress(base.getCinemaAddress())
+                      .showTimes(entry.getValue())
+                      .build();
+                })
+            .toList();
     return result;
   }
-
 
   private LocalDateTime resolveQueryTime(LocalDateTime inputDateTime) {
     LocalDateTime now = LocalDateTime.now();

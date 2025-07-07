@@ -5,6 +5,7 @@ import com.sba301.online_ticket_sales.dto.review.request.ReviewRequest;
 import com.sba301.online_ticket_sales.dto.review.request.UpdateReviewRequest;
 import com.sba301.online_ticket_sales.dto.review.response.MovieReviewResponse;
 import com.sba301.online_ticket_sales.service.ReviewService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
+@Tag(name = "Review Controller", description = "APIs quản lý thông tin đánh giá ")
 @RequiredArgsConstructor
 public class ReviewController {
   private final ReviewService reviewService;

@@ -32,4 +32,24 @@ public interface TicketOrderRepository extends JpaRepository<TicketOrder, Long> 
     """,
       nativeQuery = true)
   int countSeatBooked(@Param("showtimeId") Long showtimeId, @Param("seatCode") String seatCode);
+
+  @Query(
+      """
+    SELECT t.ticketCode, t.totalAmount, t.paymentStatus, t.createdAt,
+           ms.movie.title, ms.movie.thumbnailUrl, ms.movie.duration,
+           ms.showtime, ms.room.cinema.name, ms.room.name, ms.room.roomType,
+           ms.id
+    FROM TicketOrder t
+    JOIN t.movieScreen ms
+    WHERE t.user.id = :userId
+    ORDER BY t.createdAt DESC
+    """)
+  List<Object[]> findTicketHistoryByUserId(@Param("userId") Long userId);
+
+  // Trong TicketOrderDetailRepository hoặc TicketOrderRepository
+  @Query(
+      "SELECT tod.seatCode FROM TicketOrderDetail tod WHERE tod.ticketOrder.ticketCode = :ticketCode")
+  List<String> findSeatCodesByTicketCode(@Param("ticketCode") String ticketCode);
+
+  List<TicketOrder> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

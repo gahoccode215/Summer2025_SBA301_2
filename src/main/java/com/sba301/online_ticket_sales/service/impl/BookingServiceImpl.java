@@ -3,9 +3,9 @@ package com.sba301.online_ticket_sales.service.impl;
 import com.sba301.online_ticket_sales.dto.booking.request.BookingTicketRequest;
 import com.sba301.online_ticket_sales.dto.booking.response.BookingSeatResponse;
 import com.sba301.online_ticket_sales.dto.booking.response.SeatMapResponse;
+import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse;
 import com.sba301.online_ticket_sales.dto.booking.response.TicketOrderDTO;
-import com.sba301.online_ticket_sales.entity.MovieScreen;
-import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
@@ -15,10 +15,13 @@ import com.sba301.online_ticket_sales.repository.TicketOrderRepository;
 import com.sba301.online_ticket_sales.service.BookingCacheService;
 import com.sba301.online_ticket_sales.service.BookingService;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -62,8 +65,8 @@ public class BookingServiceImpl implements BookingService {
             .moviePosterUrl(movieScreen.getMovie().getThumbnailUrl())
             .roomId(movieScreen.getRoom().getId())
             .roomType(movieScreen.getRoom().getRoomType())
-                .rowNumber(movieScreen.getRoom().getRoomType().getColumns())
-                .columnNumber(movieScreen.getRoom().getRoomType().getRows())
+            .rowNumber(movieScreen.getRoom().getRoomType().getColumns())
+            .columnNumber(movieScreen.getRoom().getRoomType().getRows())
             .roomName(movieScreen.getRoom().getName())
             .ticketPrice(movieScreen.getTicketPrice())
             .totalSeatBooked(bookedSeats.size())
@@ -143,16 +146,74 @@ public class BookingServiceImpl implements BookingService {
             .movieName(movieScreen.getMovie().getTitle())
             .roomId(movieScreen.getRoom().getId())
             .roomType(movieScreen.getRoom().getRoomType())
-                .columnNumber(movieScreen.getRoom().getRoomType().getColumns())
-                .roomNumber(movieScreen.getRoom().getRoomType().getColumns())
+            .columnNumber(movieScreen.getRoom().getRoomType().getColumns())
+            .roomNumber(movieScreen.getRoom().getRoomType().getColumns())
             .roomName(movieScreen.getRoom().getName())
             .build();
     return bookingSeatResponse;
+  }
+
+  @Override
+  public List<TicketHistoryResponse> getUserTicketHistory() {
+
+    User user = getUserAuthenticated();
+
+    // Sử dụng entity mapping thay vì Object[] query
+    List<TicketOrder> ticketOrders =
+        ticketOrderRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+
+    List<TicketHistoryResponse> ticketHistory =
+        ticketOrders.stream()
+            .map(this::convertToTicketHistoryResponse)
+            .collect(Collectors.toList());
+
+    return ticketHistory;
+  }
+
+  private TicketHistoryResponse convertToTicketHistoryResponse(TicketOrder ticketOrder) {
+    MovieScreen movieScreen = ticketOrder.getMovieScreen();
+    Movie movie = movieScreen.getMovie();
+
+    // Sửa từ getTicketOrderDetails() thành getTicketDetails()
+    List<String> seatCodes =
+        ticketOrder.getTicketDetails().stream() // ← Đây là method đúng
+            .map(TicketOrderDetail::getSeatCode)
+            .collect(Collectors.toList());
+
+    // Tính toán showtime end
+    LocalDateTime showtimeEnd =
+        movieScreen.getShowtime().plusMinutes(movie.getDuration()).plusMinutes(15);
+
+    return TicketHistoryResponse.builder()
+        .ticketCode(ticketOrder.getTicketCode())
+        .seatCodes(seatCodes)
+        .totalPrice(ticketOrder.getTotalAmount())
+        .paymentStatus(ticketOrder.getPaymentStatus().name())
+        .bookingTime(ticketOrder.getCreatedAt())
+        .movieTitle(movie.getTitle())
+        .moviePosterUrl(movie.getThumbnailUrl())
+        .movieDuration(movie.getDuration())
+        .showtimeStart(movieScreen.getShowtime())
+        .showtimeEnd(showtimeEnd)
+        .cinemaName(movieScreen.getRoom().getCinema().getName())
+        .roomName(movieScreen.getRoom().getName())
+        .roomType(movieScreen.getRoom().getRoomType().name())
+        .build();
   }
 
   private String generateTicketCode() {
     long timePart = System.currentTimeMillis() % 100000000;
     int randomPart = (int) (Math.random() * 90 + 10);
     return "TICKET_" + timePart + randomPart;
+  }
+
+  private User getUserAuthenticated() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication.getPrincipal() instanceof String) {
+      throw new AppException(ErrorCode.UNAUTHENTICATED);
+    }
+    return (User) authentication.getPrincipal();
   }
 }

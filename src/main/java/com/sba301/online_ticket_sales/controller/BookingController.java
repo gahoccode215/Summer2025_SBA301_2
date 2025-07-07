@@ -3,6 +3,7 @@ package com.sba301.online_ticket_sales.controller;
 import com.sba301.online_ticket_sales.dto.booking.request.BookingTicketRequest;
 import com.sba301.online_ticket_sales.dto.booking.response.BookingSeatResponse;
 import com.sba301.online_ticket_sales.dto.booking.response.SeatMapResponse;
+import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse;
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -74,6 +76,31 @@ public class BookingController {
             .code(HttpStatus.OK.value())
             .message("")
             .result(response)
+            .build());
+  }
+
+  @GetMapping("/my-history-tickets")
+  @PreAuthorize("isAuthenticated()")
+  @Operation(
+      summary = "Get User Ticket History",
+      description = "Retrieve the ticket purchase history for the authenticated user")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved ticket history",
+        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+    @ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content)
+  })
+  public ResponseEntity<ApiResponseDTO<List<TicketHistoryResponse>>> getMyTicketHistory() {
+    log.info("Received request to get user ticket history");
+
+    List<TicketHistoryResponse> ticketHistory = bookingService.getUserTicketHistory();
+
+    return ResponseEntity.ok(
+        ApiResponseDTO.<List<TicketHistoryResponse>>builder()
+            .code(HttpStatus.OK.value())
+            .message("User ticket history retrieved successfully")
+            .result(ticketHistory)
             .build());
   }
 }

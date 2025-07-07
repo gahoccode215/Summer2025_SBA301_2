@@ -18,6 +18,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,18 +40,26 @@ public class CinemaServiceImpl implements CinemaService {
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
-    List<RoleEnum> roles =
-        authentication.getAuthorities().stream()
-            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-            .toList();
-    if (request.getRequestType().isCreate() && !roles.contains(RoleEnum.ADMIN)) {
+    //    List<RoleEnum> roles =
+    //        authentication.getAuthorities().stream()
+    //            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
+    //            .toList();
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+    //    if (request.getRequestType().isCreate() && !roles.contains(RoleEnum.ADMIN)) {
+    //      throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+    //    }
+    if (request.getRequestType().isCreate() && !isAdmin) {
       throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
     }
-    if (request.getRequestType().isUpdate() && !roles.contains(RoleEnum.ADMIN)) {
+    if (request.getRequestType().isUpdate() && !isAdmin) {
       boolean isManagerOfCinema =
           authentication.getManagedCinemas().stream()
               .anyMatch(cinema -> cinema.getId().equals(request.getId()));
-      if (!isManagerOfCinema) throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+      if (!isManagerOfCinema) {
+        throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+      }
     }
 
     Cinema cinema = cinemaMapper.toCinema(request);
