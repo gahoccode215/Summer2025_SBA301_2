@@ -1,5 +1,7 @@
 package com.sba301.online_ticket_sales.service.impl;
 
+import com.cloudinary.api.exceptions.ApiException;
+import com.sba301.online_ticket_sales.dto.booking.response.TicketMailDTO;
 import com.sba301.online_ticket_sales.dto.common.OTPMailDTO;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.service.SendMailService;
@@ -27,5 +29,16 @@ public class RabbitMQConsumerImpl implements UserMailQueueConsumer {
   public void consumeOTPMailMessage(OTPMailDTO otpMailMessage) {
     LOGGER.info("Consumer mail handling: " + otpMailMessage.getReceiverMail());
     sendMailService.sendMail(otpMailMessage);
+  }
+
+  @Override
+  @RabbitListener(queues = {"${rabbitmq.ticket-mail-queue}"})
+  @Retryable(
+      value = {ApiException.class},
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 8000))
+  public void consumeTicketMailMessage(TicketMailDTO ticketMailMessage) {
+    LOGGER.info("Consumer ticket mail handling: " + ticketMailMessage.getEmail());
+    sendMailService.sendTicketMail(ticketMailMessage);
   }
 }

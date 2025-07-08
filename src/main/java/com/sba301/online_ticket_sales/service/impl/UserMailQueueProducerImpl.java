@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.service.impl;
 
+import com.sba301.online_ticket_sales.dto.booking.response.TicketMailDTO;
 import com.sba301.online_ticket_sales.dto.common.OTPMailDTO;
 import com.sba301.online_ticket_sales.service.UserMailQueueProducer;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,20 @@ public class UserMailQueueProducerImpl implements UserMailQueueProducer {
   @Value("${rabbitmq.user-mail-routing-key}")
   private String userMailQueueRoutingKey;
 
+  @Value("${rabbitmq.ticket-mail-routing-key}")
+  private String ticketMailQueueRoutingKey;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(UserMailQueueProducerImpl.class);
 
   @Override
   public void sendMailMessage(OTPMailDTO mailDTO) {
     LOGGER.info("Sending mail message to queue: " + mailDTO.getReceiverMail());
     rabbitTemplate.convertAndSend(exchange, userMailQueueRoutingKey, mailDTO);
+  }
+
+  @Override
+  public void sendMailTicketOrderMessage(TicketMailDTO ticketMailDTO) {
+    LOGGER.info("Sending ticket order mail message to queue: " + ticketMailDTO.getEmail());
+    rabbitTemplate.convertAndSend(exchange, ticketMailQueueRoutingKey, ticketMailDTO);
   }
 }

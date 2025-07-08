@@ -103,4 +103,33 @@ public class BookingController {
             .result(ticketHistory)
             .build());
   }
+
+  @PostMapping("/manager/{cinemaId}/book")
+  @Operation(
+      summary = "Book Seats By Manager or Admin",
+      description = "Book seats for a movie showtime")
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Seats booked successfully",
+        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Invalid input data or missing required fields",
+        content = @Content)
+  })
+  public ResponseEntity<ApiResponseDTO<BookingSeatResponse>> bookSeatsByManager(
+      @RequestBody @Valid BookingTicketRequest bookingTicketRequest,
+      @PathVariable Long cinemaId,
+      @RequestParam Long customerId) {
+    log.info("Received request to book seats by manager: {}", bookingTicketRequest);
+    BookingSeatResponse response =
+        bookingService.bookSeatsByManager(bookingTicketRequest, cinemaId, customerId);
+    return ResponseEntity.ok(
+        ApiResponseDTO.<BookingSeatResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Seats booked successfully")
+            .result(response)
+            .build());
+  }
 }
