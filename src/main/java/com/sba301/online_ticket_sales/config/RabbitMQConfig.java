@@ -23,6 +23,12 @@ public class RabbitMQConfig {
   @Value("${rabbitmq.user-mail-routing-key}")
   private String userMailRoutingKey;
 
+  @Value("${rabbitmq.ticket-mail-queue}")
+  private String ticketMailQueue;
+
+  @Value("${rabbitmq.ticket-mail-routing-key}")
+  private String ticketMailRoutingKey;
+
   @Bean
   public TopicExchange exchange() {
     return new TopicExchange(exchange);
@@ -36,6 +42,16 @@ public class RabbitMQConfig {
   @Bean
   public Binding userMailBinding() {
     return BindingBuilder.bind(userMailQueue()).to(exchange()).with(userMailRoutingKey);
+  }
+
+  @Bean
+  public Queue userMailTicketQueue() {
+    return new Queue(ticketMailQueue);
+  }
+
+  @Bean
+  public Binding userMailTicketBinding() {
+    return BindingBuilder.bind(userMailTicketQueue()).to(exchange()).with(ticketMailRoutingKey);
   }
 
   @Bean

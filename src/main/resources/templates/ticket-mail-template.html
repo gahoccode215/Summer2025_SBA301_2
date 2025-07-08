@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đặt vé thành công</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        <!-- giữ nguyên CSS như bạn đã có -->
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1>🎬 Đặt vé thành công!</h1>
+    </div>
+    <div class="email-body">
+        <p>Xin chào <strong th:text="${email}">email@example.com</strong>,</p>
+        <p>Bạn đã <strong>đặt vé xem phim thành công</strong> qua <strong>CGV App</strong>!</p>
+
+        <ul class="info-list">
+            <li><span class="icon">🎟️</span><strong>Mã vé:</strong> <span th:text="${ticketCode}">ABC123XYZ</span></li>
+            <li><span class="icon">📧</span><strong>Email:</strong> <span th:text="${email}">email@example.com</span></li>
+            <li><span class="icon">🏢</span><strong>Rạp:</strong> <span th:text="${cinemaName}">CGV Aeon Mall</span></li>
+            <li><span class="icon">📍</span><strong>Địa chỉ:</strong> <span th:text="${cinemaAddress}">01 Đường Số 17A</span></li>
+            <li><span class="icon">🏟️</span><strong>Phòng chiếu:</strong> <span th:text="${roomName} + ' (' + ${roomType} + ')'">Room 5 (IMAX)</span></li>
+            <li><span class="icon">🎞️</span><strong>Phim:</strong> <span th:text="${movieName}">Avengers</span></li>
+            <li><span class="icon">🕒</span><strong>Bắt đầu:</strong> <span th:text="${showtimeStartTime}">25/06/2025 19:00</span></li>
+            <li><span class="icon">🕘</span><strong>Kết thúc:</strong> <span th:text="${showtimeEndTime}">25/06/2025 22:00</span></li>
+            <li><span class="icon">💺</span><strong>Ghế:</strong> <span th:text="${seatCodes}">E5, E6, E7</span></li>
+            <li><span class="icon">💵</span><strong>Tổng tiền:</strong> <span th:text="${totalPrice}">420,000 VND</span></li>
+        </ul>
+
+        <div class="qr-section">
+            <p><strong>📱 Quét mã QR tại rạp để vào cửa:</strong></p>
+            <img th:src="'cid:qrCode'" alt="QR Code Vé Xem Phim"/>
+        </div>
+
+        <p style="text-align:center;">👉 Vui lòng xuất trình mã vé hoặc mã QR tại quầy để vào phòng chiếu.</p>
+
+        <div class="farewell">
+            🎉 Hẹn gặp lại bạn tại rạp!
+        </div>
+    </div>
+
+    <div class="footer">
+        CGV App – Trải nghiệm điện ảnh trong tầm tay<br>
+        📞 Hotline: <a href="tel:19001234">1900 1234</a> |
+        📧 Email: <a href="mailto:hotro@cgv.vn">hotro@cgv.vn</a> |
+        🌐 <a href="https://www.cgv.vn" target="_blank">www.cgv.vn</a>
+    </div>
+</div>
+</body>
+</html>

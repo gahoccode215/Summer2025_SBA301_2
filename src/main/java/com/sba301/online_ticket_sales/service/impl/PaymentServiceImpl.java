@@ -1,6 +1,7 @@
 package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.dto.booking.request.VnPayCallbackParamRequest;
+import com.sba301.online_ticket_sales.dto.booking.response.TicketMailDTO;
 import com.sba301.online_ticket_sales.dto.booking.response.TicketOrderDTO;
 import com.sba301.online_ticket_sales.entity.MovieScreen;
 import com.sba301.online_ticket_sales.entity.TicketOrder;
@@ -12,6 +13,7 @@ import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.*;
 import com.sba301.online_ticket_sales.service.PaymentService;
 import com.sba301.online_ticket_sales.service.PaymentStrategy;
+import com.sba301.online_ticket_sales.service.UserMailQueueProducer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
@@ -35,6 +37,8 @@ public class PaymentServiceImpl implements PaymentService {
   private final MovieScreenRepository movieScreenRepository;
   private final TicketOrderRepository ticketOrderRepository;
   private final OrderSeatRedisRepository orderSeatRedisRepository;
+
+  private final UserMailQueueProducer userMailQueueProducer;
 
   @Override
   public String createPayment(String orderCode, HttpServletRequest httpServletRequest) {
@@ -136,12 +140,34 @@ public class PaymentServiceImpl implements PaymentService {
       orderSeatRedisRepository.releaseSeat(order.getShowtimeId(), releasedSeats);
       log.info("Released seats for order: {}", order.getTicketCode());
 
+      TicketMailDTO ticketMailDTO = createTicketMailDTO(ticketOrder, user, movieScreen);
+
+      userMailQueueProducer.sendMailTicketOrderMessage(ticketMailDTO);
+
     } else if (paymentStatus == PaymentStatus.CANCELLED || paymentStatus == PaymentStatus.EXPIRED) {
       log.info("Payment cancelled or expired for order: {}", order.getTicketCode());
       throw new AppException(ErrorCode.PAYMENT_FAILED_OR_EXPIRED);
     } else {
       throw new AppException(ErrorCode.PAYMENT_ERROR);
     }
+  }
+
+  private TicketMailDTO createTicketMailDTO(TicketOrder order, User user, MovieScreen movieScreen) {
+
+    return TicketMailDTO.builder()
+        .email(user.getEmail())
+        .ticketCode(order.getTicketCode())
+        .cinemaName(movieScreen.getRoom().getCinema().getName())
+        .cinemaAddress(movieScreen.getRoom().getCinema().getAddress())
+        .roomName(movieScreen.getRoom().getName())
+        .roomType(movieScreen.getRoom().getRoomType())
+        .movieName(movieScreen.getMovie().getTitle())
+        .showtimeStartTime(movieScreen.getShowtime())
+        .showtimeEndTime(
+            movieScreen.getShowtime().plusMinutes((movieScreen.getMovie().getDuration())))
+        .seatCodes(order.getTicketDetails().stream().map(TicketOrderDetail::getSeatCode).toList())
+        .totalPrice(order.getTotalAmount())
+        .build();
   }
 
   private PaymentStatus mapTransactionStatus(String vnpayStatus) {

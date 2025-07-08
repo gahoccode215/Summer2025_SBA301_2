@@ -22,7 +22,10 @@ public enum ErrorCode {
   ACCESS_DENIED(1009, "Access Deinied", HttpStatus.UNAUTHORIZED),
   INVALID_KEY(1010, "Invalid key", HttpStatus.BAD_REQUEST),
   INSUFFICIENT_PERMISSION(1011, "Invalid insufficient permission", HttpStatus.BAD_REQUEST),
-  // PERSON EXCEPTION (1100 - 1199)
+  REQUIRE_OTP_VALIDATION(
+      1012,
+      "Require OTP validation. Please check your email",
+      HttpStatus.UNAUTHORIZED), // PERSON EXCEPTION (1100 - 1199)
   PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
   COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
   INVALID_OCCUPATION(1102, "Invalid occupation", HttpStatus.BAD_REQUEST),
@@ -95,6 +98,8 @@ public enum ErrorCode {
   SEAT_ALREADY_BOOKED(8002, "Seat is already booked for this showtime", HttpStatus.BAD_REQUEST),
   INVALID_TICKET_PRICE(8003, "Ticket price cannot be negative", HttpStatus.BAD_REQUEST),
   FAILED_TO_CREATE_ORDER(8004, "Failed to create ticket order", HttpStatus.INTERNAL_SERVER_ERROR),
+  NO_PERMISSION_TO_BOOK(
+      8005, "You do not have permission to book tickets for this showtime", HttpStatus.FORBIDDEN),
 
   // PAYMENT EXCEPTION (9000 - 9099)
   PAYMENT_ERROR(9000, "Payment error", HttpStatus.BAD_REQUEST),

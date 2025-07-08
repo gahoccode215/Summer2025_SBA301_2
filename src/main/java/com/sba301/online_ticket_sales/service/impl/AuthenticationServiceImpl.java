@@ -60,6 +60,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   OutboundIdentityClient outboundIdentityClient;
   OutboundUserClient outboundUserClient;
   RoleRepository roleRepository;
+  UserMailQueueProducer userMailQueueProducer;
 
   @NonFinal
   @Value("${outbound.identity.client-id}")
@@ -74,7 +75,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   protected String REDIRECT_URI;
 
   @NonFinal protected final String GRANT_TYPE = "authorization_code";
-  UserMailQueueProducer userMailQueueProducer;
 
   private final String OTP_KEY = "OTP_KEY_";
   private final String RESET_PASSWORD_KEY = "RESET_PASSWORD_KEY_";
@@ -112,6 +112,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // Kiểm tra tài khoản có bị vô hiệu hóa không
     if (!user.isEnabled()) {
       throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
+    }
+
+    if (user.getIsFirstLogin()) {
+      String otpKey = OTP_KEY + user.getId();
+      boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
+      if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
+      String otpCode = generateOtp();
+      redisSecretService.saveSecretKey(otpKey, otpCode);
+      log.info("Generated new OTP: {}", otpCode);
+      userMailQueueProducer.sendMailMessage(
+          OTPMailDTO.builder()
+              .otpCode(otpCode)
+              .receiverMail(user.getEmail())
+              .type(OTPType.REGISTER)
+              .build());
+      throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
     }
 
     // Lấy danh sách roles của user

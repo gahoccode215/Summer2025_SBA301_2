@@ -7,6 +7,7 @@ import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse
 import com.sba301.online_ticket_sales.dto.booking.response.TicketOrderDTO;
 import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.enums.RoleEnum;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
@@ -78,17 +79,40 @@ public class BookingServiceImpl implements BookingService {
   }
 
   @Override
+  public BookingSeatResponse bookSeatsByManager(
+      BookingTicketRequest bookingTicketRequest, Long cinemaId, Long customerId) {
+    log.info("Booking seats by manager for request: {}", bookingTicketRequest);
+
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    log.info("User: {}", user.getUsername());
+    List<RoleEnum> roles =
+        user.getAuthorities().stream().map(auth -> RoleEnum.valueOf(auth.getAuthority())).toList();
+
+    if (!roles.contains(RoleEnum.ADMIN)) {
+      boolean hasAccess =
+          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(cinemaId));
+      if (!hasAccess) {
+        throw new AppException(ErrorCode.NO_PERMISSION_TO_BOOK);
+      }
+    }
+
+    return processBooking(bookingTicketRequest, customerId);
+  }
+
+  @Override
   public BookingSeatResponse bookSeats(BookingTicketRequest bookingTicketRequest) {
     log.info("Booking seats for request: {}", bookingTicketRequest);
-    var authentication =
-        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return processBooking(bookingTicketRequest, user.getId());
+  }
 
+  private BookingSeatResponse processBooking(BookingTicketRequest request, Long userId) {
     MovieScreen movieScreen =
         movieScreenRepository
-            .findById(bookingTicketRequest.getShowtimeId())
+            .findById(request.getShowtimeId())
             .orElseThrow(() -> new AppException(ErrorCode.MOVIESCREEN_NOT_WORKING));
 
-    for (String seatCode : bookingTicketRequest.getSeatCodes()) {
+    for (String seatCode : request.getSeatCodes()) {
       if (ticketOrderRepository.countSeatBooked(movieScreen.getId(), seatCode) > 0) {
         log.error("Seat {} is already booked for showtime ID: {}", seatCode, movieScreen.getId());
         throw new AppException(ErrorCode.SEAT_ALREADY_BOOKED);
@@ -103,17 +127,11 @@ public class BookingServiceImpl implements BookingService {
     String ticketCode = generateTicketCode();
     log.info("Generated ticket code: {}", ticketCode);
 
-    bookingCacheService.holdSeat(
-        movieScreen.getId(), bookingTicketRequest.getSeatCodes(), ticketCode);
+    bookingCacheService.holdSeat(movieScreen.getId(), request.getSeatCodes(), ticketCode);
 
     BigDecimal ticketPrice =
-        movieScreen
-            .getTicketPrice()
-            .multiply(BigDecimal.valueOf(bookingTicketRequest.getSeatCodes().size()));
-    log.info(
-        "Total ticket price for {} seats: {}",
-        bookingTicketRequest.getSeatCodes().size(),
-        ticketPrice);
+        movieScreen.getTicketPrice().multiply(BigDecimal.valueOf(request.getSeatCodes().size()));
+    log.info("Total ticket price: {}", ticketPrice);
 
     if (ticketPrice.compareTo(BigDecimal.ZERO) < 0) {
       log.error("Final price cannot be negative. Current value: {}", ticketPrice);
@@ -122,35 +140,38 @@ public class BookingServiceImpl implements BookingService {
 
     bookingCacheService.saveTicketOrder(
         TicketOrderDTO.builder()
-            .seatCode(bookingTicketRequest.getSeatCodes())
+            .seatCode(request.getSeatCodes())
             .ticketCode(ticketCode)
-            .userId(authentication.getId())
+            .userId(userId)
             .showtimeId(movieScreen.getId())
             .totalPrice(ticketPrice)
             .build());
 
-    BookingSeatResponse bookingSeatResponse =
-        BookingSeatResponse.builder()
-            .ticketOrderCode(ticketCode)
-            .seatCodes(bookingTicketRequest.getSeatCodes())
-            .showtimeId(movieScreen.getId())
-            .totalPrice(ticketPrice)
-            .cinemaId(movieScreen.getRoom().getCinema().getId())
-            .cinemaName(movieScreen.getRoom().getCinema().getName())
-            .showtimeTimeStart(movieScreen.getShowtime())
-            .showtimeTimeEnd(
-                movieScreen
-                    .getShowtime()
-                    .plusMinutes(movieScreen.getMovie().getDuration())
-                    .plusMinutes(15))
-            .movieName(movieScreen.getMovie().getTitle())
-            .roomId(movieScreen.getRoom().getId())
-            .roomType(movieScreen.getRoom().getRoomType())
-            .columnNumber(movieScreen.getRoom().getRoomType().getColumns())
-            .roomNumber(movieScreen.getRoom().getRoomType().getColumns())
-            .roomName(movieScreen.getRoom().getName())
-            .build();
-    return bookingSeatResponse;
+    return buildBookingSeatResponse(request.getSeatCodes(), ticketCode, movieScreen, ticketPrice);
+  }
+
+  private BookingSeatResponse buildBookingSeatResponse(
+      List<String> seatCodes, String ticketCode, MovieScreen movieScreen, BigDecimal price) {
+    return BookingSeatResponse.builder()
+        .ticketOrderCode(ticketCode)
+        .seatCodes(seatCodes)
+        .showtimeId(movieScreen.getId())
+        .totalPrice(price)
+        .cinemaId(movieScreen.getRoom().getCinema().getId())
+        .cinemaName(movieScreen.getRoom().getCinema().getName())
+        .showtimeTimeStart(movieScreen.getShowtime())
+        .showtimeTimeEnd(
+            movieScreen
+                .getShowtime()
+                .plusMinutes(movieScreen.getMovie().getDuration())
+                .plusMinutes(15))
+        .movieName(movieScreen.getMovie().getTitle())
+        .roomId(movieScreen.getRoom().getId())
+        .roomType(movieScreen.getRoom().getRoomType())
+        .columnNumber(movieScreen.getRoom().getRoomType().getColumns())
+        .roomNumber(movieScreen.getRoom().getRoomType().getColumns())
+        .roomName(movieScreen.getRoom().getName())
+        .build();
   }
 
   @Override

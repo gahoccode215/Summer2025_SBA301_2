@@ -4,8 +4,10 @@ import com.sba301.online_ticket_sales.dto.cinema.request.CinemaRequest;
 import com.sba301.online_ticket_sales.dto.cinema.request.RoomRequest;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaDetailResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
+import com.sba301.online_ticket_sales.dto.cinema.response.ManagerCinemaResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.RoomResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
+import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.Room;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
@@ -109,6 +111,21 @@ public class CinemaMapperImpl implements CinemaMapper {
 
   @Override
   public CinemaDetailResponse toCinemaDetailResponse(Cinema cinema) {
+    List<ManagerCinemaResponse> managerCinemaResponses =
+        cinema.getManagers().stream()
+            .map(
+                manager -> {
+                  ManagerCinemaResponse managerResponse = new ManagerCinemaResponse();
+                  managerResponse.setEmail(manager.getEmail());
+                  managerResponse.setStatus(manager.getStatus());
+                  managerResponse.setFullName(manager.getFullName());
+                  managerResponse.setPhoneNumber(manager.getPhone());
+                  managerResponse.setUserId(manager.getId());
+                  managerResponse.setRoles(manager.getRoles().stream().map(Role::getName).toList());
+                  return managerResponse;
+                })
+            .toList();
+
     CinemaDetailResponse response = new CinemaDetailResponse();
     response.setId(cinema.getId());
     response.setName(cinema.getName());
@@ -136,6 +153,7 @@ public class CinemaMapperImpl implements CinemaMapper {
             : "https://kenh14cdn.com/2017/a12-1502124775530.jpg");
     response.setCreatedAt(cinema.getCreatedAt());
     response.setUpdatedAt(cinema.getUpdatedAt());
+    response.setManagers(managerCinemaResponses);
     return response;
   }
 }

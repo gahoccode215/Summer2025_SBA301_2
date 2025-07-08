@@ -11,5 +11,8 @@ public interface BookingService {
 
   BookingSeatResponse bookSeats(BookingTicketRequest bookingTicketRequest);
 
+  BookingSeatResponse bookSeatsByManager(
+      BookingTicketRequest bookingTicketRequest, Long cinemaId, Long customerId);
+
   List<TicketHistoryResponse> getUserTicketHistory();
 }

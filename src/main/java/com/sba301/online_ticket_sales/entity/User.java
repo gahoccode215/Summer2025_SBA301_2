@@ -57,6 +57,10 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   @Column(name = "address")
   String address;
 
+  @Column(name = "is_first_login")
+  @Builder.Default
+  Boolean isFirstLogin = false;
+
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_has_role",
