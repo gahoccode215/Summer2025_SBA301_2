@@ -122,11 +122,12 @@ public class CinemaServiceImpl implements CinemaService {
   @Override
   public void deActivate(Long id, boolean active) {
     log.info("Deactivating cinema with id: {}, active: {}", id, active);
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    log.info("User: {}", user.getUsername());
-    boolean isAdmin =
-        user.getAuthorities().stream()
-            .anyMatch(auth -> RoleEnum.ADMIN.name().equals(auth.getAuthority()));
+    var authentication =
+            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
     if (!isAdmin) {
       throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
