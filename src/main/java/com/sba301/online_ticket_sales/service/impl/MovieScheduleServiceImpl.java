@@ -42,18 +42,13 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
-    //    List<RoleEnum> roles =
-    //        authentication.getAuthorities().stream()
-    //            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-    //            .toList();
+
     List<String> roleNames =
         authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     boolean isAdmin =
-        roleNames.contains("ADMIN")
-            || roleNames.contains("ROLE_ADMIN")
-            || roleNames.contains("MANAGER");
-    //    if (!roles.contains(RoleEnum.ADMIN) && !roles.contains(RoleEnum.MANAGER))
-    //      throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
+            roleNames.contains("ADMIN")
+                    || roleNames.contains("ROLE_ADMIN")
+                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
     if (!isAdmin) throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     Movie movie =
@@ -103,11 +98,13 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
-    List<RoleEnum> roles =
-        authentication.getAuthorities().stream()
-            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-            .toList();
-    if (!roles.contains(RoleEnum.ADMIN) && !roles.contains(RoleEnum.MANAGER))
+    List<String> roleNames =
+            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    boolean isAdmin =
+            roleNames.contains("ADMIN")
+                    || roleNames.contains("ROLE_ADMIN")
+                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
+    if (!isAdmin)
       throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     Movie movie =
@@ -148,13 +145,15 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
   @Transactional
   public void activateMovieSchedule(Long id, MovieScreenStatus status) {
     var authentication =
-        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
-    List<RoleEnum> roles =
-        authentication.getAuthorities().stream()
-            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-            .toList();
-    if (!roles.contains(RoleEnum.ADMIN) && !roles.contains(RoleEnum.MANAGER))
+    List<String> roleNames =
+            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    boolean isAdmin =
+            roleNames.contains("ADMIN")
+                    || roleNames.contains("ROLE_ADMIN")
+                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
+    if (!isAdmin)
       throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     MovieScreen movieScreen =

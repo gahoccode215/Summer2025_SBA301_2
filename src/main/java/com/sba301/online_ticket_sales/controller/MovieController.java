@@ -38,20 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MovieController {
   MovieService movieService;
 
-  @Operation(
-      summary = "Tạo mới phim",
-      description =
-          "Tạo một phim mới với thông tin được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER.")
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "201",
-        description = "Tạo mới thành công",
-        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "400",
-        description = "Dữ liệu đầu vào không hợp lệ hoặc ID liên kết không tồn tại",
-        content = @Content)
-  })
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> createMovie(
@@ -67,21 +53,7 @@ public class MovieController {
                 .build());
   }
 
-  @Operation(
-      summary = "Cập nhật phim",
-      description =
-          "Cập nhật thông tin phim theo ID, chỉ cập nhật các trường được cung cấp. Yêu cầu quyền ADMIN hoặc MANAGER.")
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "Cập nhật thành công",
-        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "400",
-        description = "Dữ liệu đầu vào không hợp lệ hoặc ID liên kết không tồn tại",
-        content = @Content),
-    @ApiResponse(responseCode = "404", description = "Phim không tồn tại", content = @Content)
-  })
+
   @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> updateMovie(
@@ -97,20 +69,6 @@ public class MovieController {
             .build());
   }
 
-  @Operation(
-      summary = "Xóa phim (xóa mềm)",
-      description =
-          "Xóa mềm phim theo ID bằng cách đặt isDeleted = true, xóa liên kết với Country, Genre, Person (directors, actors) mà không xóa các thực thể liên kết. Yêu cầu quyền ADMIN hoặc MANAGER.")
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "Xóa thành công",
-        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Phim không tồn tại hoặc đã bị xóa",
-        content = @Content)
-  })
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<Void>> deleteMovie(
@@ -123,22 +81,8 @@ public class MovieController {
             .build());
   }
 
-  @Operation(
-      summary = "Lấy chi tiết phim",
-      description =
-          "Lấy thông tin chi tiết của phim theo ID, chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER .")
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "Lấy chi tiết thành công",
-        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class))),
-    @ApiResponse(
-        responseCode = "404",
-        description = "Phim không tồn tại hoặc đã bị xóa",
-        content = @Content)
-  })
+
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> getMovieDetail(
       @Parameter(description = "ID của phim cần lấy", required = true) @PathVariable Long id) {
     MovieResponse response = movieService.getMovieDetail(id);
@@ -150,18 +94,7 @@ public class MovieController {
             .build());
   }
 
-  @Operation(
-      summary = "Lấy danh sách phim",
-      description =
-          "Lấy danh sách phim với phân trang, tìm kiếm theo tiêu đề, sắp xếp theo tiêu đề, thời lượng hoặc ngày phát hành, và lọc theo trạng thái phim (UPCOMING, NOW_SHOWING, ENDED, IMAX). Chỉ trả về phim chưa bị xóa mềm (isDeleted = false). Yêu cầu quyền ADMIN, MANAGER hoặc CUSTOMER.")
-  @ApiResponses({
-    @ApiResponse(
-        responseCode = "200",
-        description = "Lấy danh sách thành công",
-        content = @Content(schema = @Schema(implementation = ApiResponseDTO.class)))
-  })
   @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER', 'STAFF')")
   public ResponseEntity<ApiResponseDTO<Page<MovieResponse>>> getAllMovies(
       @Parameter(description = "Số trang (bắt đầu từ 0)", example = "0")
           @RequestParam(defaultValue = "0")

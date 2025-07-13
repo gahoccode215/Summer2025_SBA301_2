@@ -98,16 +98,19 @@ public class MovieServiceImpl implements MovieService {
 
   @Override
   public MovieResponse getMovieDetail(Long id) {
-
-    Movie movie =
-        movieRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
+    Movie movie = movieRepository.findById(id)
+            .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
 
     if (Boolean.TRUE.equals(movie.getIsDeleted())) {
       throw new AppException(ErrorCode.MOVIE_NOT_FOUND);
     }
 
+    // Kiểm tra quyền admin
+    Boolean adminAccess = hasAdminAccess();
+
     // Kiểm tra movie có được publish không (chỉ admin/manager mới xem được unpublished)
-    if (!Boolean.TRUE.equals(movie.getIsPublished()) && !hasAdminAccess()) {
+    if (!Boolean.TRUE.equals(movie.getIsPublished()) &&
+            (adminAccess == null || !adminAccess)) {
       throw new AppException(ErrorCode.MOVIE_NOT_FOUND);
     }
 
@@ -116,43 +119,42 @@ public class MovieServiceImpl implements MovieService {
 
   @Override
   public Page<MovieResponse> getAllMovies(
-      Pageable pageable, String keyword, MovieStatus movieStatus) {
+          Pageable pageable, String keyword, MovieStatus movieStatus) {
 
-    Specification<Movie> spec =
-        (root, query, cb) -> {
-          List<Predicate> predicates = new ArrayList<>();
+    Specification<Movie> spec = (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
 
-          // Only fetch non-deleted movies
-          predicates.add(cb.equal(root.get("isDeleted"), false));
+      // Only fetch non-deleted movies
+      predicates.add(cb.equal(root.get("isDeleted"), false));
 
-          // Only fetch published movies (trừ khi là admin)
-          if (!hasAdminAccess()) {
-            predicates.add(cb.equal(root.get("isPublished"), true));
-          }
+      // Kiểm tra quyền admin
+      Boolean adminAccess = hasAdminAccess();
+      // Chỉ fetch published movies nếu không phải admin/manager
+      if (adminAccess == null || !adminAccess) {
+        predicates.add(cb.equal(root.get("isPublished"), true));
+      }
 
-          // Search by title (cải tiến search)
-          if (keyword != null && !keyword.isBlank()) {
-            String searchPattern = "%" + keyword.toLowerCase().trim() + "%";
-            Predicate titlePredicate = cb.like(cb.lower(root.get("title")), searchPattern);
-            Predicate descriptionPredicate =
+      // Search by title
+      if (keyword != null && !keyword.isBlank()) {
+        String searchPattern = "%" + keyword.toLowerCase().trim() + "%";
+        Predicate titlePredicate = cb.like(cb.lower(root.get("title")), searchPattern);
+        Predicate descriptionPredicate =
                 cb.like(cb.lower(root.get("description")), searchPattern);
+        predicates.add(cb.or(titlePredicate, descriptionPredicate));
+      }
 
-            // Search trong cả title và description
-            predicates.add(cb.or(titlePredicate, descriptionPredicate));
-          }
+      // Filter by movieStatus
+      if (movieStatus != null) {
+        predicates.add(cb.equal(root.get("movieStatus"), movieStatus));
+      }
 
-          // Filter by movieStatus
-          if (movieStatus != null) {
-            predicates.add(cb.equal(root.get("movieStatus"), movieStatus));
-          }
-
-          return cb.and(predicates.toArray(new Predicate[0]));
-        };
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
 
     Page<Movie> movies = movieRepository.findAll(spec, pageable);
-
     return movies.map(movieMapper::toMovieResponse);
   }
+
 
   private String uploadThumbnailImage(MultipartFile thumbnailFile) {
     try {
@@ -309,16 +311,33 @@ public class MovieServiceImpl implements MovieService {
     movie.setCountry(null);
   }
 
-  private boolean hasAdminAccess() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated()) {
-      return false;
-    }
+  private Boolean hasAdminAccess() {
+    try {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    return authentication.getAuthorities().stream()
-        .anyMatch(
-            authority ->
-                authority.getAuthority().equals(PredefinedRole.ADMIN_ROLE)
-                    || authority.getAuthority().equals(PredefinedRole.MANAGER_ROLE));
+      // Nếu không có authentication hoặc chưa authenticated, return null
+      if (authentication == null || !authentication.isAuthenticated()) {
+        return null;
+      }
+
+      // Kiểm tra nếu là anonymous user
+      if (authentication.getPrincipal().equals("anonymousUser")) {
+        return null;
+      }
+
+      // Kiểm tra có quyền ADMIN hoặc MANAGER không
+      boolean hasAdminRole = authentication.getAuthorities().stream()
+              .anyMatch(authority ->
+                      authority.getAuthority().equals(PredefinedRole.ADMIN_ROLE)
+                              || authority.getAuthority().equals(PredefinedRole.MANAGER_ROLE));
+
+      return hasAdminRole ? true : null;
+
+    } catch (Exception e) {
+      // Log lỗi nếu cần
+      log.warn("Error checking admin access: {}", e.getMessage());
+      return null;
+    }
   }
+
 }

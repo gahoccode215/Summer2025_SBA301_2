@@ -80,17 +80,23 @@ public class CinemaServiceImpl implements CinemaService {
   @Override
   public List<CinemaResponse> getAllCinemasWithAuthentication() {
     log.info("Get all cinemas");
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    List<RoleEnum> roles =
-        user.getAuthorities().stream()
-            .map(authority -> RoleEnum.valueOf(authority.getAuthority()))
-            .toList();
+    var authentication =
+            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
     List<Cinema> cinemas;
 
-    if (roles.contains(RoleEnum.ADMIN)) {
+//    if (roles.contains(RoleEnum.ADMIN)) {
+//      cinemas = cinemaRepository.findAll();
+//    } else {
+//      cinemas = user.getManagedCinemas();
+//    }
+    if(isAdmin){
       cinemas = cinemaRepository.findAll();
-    } else {
-      cinemas = user.getManagedCinemas();
+    }else{
+      cinemas = authentication.getManagedCinemas();
     }
     if (!cinemas.isEmpty()) {
       return cinemas.stream().map(cinemaMapper::toCinemaResponse).toList();
@@ -101,14 +107,27 @@ public class CinemaServiceImpl implements CinemaService {
   @Override
   public CinemaDetailResponse getCinemaDetail(Long id) {
     log.info("Get cinema detail with id: {}", id);
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    log.info("User: {}", user.getUsername());
-    List<RoleEnum> roles =
-        user.getAuthorities().stream().map(auth -> RoleEnum.valueOf(auth.getAuthority())).toList();
+//    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//    log.info("User: {}", user.getUsername());
+//    List<RoleEnum> roles =
+//        user.getAuthorities().stream().map(auth -> RoleEnum.valueOf(auth.getAuthority())).toList();
+    var authentication =
+            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-    if (!roles.contains(RoleEnum.ADMIN)) {
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+
+//    if (!roles.contains(RoleEnum.ADMIN)) {
+//      boolean hasAccess =
+//          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
+//      if (!hasAccess) {
+//        throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+//      }
+//    }
+    if (isAdmin) {
       boolean hasAccess =
-          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
+              authentication.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
       if (!hasAccess) {
         throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
       }
