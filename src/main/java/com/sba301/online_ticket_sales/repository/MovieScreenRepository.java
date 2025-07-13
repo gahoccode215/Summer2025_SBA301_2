@@ -96,6 +96,27 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
       value =
           """
                   SELECT
+                    c.id AS cinema_id,
+                    c.name AS cinema_name,
+                    c.address AS cinema_address,
+                    ms.id AS show_time_id,
+                    r.id AS room_id,
+                    ms.showtime AS show_time,
+                    r.room_type AS room_type
+                  FROM movie_screens ms
+                  JOIN movies m ON ms.movie_id = m.id
+                  JOIN rooms r ON ms.room_id = r.id
+                  JOIN cinemas c ON r.cinema_id = c.id
+                  WHERE m.id = :movieId
+                  ORDER BY c.id, ms.showtime
+                  """,
+      nativeQuery = true)
+  List<CinemaShowtimeDTO> findAllShowTimesByMovie(@Param("movieId") Long movieId);
+
+  @Query(
+      value =
+          """
+                  SELECT
                     ms.id AS showTimeId,
                     r.id AS roomId,
                     r.room_type AS roomType,
@@ -120,4 +141,27 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
       @Param("cinemaId") Long cinemaId,
       @Param("queryTime") LocalDateTime queryTime,
       @Param("upperBound") LocalDateTime upperBound);
+
+  @Query(
+      value =
+          """
+                  SELECT
+                    ms.id AS showTimeId,
+                    r.id AS roomId,
+                    r.room_type AS roomType,
+                    ms.showtime AS showTime,
+                    m.id AS movieId,
+                    m.title AS movieName,
+                    m.thumbnail_url AS moviePosterUrl,
+                    m.duration AS movieDuration,
+                    m.age_restriction AS movieRating,
+                    CAST(m.release_date AS DATETIME) AS movieReleaseDate
+                  FROM movie_screens ms
+                  JOIN rooms r ON ms.room_id = r.id
+                  JOIN movies m ON ms.movie_id = m.id
+                  WHERE r.cinema_id = :cinemaId
+                  ORDER BY m.id, ms.showtime
+                  """,
+      nativeQuery = true)
+  List<MovieShowtimeDTO> findAllByCinema(@Param("cinemaId") Long cinemaId);
 }
