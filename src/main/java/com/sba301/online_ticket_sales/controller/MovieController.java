@@ -6,12 +6,7 @@ import com.sba301.online_ticket_sales.dto.movie.request.MovieUpdateRequest;
 import com.sba301.online_ticket_sales.dto.movie.response.MovieResponse;
 import com.sba301.online_ticket_sales.enums.MovieStatus;
 import com.sba301.online_ticket_sales.service.MovieService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -53,7 +48,6 @@ public class MovieController {
                 .build());
   }
 
-
   @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> updateMovie(
@@ -80,7 +74,6 @@ public class MovieController {
             .message("Xóa thành công")
             .build());
   }
-
 
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponseDTO<MovieResponse>> getMovieDetail(

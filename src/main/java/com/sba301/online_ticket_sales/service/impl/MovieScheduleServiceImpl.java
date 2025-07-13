@@ -8,7 +8,6 @@ import com.sba301.online_ticket_sales.entity.Room;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.MovieScreenStatus;
-import com.sba301.online_ticket_sales.enums.RoleEnum;
 import com.sba301.online_ticket_sales.enums.RoomType;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
@@ -46,9 +45,10 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
     List<String> roleNames =
         authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     boolean isAdmin =
-            roleNames.contains("ADMIN")
-                    || roleNames.contains("ROLE_ADMIN")
-                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
+        roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN")
+            || roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER");
     if (!isAdmin) throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     Movie movie =
@@ -99,13 +99,13 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
     List<String> roleNames =
-            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     boolean isAdmin =
-            roleNames.contains("ADMIN")
-                    || roleNames.contains("ROLE_ADMIN")
-                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
-    if (!isAdmin)
-      throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
+        roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN")
+            || roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER");
+    if (!isAdmin) throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     Movie movie =
         movieRepository
@@ -145,16 +145,16 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
   @Transactional
   public void activateMovieSchedule(Long id, MovieScreenStatus status) {
     var authentication =
-            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     log.info("User: {}", authentication.getUsername());
     List<String> roleNames =
-            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     boolean isAdmin =
-            roleNames.contains("ADMIN")
-                    || roleNames.contains("ROLE_ADMIN")
-                    || roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
-    if (!isAdmin)
-      throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
+        roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN")
+            || roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER");
+    if (!isAdmin) throw new AppException(ErrorCode.SCHEDULE_NO_PERMISSION);
 
     MovieScreen movieScreen =
         movieScreenRepository

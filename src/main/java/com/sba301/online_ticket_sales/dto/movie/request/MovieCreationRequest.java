@@ -31,17 +31,11 @@ public class MovieCreationRequest {
   @Max(value = 600, message = "Thời lượng phim không được vượt quá 600 phút")
   Integer duration;
 
-  @PastOrPresent(message = "Ngày phát hành không được là ngày tương lai")
   LocalDate releaseDate;
 
-  @FutureOrPresent(message = "Ngày công chiếu phải là ngày hiện tại hoặc tương lai")
   LocalDate premiereDate;
 
-  @FutureOrPresent(message = "Ngày kết thúc chiếu phải là ngày hiện tại hoặc tương lai")
   LocalDate endDate;
-
-  //  @URL(message = "URL thumbnail không hợp lệ")
-  //  String thumbnailUrl;
 
   @URL(message = "URL trailer không hợp lệ")
   String trailerUrl;

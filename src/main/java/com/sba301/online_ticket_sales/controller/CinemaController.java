@@ -31,7 +31,7 @@ public class CinemaController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @Operation(
       summary = "Upsert Cinema",
       description =

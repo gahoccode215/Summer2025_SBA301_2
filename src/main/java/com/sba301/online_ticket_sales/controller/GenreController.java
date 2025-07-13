@@ -5,12 +5,7 @@ import com.sba301.online_ticket_sales.dto.genre.request.GenreCreationRequest;
 import com.sba301.online_ticket_sales.dto.genre.request.GenreUpdateRequest;
 import com.sba301.online_ticket_sales.dto.genre.response.GenreResponse;
 import com.sba301.online_ticket_sales.service.GenreService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -35,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 public class GenreController {
   GenreService genreService;
 
-
   @PostMapping
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<GenreResponse>> createGenre(
@@ -49,7 +43,6 @@ public class GenreController {
                 .result(response)
                 .build());
   }
-
 
   @PutMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -66,7 +59,6 @@ public class GenreController {
             .build());
   }
 
-
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   public ResponseEntity<ApiResponseDTO<Void>> deleteGenre(
@@ -80,7 +72,6 @@ public class GenreController {
             .build());
   }
 
-
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponseDTO<GenreResponse>> getGenreDetail(
       @Parameter(description = "ID của thể loại cần lấy", required = true) @PathVariable
@@ -93,7 +84,6 @@ public class GenreController {
             .result(response)
             .build());
   }
-
 
   @GetMapping
   public ResponseEntity<ApiResponseDTO<Page<GenreResponse>>> getAllGenres(

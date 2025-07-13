@@ -131,12 +131,4 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   public boolean isStaff() {
     return hasRole(PredefinedRole.STAFF_ROLE);
   }
-
-  public boolean isAdminAccount() {
-    return this.username != null && (isAdmin() || isManager() || isStaff());
-  }
-
-  public boolean isCustomerAccount() {
-    return this.username == null || (!isAdmin() && !isManager() && !isStaff());
-  }
 }
