@@ -94,11 +94,7 @@ public class CinemaServiceImpl implements CinemaService {
   @Override
   public CinemaDetailResponse getCinemaDetail(Long id) {
     log.info("Get cinema detail with id: {}", id);
-    //    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    //    log.info("User: {}", user.getUsername());
-    //    List<RoleEnum> roles =
-    //        user.getAuthorities().stream().map(auth ->
-    // RoleEnum.valueOf(auth.getAuthority())).toList();
+
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<String> roleNames =
@@ -106,14 +102,8 @@ public class CinemaServiceImpl implements CinemaService {
 
     boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
-    //    if (!roles.contains(RoleEnum.ADMIN)) {
-    //      boolean hasAccess =
-    //          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
-    //      if (!hasAccess) {
-    //        throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
-    //      }
-    //    }
-    if (isAdmin) {
+
+    if (!isAdmin) {
       boolean hasAccess =
           authentication.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
       if (!hasAccess) {
