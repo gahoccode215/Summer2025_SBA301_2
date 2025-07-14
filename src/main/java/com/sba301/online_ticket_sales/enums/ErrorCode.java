@@ -58,6 +58,7 @@ public enum ErrorCode {
   CANNOT_DISABLE_SELF(1504, "Không thể vô hiệu hóa chính mình", HttpStatus.BAD_REQUEST),
   CANNOT_MODIFY_ADMIN(1505, "Không thể sửa đổi quản trị viên", HttpStatus.BAD_REQUEST),
   PHONE_ALREADY_EXISTS(1506, "Số điện thoại đã tồn tại", HttpStatus.BAD_REQUEST),
+  QUICK_ACCOUNT_CANNOT_LOGIN(1507, "Tài khoản tạo nhanh không thể đăng nhập", HttpStatus.BAD_REQUEST),
   // IMAGE EXCEPTION (1600 - 1699)
   IMAGE_UPLOAD_FAILED(1600, "Tải lên hình ảnh thất bại", HttpStatus.BAD_REQUEST),
   INVALID_IMAGE_FILE(1601, "Tệp hình ảnh không hợp lệ", HttpStatus.BAD_REQUEST),

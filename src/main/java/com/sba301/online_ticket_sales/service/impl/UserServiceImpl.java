@@ -205,20 +205,16 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserResponse createQuickCustomer(QuickCustomerRequest request) {
-    User currentUser = getUserAuthenticated();
-    if (!currentUser.isStaff()) {
-      throw new AppException(ErrorCode.ACCESS_DENIED);
-    }
+//    User currentUser = getUserAuthenticated();
 
-    if (userRepository.existsByPhone(request.getPhone())) {
-      throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+    if (userRepository.existsByEmail(request.getEmail())) {
+      throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
     List<Role> roles = roleRepository.findByNameIn(List.of(PredefinedRole.CUSTOMER_ROLE));
-    User user =
-        User.builder()
+    User user = User.builder()
             .fullName(request.getFullName())
-            .phone(request.getPhone())
+            .email(request.getEmail())
             .password(null)
             .status(UserStatus.ACTIVE)
             .accountType(AccountType.QUICK)
@@ -237,12 +233,11 @@ public class UserServiceImpl implements UserService {
       throw new AppException(ErrorCode.ACCESS_DENIED);
     }
 
-    // Validate phone uniqueness
-    //    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
-    //      if (userRepository.existsByPhoneAndIdNot(request.getPhone(), existingUser.getId())) {
-    //        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
-    //      }
-    //    }
+//    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
+//      if (userRepository.existsByPhone(request.getPhone())) {
+//        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+//      }
+//    }
 
     // Validate status change
     if (request.getStatus() != null) {
@@ -255,7 +250,6 @@ public class UserServiceImpl implements UserService {
     }
   }
 
-  // THIẾU: Helper methods
   private boolean canUpdateUser(User currentUser, User targetUser) {
     if (currentUser.isAdmin()) {
       return true;
@@ -312,6 +306,9 @@ public class UserServiceImpl implements UserService {
       if (assignedCinemas.size() != request.getAssignedCinemaIds().size()) {
         throw new AppException(ErrorCode.SOME_CINEMAS_NOT_FOUND);
       }
+    }
+    if (request.getPhone() != null && userRepository.existsByPhone(request.getPhone())) {
+      throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
     }
 
     // 3. Lấy role theo roleName

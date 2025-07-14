@@ -2,6 +2,7 @@ package com.sba301.online_ticket_sales.config;
 
 import static com.sba301.online_ticket_sales.enums.TokenType.ACCESS_TOKEN;
 
+import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.model.RedisToken;
@@ -93,21 +94,30 @@ public class PreFilter extends OncePerRequestFilter {
    * response 401.
    */
   private boolean isTokenValidInRedis(String email, String token, HttpServletResponse response)
-      throws IOException {
+          throws IOException {
     try {
-      RedisToken redisToken = redisTokenService.getById(email);
-      if (redisToken == null || !redisToken.getAccessToken().equals(token)) {
-        log.warn("Token for email {} is invalid or has been logged out", email);
+      User user = userRepository.findByUsernameOrEmail(email)
+              .orElseThrow(() -> new UsernameNotFoundException("User not found for email: " + email));
+      String redisKey = user.getId().toString();
+      RedisToken redisToken = redisTokenService.getById(redisKey);
+      if (redisToken == null) {
+        log.warn("No token found in Redis for user ID {} (email {})", redisKey, email);
+        sendUnauthorizedResponse(response);
+        return false;
+      }
+      if (!redisToken.getAccessToken().equals(token)) {
+        log.warn("Token mismatch for user ID {} (email {})", redisKey, email);
         sendUnauthorizedResponse(response);
         return false;
       }
       return true;
-    } catch (AppException e) {
-      log.warn("Token not found in Redis for email {}: {}", email, e.getMessage());
+    } catch (UsernameNotFoundException e) {
+      log.warn("User lookup failed: {}", e.getMessage());
       sendUnauthorizedResponse(response);
       return false;
     }
   }
+
 
   /** Gửi response 401 khi token không hợp lệ. */
   private void sendUnauthorizedResponse(HttpServletResponse response) throws IOException {

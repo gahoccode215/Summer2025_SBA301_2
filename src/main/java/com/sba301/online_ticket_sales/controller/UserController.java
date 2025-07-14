@@ -193,7 +193,6 @@ public class UserController {
   }
   @PostMapping("/quick-customers")
   @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
-  @Operation(summary = "STAFF tạo quick customer bằng phone")
   public ResponseEntity<ApiResponseDTO<UserResponse>> createQuickCustomer(@Valid @RequestBody QuickCustomerRequest request) {
     UserResponse response = userService.createQuickCustomer(request);
     return ResponseEntity.status(HttpStatus.CREATED)
