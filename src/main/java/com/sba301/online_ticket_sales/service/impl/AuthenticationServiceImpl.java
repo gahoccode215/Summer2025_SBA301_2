@@ -94,6 +94,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
     User user = authenticationMapper.toUser(request);
+    handleVerifyOtp(user);
     userRepository.save(user);
   }
 
@@ -119,18 +120,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     if (user.getIsFirstLogin()) {
-      String otpKey = OTP_KEY + user.getId();
-      boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
-      if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
-      String otpCode = generateOtp();
-      redisSecretService.saveSecretKey(otpKey, otpCode);
-      log.info("Generated new OTP: {}", otpCode);
-      userMailQueueProducer.sendMailMessage(
-          OTPMailDTO.builder()
-              .otpCode(otpCode)
-              .receiverMail(user.getEmail())
-              .type(OTPType.REGISTER)
-              .build());
+      handleVerifyOtp(user);
       throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
     }
 
@@ -169,6 +159,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .userId(user.getId())
         .roleNames(roles)
         .build();
+  }
+
+  private void handleVerifyOtp(User user) {
+    String otpKey = OTP_KEY + user.getId();
+    boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
+    if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
+    String otpCode = generateOtp();
+    redisSecretService.saveSecretKey(otpKey, otpCode);
+    log.info("Generated new OTP: {}", otpCode);
+    userMailQueueProducer.sendMailMessage(
+        OTPMailDTO.builder()
+            .otpCode(otpCode)
+            .receiverMail(user.getEmail())
+            .type(OTPType.REGISTER)
+            .build());
   }
 
   @Override

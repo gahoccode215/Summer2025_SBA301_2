@@ -64,7 +64,7 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
 
   @Column(name = "is_first_login")
   @Builder.Default
-  Boolean isFirstLogin = false;
+  Boolean isFirstLogin = true;
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
