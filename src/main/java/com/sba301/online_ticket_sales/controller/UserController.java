@@ -1,10 +1,7 @@
 package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
-import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserListFilterRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.request.*;
 import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
@@ -194,4 +191,17 @@ public class UserController {
             .result(response)
             .build());
   }
+  @PostMapping("/quick-customers")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
+  @Operation(summary = "STAFF tạo quick customer bằng phone")
+  public ResponseEntity<ApiResponseDTO<UserResponse>> createQuickCustomer(@Valid @RequestBody QuickCustomerRequest request) {
+    UserResponse response = userService.createQuickCustomer(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponseDTO.<UserResponse>builder()
+                    .code(HttpStatus.CREATED.value())
+                    .message("Tạo tài khoản thành công")
+                    .result(response)
+                    .build());
+  }
+
 }
