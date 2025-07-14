@@ -170,13 +170,17 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
   public List<CinemaShowTimeResponse> getMovieShowTimes(Long movieId, LocalDateTime date) {
     log.info("Fetching show times for movie ID: {} on date: {}", movieId, date);
 
-    // Lấy đầu ngày và cuối ngày của ngày được chọn
-    LocalDate queryDate = (date != null) ? date.toLocalDate() : LocalDate.now();
-    LocalDateTime startOfDay = queryDate.atStartOfDay();
-    LocalDateTime endOfDay = queryDate.atTime(LocalTime.MAX);
+    List<CinemaShowtimeDTO> showTimes;
 
-    List<CinemaShowtimeDTO> showTimes =
-        movieScreenRepository.findShowTimesByMovie(movieId, startOfDay, endOfDay);
+    if (date != null) {
+      LocalDate queryDate = date.toLocalDate();
+      LocalDateTime startOfDay = queryDate.atStartOfDay();
+      LocalDateTime endOfDay = queryDate.atTime(LocalTime.MAX);
+
+      showTimes = movieScreenRepository.findShowTimesByMovie(movieId, startOfDay, endOfDay);
+    } else {
+      showTimes = movieScreenRepository.findAllShowTimesByMovie(movieId);
+    }
 
     if (showTimes.isEmpty()) {
       log.info("No show times found for movie ID: {}", movieId);
@@ -235,11 +239,16 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
   @Override
   public List<MovieShowTimeResponse> getMovieShowTimesByCinema(Long cinemaId, LocalDateTime date) {
     log.info("Fetching movie show times for cinema ID: {} on date: {}", cinemaId, date);
-    LocalDateTime queryTime = resolveQueryTime(date);
-    LocalDateTime upperBound = queryTime.plusDays(1).minusSeconds(1);
+    List<MovieShowtimeDTO> showTimes;
 
-    List<MovieShowtimeDTO> showTimes =
-        movieScreenRepository.findByCinemaAndDate(cinemaId, queryTime, upperBound);
+    if (date != null) {
+      LocalDateTime queryTime = date.toLocalDate().atStartOfDay();
+      LocalDateTime upperBound = queryTime.plusDays(1).minusSeconds(1);
+
+      showTimes = movieScreenRepository.findByCinemaAndDate(cinemaId, queryTime, upperBound);
+    } else {
+      showTimes = movieScreenRepository.findAllByCinema(cinemaId);
+    }
 
     if (showTimes.isEmpty()) {
       log.info("No show times found for cinema ID: {}", cinemaId);

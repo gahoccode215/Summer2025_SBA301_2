@@ -84,7 +84,7 @@ public class ApplicationInitConfig {
       for (int i = 0; i < totalDays; i++) {
         LocalDateTime dayStart = now.plusDays(i).withHour(8).withMinute(0);
 
-        int screensToday = random.nextInt(3) + 3; // 3–5 suất/ngày
+        int screensToday = random.nextInt(3) + 3;
         for (int j = 0; j < screensToday; j++) {
           Optional<MovieScreen> created = tryCreateNonConflictMovieScreen(dayStart, room, movies);
           created.ifPresent(movieScreenRepository::save);
