@@ -27,7 +27,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
   boolean existsByEmail(String email);
 
-  // ADMIN: Lấy tất cả users với filter
+  // ADMIN: Lấy tất cả users
   @Query(
       "SELECT DISTINCT u FROM User u "
           + "LEFT JOIN FETCH u.roles r "
@@ -71,4 +71,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
       @Param("status") UserStatus status,
       @Param("roleName") String roleName,
       Pageable pageable);
+
+  boolean existsByPhone(String phone);
+
+  Optional<User> findByPhone(String phone);
 }

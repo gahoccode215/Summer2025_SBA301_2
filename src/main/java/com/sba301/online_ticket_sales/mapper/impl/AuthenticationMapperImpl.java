@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.dto.auth.request.RegisterRequest;
 import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.enums.AccountType;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.AuthenticationMapper;
@@ -32,6 +33,7 @@ public class AuthenticationMapperImpl implements AuthenticationMapper {
         .birthDate(request.getBirthDate())
         .gender(request.getGender())
         .roles(Collections.singletonList(customerRole))
+        .accountType(AccountType.FULL)
         .password(passwordEncoder.encode(request.getPassword()))
         .build();
   }

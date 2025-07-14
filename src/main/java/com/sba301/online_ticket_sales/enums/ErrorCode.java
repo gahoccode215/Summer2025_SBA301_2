@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatusCode;
 
 @Getter
 public enum ErrorCode {
-  UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
+  UNCATEGORIZED_EXCEPTION(9999, "Lỗi không phân loại", HttpStatus.INTERNAL_SERVER_ERROR),
   // AUTHENTICATION EXCEPTION (1000 - 1099)
   UNAUTHENTICATED(1000, "Vui lòng đăng nhập để sử dụng chức năng này", HttpStatus.UNAUTHORIZED),
   UNAUTHORIZED(1001, "Không thể thực hiện chức năng này", HttpStatus.FORBIDDEN),
@@ -15,55 +15,55 @@ public enum ErrorCode {
       1003, "Email hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
   ACCOUNT_HAS_BEEN_DISABLE(
       1004, "Tài khoản của bạn chưa kích hoạt hoặc bị khóa", HttpStatus.BAD_REQUEST),
-  INVALID_TOKEN(1005, "Invalid token", HttpStatus.BAD_REQUEST),
-  ROLE_NOT_FOUND(1006, "Role not found", HttpStatus.BAD_REQUEST),
-  INCORRECT_PASSWORD(1007, "Current password is incorrect", HttpStatus.BAD_REQUEST),
-  PASSWORD_MISMATCH(1008, "New password and confirm password do not match", HttpStatus.BAD_REQUEST),
-  ACCESS_DENIED(1009, "Access Deinied", HttpStatus.UNAUTHORIZED),
-  INVALID_KEY(1010, "Invalid key", HttpStatus.BAD_REQUEST),
-  INSUFFICIENT_PERMISSION(1011, "Invalid insufficient permission", HttpStatus.BAD_REQUEST),
+  INVALID_TOKEN(1005, "Mã thông báo không hợp lệ", HttpStatus.BAD_REQUEST),
+  ROLE_NOT_FOUND(1006, "Vai trò không tìm thấy", HttpStatus.BAD_REQUEST),
+  INCORRECT_PASSWORD(1007, "Mật khẩu hiện tại không chính xác", HttpStatus.BAD_REQUEST),
+  PASSWORD_MISMATCH(1008, "Mật khẩu mới và mật khẩu xác nhận không khớp", HttpStatus.BAD_REQUEST),
+  ACCESS_DENIED(1009, "Truy cập bị từ chối", HttpStatus.UNAUTHORIZED),
+  INVALID_KEY(1010, "Khóa không hợp lệ", HttpStatus.BAD_REQUEST),
+  INSUFFICIENT_PERMISSION(1011, "Quyền truy cập không đủ", HttpStatus.BAD_REQUEST),
   REQUIRE_OTP_VALIDATION(
-      1012,
-      "Require OTP validation. Please check your email",
-      HttpStatus.UNAUTHORIZED), // PERSON EXCEPTION (1100 - 1199)
-  PERSON_NOT_FOUND(1100, "Person not found", HttpStatus.NOT_FOUND),
-  COUNTRY_NOT_FOUND(1101, "Country not found", HttpStatus.BAD_REQUEST),
-  INVALID_OCCUPATION(1102, "Invalid occupation", HttpStatus.BAD_REQUEST),
+      1012, "Yêu cầu xác thực OTP. Vui lòng kiểm tra email của bạn", HttpStatus.UNAUTHORIZED),
+  // PERSON EXCEPTION (1100 - 1199)
+  PERSON_NOT_FOUND(1100, "Người không tìm thấy", HttpStatus.NOT_FOUND),
+  COUNTRY_NOT_FOUND(1101, "Quốc gia không tìm thấy", HttpStatus.BAD_REQUEST),
+  INVALID_OCCUPATION(1102, "Nghề nghiệp không hợp lệ", HttpStatus.BAD_REQUEST),
   // GENRE EXCEPTION (1200 - 1299)
-  GENRE_ALREADY_EXISTS(1200, "Genre name already exists", HttpStatus.BAD_REQUEST),
-  GENRE_NOT_FOUND(1201, "Genre not found", HttpStatus.NOT_FOUND),
+  GENRE_ALREADY_EXISTS(1200, "Tên thể loại đã tồn tại", HttpStatus.BAD_REQUEST),
+  GENRE_NOT_FOUND(1201, "Thể loại không tìm thấy", HttpStatus.NOT_FOUND),
   GENRE_IN_USE(1202, "Thể loại đang được sử dụng, không thể xóa", HttpStatus.BAD_REQUEST),
   // MOVIE EXCEPTION (1300 - 1399)
-  INVALID_COUNTRY(1300, "Invalid country ID", HttpStatus.BAD_REQUEST),
-  INVALID_GENRE(1301, "One or more genre IDs are invalid", HttpStatus.BAD_REQUEST),
-  INVALID_PERSON(1302, "One or more person IDs are invalid", HttpStatus.BAD_REQUEST),
-  MOVIE_NOT_FOUND(1303, "Movie not found", HttpStatus.NOT_FOUND),
+  INVALID_COUNTRY(1300, "ID quốc gia không hợp lệ", HttpStatus.BAD_REQUEST),
+  INVALID_GENRE(1301, "Một hoặc nhiều ID thể loại không hợp lệ", HttpStatus.BAD_REQUEST),
+  INVALID_PERSON(1302, "Một hoặc nhiều ID người không hợp lệ", HttpStatus.BAD_REQUEST),
+  MOVIE_NOT_FOUND(1303, "Phim không tìm thấy", HttpStatus.NOT_FOUND),
   MOVIE_TITLE_ALREADY_EXISTS(1304, "Tiêu đề phim đã tồn tại", HttpStatus.BAD_REQUEST),
   INVALID_PREMIERE_DATE(
       1305, "Ngày công chiếu phải sau hoặc bằng ngày phát hành", HttpStatus.BAD_REQUEST),
   INVALID_END_DATE(
       1306, "Ngày kết thúc chiếu phải sau hoặc bằng ngày công chiếu", HttpStatus.BAD_REQUEST),
   MOVIE_MISSING_REQUIRED_FORMAT(1307, "Sai định dạng chiếu", HttpStatus.BAD_REQUEST),
-  MOVIE_ALREADY_DELETED(1308, "Movie already deleted", HttpStatus.BAD_REQUEST),
+  MOVIE_ALREADY_DELETED(1308, "Phim đã bị xóa", HttpStatus.BAD_REQUEST),
   // COUNTRY EXCEPTION (1400 - 1499)
-  COUNTRY_ALREADY_EXISTS(1400, "Country name already exists", HttpStatus.BAD_REQUEST),
+  COUNTRY_ALREADY_EXISTS(1400, "Tên quốc gia đã tồn tại", HttpStatus.BAD_REQUEST),
   REVIEW_NOT_FOUND_OR_UNAUTHORIZED(
-      1401, "Review not found or unauthorized", HttpStatus.BAD_REQUEST),
-  REVIEW_ALREADY_EXISTS(1402, "Review already exists", HttpStatus.BAD_REQUEST),
+      1401, "Đánh giá không tìm thấy hoặc không được phép", HttpStatus.BAD_REQUEST),
+  REVIEW_ALREADY_EXISTS(1402, "Đánh giá đã tồn tại", HttpStatus.BAD_REQUEST),
   // USER EXCEPTION (1500 - 1599)
-  USER_NOT_FOUND(1500, "User not found", HttpStatus.NOT_FOUND),
-  USERNAME_ALREADY_EXISTS(1501, "Username already exists", HttpStatus.BAD_REQUEST),
-  INVALID_ROLES(1502, "Invalid roles", HttpStatus.BAD_REQUEST),
+  USER_NOT_FOUND(1500, "Người dùng không tìm thấy", HttpStatus.NOT_FOUND),
+  USERNAME_ALREADY_EXISTS(1501, "Tên người dùng đã tồn tại", HttpStatus.BAD_REQUEST),
+  INVALID_ROLES(1502, "Vai trò không hợp lệ", HttpStatus.BAD_REQUEST),
   MANAGER_CANNOT_ASSIGN_TO_OTHER_CINEMA(
-      1503, "Manager cannot assign to other cinema", HttpStatus.BAD_REQUEST),
-  CANNOT_DISABLE_SELF(1504, "Cannot disable self", HttpStatus.BAD_REQUEST),
-  CANNOT_MODIFY_ADMIN(1505, "Cannot modify admin", HttpStatus.BAD_REQUEST),
+      1503, "Quản lý không thể gán cho rạp khác", HttpStatus.BAD_REQUEST),
+  CANNOT_DISABLE_SELF(1504, "Không thể vô hiệu hóa chính mình", HttpStatus.BAD_REQUEST),
+  CANNOT_MODIFY_ADMIN(1505, "Không thể sửa đổi quản trị viên", HttpStatus.BAD_REQUEST),
+  PHONE_ALREADY_EXISTS(1506, "Số điện thoại đã tồn tại", HttpStatus.BAD_REQUEST),
   // IMAGE EXCEPTION (1600 - 1699)
-  IMAGE_UPLOAD_FAILED(1600, "Image upload failed", HttpStatus.BAD_REQUEST),
-  INVALID_IMAGE_FILE(1601, "Invalid image file", HttpStatus.BAD_REQUEST),
-  INVALID_IMAGE_FORMAT(1602, "Invalid image format", HttpStatus.BAD_REQUEST),
-  FILE_TOO_LARGE(1603, "File too large", HttpStatus.BAD_REQUEST),
-  UNSUPPORTED_IMAGE_FORMAT(1604, "Unsupported image format", HttpStatus.BAD_REQUEST),
+  IMAGE_UPLOAD_FAILED(1600, "Tải lên hình ảnh thất bại", HttpStatus.BAD_REQUEST),
+  INVALID_IMAGE_FILE(1601, "Tệp hình ảnh không hợp lệ", HttpStatus.BAD_REQUEST),
+  INVALID_IMAGE_FORMAT(1602, "Định dạng hình ảnh không hợp lệ", HttpStatus.BAD_REQUEST),
+  FILE_TOO_LARGE(1603, "Tệp quá lớn", HttpStatus.BAD_REQUEST),
+  UNSUPPORTED_IMAGE_FORMAT(1604, "Định dạng hình ảnh không được hỗ trợ", HttpStatus.BAD_REQUEST),
   // BOOKING EXCEPTION (1700 - 1799)
   TICKET_CANNOT_NULL(1700, "Danh sách vé không được để trống", HttpStatus.BAD_REQUEST),
   TICKET_DUPLICATE_SEAT(1701, "Danh sách vé có ghế trùng lặp", HttpStatus.BAD_REQUEST),
@@ -73,37 +73,37 @@ public enum ErrorCode {
   MOVIESCREEN_NOT_WORKING(1705, "Suất chiếu không hoạt động", HttpStatus.BAD_REQUEST),
 
   // CINEMA EXCEPTION (1200 - 1299);
-  CINEMA_NOT_FOUND(2000, "Cinema not found", HttpStatus.NOT_FOUND),
-  SOME_CINEMAS_NOT_FOUND(2001, "Some cinemas not found", HttpStatus.BAD_REQUEST),
+  CINEMA_NOT_FOUND(2000, "Rạp không tìm thấy", HttpStatus.NOT_FOUND),
+  SOME_CINEMAS_NOT_FOUND(2001, "Một số rạp không tìm thấy", HttpStatus.BAD_REQUEST),
   CINEMA_UPSERT_PERMISSION_DENIED(
-      2002, "You do not have permission to create or update a cinema", HttpStatus.FORBIDDEN),
-  ROOM_NOT_FOUND(2004, "Room not found", HttpStatus.NOT_FOUND),
-  ROOM_OR_MOVIE_NOT_ACTIVE(2005, "Room or movie is not active", HttpStatus.BAD_REQUEST),
+      2002, "Bạn không có quyền tạo hoặc cập nhật rạp", HttpStatus.FORBIDDEN),
+  ROOM_NOT_FOUND(2004, "Phòng không tìm thấy", HttpStatus.NOT_FOUND),
+  ROOM_OR_MOVIE_NOT_ACTIVE(2005, "Phòng hoặc phim không hoạt động", HttpStatus.BAD_REQUEST),
 
   // OTP EXCEPTION ()
-  SECRET_KEY_INCORRECT(2100, "Secret Key incorrect", HttpStatus.NOT_FOUND),
-  SECRET_KEY_EXPIRED(2101, "Secret Key not found or expired", HttpStatus.NOT_FOUND),
+  SECRET_KEY_INCORRECT(2100, "Khóa bí mật không chính xác", HttpStatus.NOT_FOUND),
+  SECRET_KEY_EXPIRED(2101, "Khóa bí mật không tìm thấy hoặc hết hạn", HttpStatus.NOT_FOUND),
 
   // SCHEDULE EXCEPTION (2200 - 2299)
-  SCHEDULE_NOT_FOUND(2200, "Schedule not found", HttpStatus.NOT_FOUND),
-  SCHEDULE_ALREADY_EXISTS(2201, "Schedule already exists", HttpStatus.BAD_REQUEST),
-  SCHEDULE_NOT_ACTIVE(2202, "Schedule is not active", HttpStatus.BAD_REQUEST),
+  SCHEDULE_NOT_FOUND(2200, "Lịch chiếu không tìm thấy", HttpStatus.NOT_FOUND),
+  SCHEDULE_ALREADY_EXISTS(2201, "Lịch chiếu đã tồn tại", HttpStatus.BAD_REQUEST),
+  SCHEDULE_NOT_ACTIVE(2202, "Lịch chiếu không hoạt động", HttpStatus.BAD_REQUEST),
   SCHEDULE_NO_PERMISSION(
-      2203, "You do not have permission to create or update a schedule", HttpStatus.FORBIDDEN),
+      2203, "Bạn không có quyền tạo hoặc cập nhật lịch chiếu", HttpStatus.FORBIDDEN),
 
   // BOOKING
-  TICKET_ORDER_NOT_FOUND_CACHE(8000, "Ticket order not found in cache", HttpStatus.NOT_FOUND),
+  TICKET_ORDER_NOT_FOUND_CACHE(
+      8000, "Đơn hàng vé không tìm thấy trong bộ nhớ đệm", HttpStatus.NOT_FOUND),
   TICKET_PRICE_NOT_FOUND(
-      8001, "Ticket price not found for the given cinema and date type", HttpStatus.NOT_FOUND),
-  SEAT_ALREADY_BOOKED(8002, "Seat is already booked for this showtime", HttpStatus.BAD_REQUEST),
-  INVALID_TICKET_PRICE(8003, "Ticket price cannot be negative", HttpStatus.BAD_REQUEST),
-  FAILED_TO_CREATE_ORDER(8004, "Failed to create ticket order", HttpStatus.INTERNAL_SERVER_ERROR),
-  NO_PERMISSION_TO_BOOK(
-      8005, "You do not have permission to book tickets for this showtime", HttpStatus.FORBIDDEN),
+      8001, "Giá vé không tìm thấy cho rạp và loại ngày đã cho", HttpStatus.NOT_FOUND),
+  SEAT_ALREADY_BOOKED(8002, "Ghế đã được đặt cho suất chiếu này", HttpStatus.BAD_REQUEST),
+  INVALID_TICKET_PRICE(8003, "Giá vé không thể âm", HttpStatus.BAD_REQUEST),
+  FAILED_TO_CREATE_ORDER(8004, "Tạo đơn hàng vé thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
+  NO_PERMISSION_TO_BOOK(8005, "Bạn không có quyền đặt vé cho suất chiếu này", HttpStatus.FORBIDDEN),
 
   // PAYMENT EXCEPTION (9000 - 9099)
-  PAYMENT_ERROR(9000, "Payment error", HttpStatus.BAD_REQUEST),
-  PAYMENT_FAILED_OR_EXPIRED(9001, "Payment failed or expired", HttpStatus.BAD_REQUEST);
+  PAYMENT_ERROR(9000, "Lỗi thanh toán", HttpStatus.BAD_REQUEST),
+  PAYMENT_FAILED_OR_EXPIRED(9001, "Thanh toán thất bại hoặc hết hạn", HttpStatus.BAD_REQUEST);
 
   ErrorCode(int code, String message, HttpStatusCode statusCode) {
     this.code = code;

@@ -1,6 +1,7 @@
 package com.sba301.online_ticket_sales.entity;
 
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
+import com.sba301.online_ticket_sales.enums.AccountType;
 import com.sba301.online_ticket_sales.enums.Gender;
 import com.sba301.online_ticket_sales.enums.UserStatus;
 import jakarta.persistence.*;
@@ -42,13 +43,13 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
   @Column(name = "status")
   UserStatus status;
 
-  @Column(name = "password", nullable = false)
+  @Column(name = "password")
   String password;
 
   @Column(name = "birth_date")
   LocalDate birthDate;
 
-  @Column(name = "phone")
+  @Column(name = "phone", unique = true)
   String phone;
 
   @Column(name = "username", unique = true)
@@ -56,6 +57,10 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
 
   @Column(name = "address")
   String address;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "account_type")
+  AccountType accountType;
 
   @Column(name = "is_first_login")
   @Builder.Default
@@ -106,7 +111,8 @@ public class User extends AbstractEntity<Long> implements UserDetails, Serializa
 
   @Override
   public boolean isEnabled() {
-    return UserStatus.ACTIVE.equals(status);
+    return UserStatus.ACTIVE.equals(status)
+        && (password != null || accountType == AccountType.QUICK);
   }
 
   @PrePersist

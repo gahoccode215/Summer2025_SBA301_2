@@ -1,16 +1,14 @@
 package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
-import com.sba301.online_ticket_sales.dto.user.request.CreateUserAccountRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserListFilterRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserProfileUpdateRequest;
-import com.sba301.online_ticket_sales.dto.user.request.UserUpdateRequest;
+import com.sba301.online_ticket_sales.dto.user.request.*;
 import com.sba301.online_ticket_sales.dto.user.response.UserListResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserProfileResponse;
 import com.sba301.online_ticket_sales.dto.user.response.UserResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
 import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.enums.AccountType;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.UserStatus;
 import com.sba301.online_ticket_sales.exception.AppException;
@@ -202,6 +200,33 @@ public class UserServiceImpl implements UserService {
     User updatedUser = userRepository.save(user);
 
     return userMapper.toUserResponse(updatedUser);
+  }
+
+  @Override
+  @Transactional
+  public UserResponse createQuickCustomer(QuickCustomerRequest request) {
+    User currentUser = getUserAuthenticated();
+    if (!currentUser.isStaff()) {
+      throw new AppException(ErrorCode.ACCESS_DENIED);
+    }
+
+    if (userRepository.existsByPhone(request.getPhone())) {
+      throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+    }
+
+    List<Role> roles = roleRepository.findByNameIn(List.of(PredefinedRole.CUSTOMER_ROLE));
+    User user =
+        User.builder()
+            .fullName(request.getFullName())
+            .phone(request.getPhone())
+            .password(null)
+            .status(UserStatus.ACTIVE)
+            .accountType(AccountType.QUICK)
+            .roles(roles)
+            .build();
+
+    user = userRepository.save(user);
+    return userMapper.toUserResponse(user);
   }
 
   private void validateUserUpdate(User existingUser, UserUpdateRequest request) {

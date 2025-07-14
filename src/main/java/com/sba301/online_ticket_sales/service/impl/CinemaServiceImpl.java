@@ -6,7 +6,6 @@ import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
 import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
-import com.sba301.online_ticket_sales.enums.RoleEnum;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
@@ -102,7 +101,6 @@ public class CinemaServiceImpl implements CinemaService {
 
     boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
-
     if (!isAdmin) {
       boolean hasAccess =
           authentication.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
@@ -123,9 +121,9 @@ public class CinemaServiceImpl implements CinemaService {
   public void deActivate(Long id, boolean active) {
     log.info("Deactivating cinema with id: {}, active: {}", id, active);
     var authentication =
-            (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<String> roleNames =
-            authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
     boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
