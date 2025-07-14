@@ -207,7 +207,6 @@ public class UserServiceImpl implements UserService {
   public UserResponse createQuickCustomer(QuickCustomerRequest request) {
     User currentUser = getUserAuthenticated();
     if (!currentUser.isStaff()) {
-
       throw new AppException(ErrorCode.ACCESS_DENIED);
     }
 
