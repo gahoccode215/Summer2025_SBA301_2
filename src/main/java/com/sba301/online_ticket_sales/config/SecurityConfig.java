@@ -1,6 +1,7 @@
 package com.sba301.online_ticket_sales.config;
 
 import com.sba301.online_ticket_sales.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,9 @@ public class SecurityConfig {
     "/api/v1/cinemas/**",
     "/api/v1/rooms/**",
     "/api/v1/payments/**",
+    "/api/v1/persons/**",
+    "/api/v1/genres/**",
+    "/api/v1/countries/**"
   };
 
   @Bean
@@ -52,7 +56,32 @@ public class SecurityConfig {
             request ->
                 request.requestMatchers(PUBLIC_ENDPOINTS).permitAll().anyRequest().authenticated())
         .authenticationProvider(provider())
-        .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class)
+        .exceptionHandling(
+            exceptions ->
+                exceptions
+                    .authenticationEntryPoint(
+                        (request, response, authException) -> {
+                          // Xử lý 401 - Không có token hoặc token không hợp lệ
+                          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                          response.setContentType("application/json");
+                          response.setCharacterEncoding("UTF-8");
+                          response
+                              .getWriter()
+                              .write(
+                                  "{\"code\": 401, \"message\": \"Vui lòng đăng nhập để sử dụng chức năng này\"}");
+                        })
+                    .accessDeniedHandler(
+                        (request, response, accessDeniedException) -> {
+                          // Xử lý 403 - Có token nhưng không đủ quyền
+                          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                          response.setContentType("application/json");
+                          response.setCharacterEncoding("UTF-8");
+                          response
+                              .getWriter()
+                              .write(
+                                  "{\"code\": 403, \"message\": \"Bạn không có quyền thực hiện chức năng này\"}");
+                        }));
     return httpSecurity.build();
   }
 

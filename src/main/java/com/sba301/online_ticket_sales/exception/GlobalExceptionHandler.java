@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -84,16 +86,42 @@ public class GlobalExceptionHandler {
                 .build());
   }
 
-  /** Xử lý lỗi không có quyền truy cập (401 Unauthorized). */
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<ApiResponseDTO<Void>> handleAccessDeniedException(
-      AccessDeniedException exception) {
-    log.warn("Access Denied: {}", exception.getMessage());
+  /** Xử lý lỗi authentication (401 - Chưa đăng nhập hoặc token không hợp lệ) */
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ApiResponseDTO<Void>> handleAuthenticationException(
+      AuthenticationException exception) {
+    log.warn("Authentication failed: {}", exception.getMessage());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         .body(
             ApiResponseDTO.<Void>builder()
                 .code(HttpStatus.UNAUTHORIZED.value())
-                .message(ErrorCode.UNAUTHENTICATED.getMessage())
+                .message("Vui lòng đăng nhập để sử dụng chức năng này")
+                .build());
+  }
+
+  /** Xử lý lỗi authorization từ Spring Security method-level (403 - Không đủ quyền) */
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public ResponseEntity<ApiResponseDTO<Void>> handleAuthorizationDeniedException(
+      AuthorizationDeniedException exception) {
+    log.warn("Authorization denied: {}", exception.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(
+            ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.FORBIDDEN.value())
+                .message("Bạn không có quyền thực hiện chức năng này")
+                .build());
+  }
+
+  /** Xử lý lỗi access denied từ file system (403) */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiResponseDTO<Void>> handleAccessDeniedException(
+      AccessDeniedException exception) {
+    log.warn("Access Denied: {}", exception.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN) // Sửa từ UNAUTHORIZED thành FORBIDDEN
+        .body(
+            ApiResponseDTO.<Void>builder()
+                .code(HttpStatus.FORBIDDEN.value())
+                .message("Truy cập bị từ chối")
                 .build());
   }
 
