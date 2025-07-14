@@ -87,9 +87,9 @@ public class BookingServiceImpl implements BookingService {
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<String> roleNames =
         authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-    boolean isManager = roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER");
+    boolean isAdmin = roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER") || roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
-    if (!isManager) {
+    if (!isAdmin) {
       boolean hasAccess =
           authentication.getManagedCinemas().stream()
               .anyMatch(cinema -> cinema.getId().equals(cinemaId));
