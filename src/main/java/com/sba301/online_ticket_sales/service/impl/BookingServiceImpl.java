@@ -87,7 +87,11 @@ public class BookingServiceImpl implements BookingService {
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<String> roleNames =
         authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-    boolean isAdmin = roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER") || roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
 
     if (!isAdmin) {
       boolean hasAccess =

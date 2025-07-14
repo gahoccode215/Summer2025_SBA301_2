@@ -13,6 +13,4 @@ public class QuickCustomerRequest {
 
   @NotBlank(message = "Tên đầy đủ không được để trống")
   private String fullName;
-
-
 }

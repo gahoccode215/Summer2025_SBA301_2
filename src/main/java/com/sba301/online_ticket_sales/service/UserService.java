@@ -32,4 +32,6 @@ public interface UserService {
   UserResponse updateUser(Long userId, UserUpdateRequest request);
 
   UserResponse createQuickCustomer(QuickCustomerRequest request);
+
+  UserResponse upgradeQuickAccount(Long userId, UpgradeQuickRequest request);
 }

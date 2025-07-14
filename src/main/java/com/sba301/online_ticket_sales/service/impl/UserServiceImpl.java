@@ -205,14 +205,15 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public UserResponse createQuickCustomer(QuickCustomerRequest request) {
-//    User currentUser = getUserAuthenticated();
+    //    User currentUser = getUserAuthenticated();
 
     if (userRepository.existsByEmail(request.getEmail())) {
       throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
     List<Role> roles = roleRepository.findByNameIn(List.of(PredefinedRole.CUSTOMER_ROLE));
-    User user = User.builder()
+    User user =
+        User.builder()
             .fullName(request.getFullName())
             .email(request.getEmail())
             .password(null)
@@ -220,6 +221,34 @@ public class UserServiceImpl implements UserService {
             .accountType(AccountType.QUICK)
             .roles(roles)
             .build();
+
+    user = userRepository.save(user);
+    return userMapper.toUserResponse(user);
+  }
+
+  @Override
+  @Transactional
+  public UserResponse upgradeQuickAccount(Long userId, UpgradeQuickRequest request) {
+    //  Tìm user theo ID
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    // Kiểm tra loại tài khoản
+    if (user.getAccountType() != AccountType.QUICK) {
+      throw new AppException(ErrorCode.INVALID_ACCOUNT_TYPE);
+    }
+
+    //  Validate password confirmation
+    if (!request.getPassword().equals(request.getConfirmPassword())) {
+      throw new AppException(ErrorCode.PASSWORD_MISMATCH);
+    }
+
+    // Nâng cấp account
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+    user.setAccountType(AccountType.FULL);
+    user.setIsFirstLogin(false);
 
     user = userRepository.save(user);
     return userMapper.toUserResponse(user);
@@ -233,11 +262,11 @@ public class UserServiceImpl implements UserService {
       throw new AppException(ErrorCode.ACCESS_DENIED);
     }
 
-//    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
-//      if (userRepository.existsByPhone(request.getPhone())) {
-//        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
-//      }
-//    }
+    //    if (request.getPhone() != null && !request.getPhone().equals(existingUser.getPhone())) {
+    //      if (userRepository.existsByPhone(request.getPhone())) {
+    //        throw new AppException(ErrorCode.PHONE_ALREADY_EXISTS);
+    //      }
+    //    }
 
     // Validate status change
     if (request.getStatus() != null) {

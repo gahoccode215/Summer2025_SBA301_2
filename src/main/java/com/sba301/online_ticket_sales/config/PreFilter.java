@@ -94,10 +94,13 @@ public class PreFilter extends OncePerRequestFilter {
    * response 401.
    */
   private boolean isTokenValidInRedis(String email, String token, HttpServletResponse response)
-          throws IOException {
+      throws IOException {
     try {
-      User user = userRepository.findByUsernameOrEmail(email)
-              .orElseThrow(() -> new UsernameNotFoundException("User not found for email: " + email));
+      User user =
+          userRepository
+              .findByUsernameOrEmail(email)
+              .orElseThrow(
+                  () -> new UsernameNotFoundException("User not found for email: " + email));
       String redisKey = user.getId().toString();
       RedisToken redisToken = redisTokenService.getById(redisKey);
       if (redisToken == null) {
@@ -117,7 +120,6 @@ public class PreFilter extends OncePerRequestFilter {
       return false;
     }
   }
-
 
   /** Gửi response 401 khi token không hợp lệ. */
   private void sendUnauthorizedResponse(HttpServletResponse response) throws IOException {

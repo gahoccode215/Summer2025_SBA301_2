@@ -191,16 +191,32 @@ public class UserController {
             .result(response)
             .build());
   }
+
   @PostMapping("/quick-customers")
   @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
-  public ResponseEntity<ApiResponseDTO<UserResponse>> createQuickCustomer(@Valid @RequestBody QuickCustomerRequest request) {
+  public ResponseEntity<ApiResponseDTO<UserResponse>> createQuickCustomer(
+      @Valid @RequestBody QuickCustomerRequest request) {
     UserResponse response = userService.createQuickCustomer(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponseDTO.<UserResponse>builder()
-                    .code(HttpStatus.CREATED.value())
-                    .message("Tạo tài khoản thành công")
-                    .result(response)
-                    .build());
+        .body(
+            ApiResponseDTO.<UserResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Tạo tài khoản thành công")
+                .result(response)
+                .build());
   }
 
+  @PutMapping("/{userId}/upgrade")
+  @PreAuthorize("hasRole('CUSTOMER') or hasRole('STAFF') or hasRole('MANAGER') or hasRole('ADMIN')")
+  @Operation(summary = "Nâng cấp quick account thành full account")
+  public ResponseEntity<ApiResponseDTO<UserResponse>> upgradeQuickAccount(
+      @PathVariable Long userId, @Valid @RequestBody UpgradeQuickRequest request) {
+    UserResponse response = userService.upgradeQuickAccount(userId, request);
+    return ResponseEntity.ok(
+        ApiResponseDTO.<UserResponse>builder()
+            .code(HttpStatus.OK.value())
+            .message("Nâng cấp tài khoản thành công")
+            .result(response)
+            .build());
+  }
 }

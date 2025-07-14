@@ -27,9 +27,7 @@ import com.sba301.online_ticket_sales.service.RedisTokenService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-
 import java.util.*;
-
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -52,384 +50,383 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    UserRepository userRepository;
-    AuthenticationMapper authenticationMapper;
-    UserService userService;
-    AuthenticationManager authenticationManager;
-    JwtService jwtService;
-    RedisTokenService redisTokenService;
-    RedisSecretService redisSecretService;
-    PasswordEncoder passwordEncoder;
-    OutboundIdentityClient outboundIdentityClient;
-    OutboundUserClient outboundUserClient;
-    RoleRepository roleRepository;
-    UserMailQueueProducer userMailQueueProducer;
+  UserRepository userRepository;
+  AuthenticationMapper authenticationMapper;
+  UserService userService;
+  AuthenticationManager authenticationManager;
+  JwtService jwtService;
+  RedisTokenService redisTokenService;
+  RedisSecretService redisSecretService;
+  PasswordEncoder passwordEncoder;
+  OutboundIdentityClient outboundIdentityClient;
+  OutboundUserClient outboundUserClient;
+  RoleRepository roleRepository;
+  UserMailQueueProducer userMailQueueProducer;
 
-    @NonFinal
-    @Value("${outbound.identity.client-id}")
-    protected String CLIENT_ID;
+  @NonFinal
+  @Value("${outbound.identity.client-id}")
+  protected String CLIENT_ID;
 
-    @NonFinal
-    @Value("${outbound.identity.client-secret}")
-    protected String CLIENT_SECRET;
+  @NonFinal
+  @Value("${outbound.identity.client-secret}")
+  protected String CLIENT_SECRET;
 
-    @NonFinal
-    @Value("${outbound.identity.redirect-uri}")
-    protected String REDIRECT_URI;
+  @NonFinal
+  @Value("${outbound.identity.redirect-uri}")
+  protected String REDIRECT_URI;
 
-    @NonFinal
-    protected final String GRANT_TYPE = "authorization_code";
+  @NonFinal protected final String GRANT_TYPE = "authorization_code";
 
-    private final String OTP_KEY = "OTP_KEY_";
-    private final String RESET_PASSWORD_KEY = "RESET_PASSWORD_KEY_";
+  private final String OTP_KEY = "OTP_KEY_";
+  private final String RESET_PASSWORD_KEY = "RESET_PASSWORD_KEY_";
 
-    /**
-     * Đăng ký tài khoản mới cho customer Chỉ customer mới có thể đăng ký, tài khoản quản trị được tạo
-     * bởi admin
-     *
-     * @param request thông tin đăng ký
-     */
-    @Override
-    public void register(RegisterRequest request) {
+  /**
+   * Đăng ký tài khoản mới cho customer Chỉ customer mới có thể đăng ký, tài khoản quản trị được tạo
+   * bởi admin
+   *
+   * @param request thông tin đăng ký
+   */
+  @Override
+  public void register(RegisterRequest request) {
 
-        // Kiểm tra email đã tồn tại
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
-        User user = authenticationMapper.toUser(request);
-        userRepository.save(user);
+    // Kiểm tra email đã tồn tại
+    if (userRepository.existsByEmail(request.getEmail())) {
+      throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+    }
+    User user = authenticationMapper.toUser(request);
+    userRepository.save(user);
+  }
+
+  /**
+   * Đăng nhập hệ thống Hỗ trợ đăng nhập bằng: - Email/password (cho customer) - Username/password
+   * (cho admin, manager, staff)
+   *
+   * @param request thông tin đăng nhập
+   * @return token response chứa access token và refresh token
+   */
+  @Override
+  public TokenResponse login(LoginRequest request) {
+
+    // Tìm user theo identifier (có thể là email hoặc username)
+    User user = findUserByIdentifier(request.getIdentifier());
+
+    // Kiểm tra tài khoản có bị vô hiệu hóa không
+    if (!user.isEnabled()) {
+      throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
+    }
+    if (user.getPassword() == null) {
+      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
     }
 
-    /**
-     * Đăng nhập hệ thống Hỗ trợ đăng nhập bằng: - Email/password (cho customer) - Username/password
-     * (cho admin, manager, staff)
-     *
-     * @param request thông tin đăng nhập
-     * @return token response chứa access token và refresh token
-     */
-    @Override
-    public TokenResponse login(LoginRequest request) {
-
-        // Tìm user theo identifier (có thể là email hoặc username)
-        User user = findUserByIdentifier(request.getIdentifier());
-
-        // Kiểm tra tài khoản có bị vô hiệu hóa không
-        if (!user.isEnabled()) {
-            throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
-        }
-        if (user.getPassword() == null) {
-            throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
-        }
-
-        if (user.getIsFirstLogin()) {
-            String otpKey = OTP_KEY + user.getId();
-            boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
-            if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
-            String otpCode = generateOtp();
-            redisSecretService.saveSecretKey(otpKey, otpCode);
-            log.info("Generated new OTP: {}", otpCode);
-            userMailQueueProducer.sendMailMessage(
-                    OTPMailDTO.builder()
-                            .otpCode(otpCode)
-                            .receiverMail(user.getEmail())
-                            .type(OTPType.REGISTER)
-                            .build());
-            throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
-        }
-
-        // Lấy danh sách roles của user
-        List<String> roles = userService.getAllRolesByUserId(user.getId());
-        List<SimpleGrantedAuthority> authorities =
-                roles.stream().map(SimpleGrantedAuthority::new).toList();
-
-        log.info("authorities: {}", authorities);
-
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            user.getUsername(), request.getPassword(), authorities));
-
-        } catch (BadCredentialsException e) {
-            throw new AppException(ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
-        }
-
-        // Tạo access token mới
-        String accessToken = jwtService.generateToken(user);
-
-        // Tạo refresh token mới
-        String refreshToken = jwtService.generateRefreshToken(user);
-
-        redisTokenService.save(
-                RedisToken.builder()
-                        .id(user.getId().toString())
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build());
-
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .roleNames(roles)
-                .build();
+    if (user.getIsFirstLogin()) {
+      String otpKey = OTP_KEY + user.getId();
+      boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
+      if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
+      String otpCode = generateOtp();
+      redisSecretService.saveSecretKey(otpKey, otpCode);
+      log.info("Generated new OTP: {}", otpCode);
+      userMailQueueProducer.sendMailMessage(
+          OTPMailDTO.builder()
+              .otpCode(otpCode)
+              .receiverMail(user.getEmail())
+              .type(OTPType.REGISTER)
+              .build());
+      throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
     }
 
-    @Override
-    public void logout(HttpServletRequest request) {
-        log.info("VAO HAM LOGOUT - {}", request.getHeader(AUTHORIZATION));
-        log.info("TOKEN -- {}", request.getHeader(AUTHORIZATION));
-        final String authHeader = request.getHeader(AUTHORIZATION);
-        if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
-        final String token = authHeader.substring(7);
-        final String identifier = jwtService.extractSubject(token, ACCESS_TOKEN);
-        User user = findUserByIdentifier(identifier); // Tìm user
-        String redisKey = user.getId().toString();
-        redisTokenService.remove(redisKey);
+    // Lấy danh sách roles của user
+    List<String> roles = userService.getAllRolesByUserId(user.getId());
+    List<SimpleGrantedAuthority> authorities =
+        roles.stream().map(SimpleGrantedAuthority::new).toList();
+
+    log.info("authorities: {}", authorities);
+
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              user.getUsername(), request.getPassword(), authorities));
+
+    } catch (BadCredentialsException e) {
+      throw new AppException(ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
     }
 
-    @Override
-    /**
-     * Refresh token
-     *
-     * @param request
-     * @return
-     */
-    public TokenResponse refreshToken(HttpServletRequest request) {
-        log.info("---------- refreshToken ----------");
+    // Tạo access token mới
+    String accessToken = jwtService.generateToken(user);
 
-        final String refreshToken = request.getHeader("X-Refresh-Token");
-        if (StringUtils.isBlank(refreshToken)) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
+    // Tạo refresh token mới
+    String refreshToken = jwtService.generateRefreshToken(user);
 
-        log.info("Refresh token received: {}", refreshToken);
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(user.getId().toString())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
 
-        final String identifier = jwtService.extractSubject(refreshToken, TokenType.REFRESH_TOKEN);
-        if (StringUtils.isBlank(identifier)) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
-        User user = findUserByIdentifier(identifier);
-        if (!jwtService.isValid(refreshToken, TokenType.REFRESH_TOKEN, user)) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
+    return TokenResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .roleNames(roles)
+        .build();
+  }
 
-        // Xóa access token cũ trong Redis
-        String redisKey = user.getId().toString();
-        redisTokenService.remove(redisKey);
+  @Override
+  public void logout(HttpServletRequest request) {
+    log.info("VAO HAM LOGOUT - {}", request.getHeader(AUTHORIZATION));
+    log.info("TOKEN -- {}", request.getHeader(AUTHORIZATION));
+    final String authHeader = request.getHeader(AUTHORIZATION);
+    if (StringUtils.isBlank(authHeader) || !authHeader.startsWith("Bearer ")) {
+      throw new AppException(ErrorCode.INVALID_TOKEN);
+    }
+    final String token = authHeader.substring(7);
+    final String identifier = jwtService.extractSubject(token, ACCESS_TOKEN);
+    User user = findUserByIdentifier(identifier); // Tìm user
+    String redisKey = user.getId().toString();
+    redisTokenService.remove(redisKey);
+  }
 
-        // Tạo access token mới
-        String newAccessToken = jwtService.generateToken(user);
+  @Override
+  /**
+   * Refresh token
+   *
+   * @param request
+   * @return
+   */
+  public TokenResponse refreshToken(HttpServletRequest request) {
+    log.info("---------- refreshToken ----------");
 
-        // Lưu token mới vào Redis
-        redisTokenService.save(
-                RedisToken.builder()
-                        .id(redisKey)
-                        .accessToken(newAccessToken)
-                        .refreshToken(refreshToken)
-                        .build());
-
-        return TokenResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .build();
+    final String refreshToken = request.getHeader("X-Refresh-Token");
+    if (StringUtils.isBlank(refreshToken)) {
+      throw new AppException(ErrorCode.INVALID_TOKEN);
     }
 
-    @Override
-    public void changePassword(ChangePasswordRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || authentication.getPrincipal() instanceof String) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        User user = (User) authentication.getPrincipal();
+    log.info("Refresh token received: {}", refreshToken);
 
-        // Verify current password
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.INCORRECT_PASSWORD);
-        }
-
-        // Check if new password matches confirm password
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new AppException(ErrorCode.PASSWORD_MISMATCH);
-        }
-        // Update password
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+    final String identifier = jwtService.extractSubject(refreshToken, TokenType.REFRESH_TOKEN);
+    if (StringUtils.isBlank(identifier)) {
+      throw new AppException(ErrorCode.INVALID_TOKEN);
+    }
+    User user = findUserByIdentifier(identifier);
+    if (!jwtService.isValid(refreshToken, TokenType.REFRESH_TOKEN, user)) {
+      throw new AppException(ErrorCode.INVALID_TOKEN);
     }
 
-    @Override
-    public TokenResponse outboundAuthenticate(String code) {
-        var response =
-                outboundIdentityClient.exchangeToken(
-                        ExchangeTokenRequest.builder()
-                                .code(code)
-                                .clientId(CLIENT_ID)
-                                .clientSecret(CLIENT_SECRET)
-                                .redirectUri(REDIRECT_URI)
-                                .grantType(GRANT_TYPE)
-                                .build());
+    // Xóa access token cũ trong Redis
+    String redisKey = user.getId().toString();
+    redisTokenService.remove(redisKey);
 
-        log.info("TOKEN RESPONSE {}", response);
-        // Get user info
-        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+    // Tạo access token mới
+    String newAccessToken = jwtService.generateToken(user);
 
-        log.info("User Info {}", userInfo);
+    // Lưu token mới vào Redis
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(redisKey)
+            .accessToken(newAccessToken)
+            .refreshToken(refreshToken)
+            .build());
 
-        Role customerRole =
-                roleRepository
-                        .findByName(PredefinedRole.CUSTOMER_ROLE)
-                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    return TokenResponse.builder()
+        .accessToken(newAccessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
+  }
 
-        // Onboard user
-        var user =
-                userRepository
-                        .findByEmail(userInfo.getEmail())
-                        .orElseGet(
-                                () ->
-                                        userRepository.save(
-                                                User.builder()
-                                                        .email(userInfo.getEmail())
-                                                        .fullName(userInfo.getName())
-                                                        .password("")
-                                                        .roles(Collections.singletonList(customerRole))
-                                                        .accountType(AccountType.QUICK)
-                                                        .build()));
-        // create new access token
-        String accessToken = jwtService.generateToken(user);
+  @Override
+  public void changePassword(ChangePasswordRequest request) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication.getPrincipal() instanceof String) {
+      throw new AppException(ErrorCode.UNAUTHENTICATED);
+    }
+    User user = (User) authentication.getPrincipal();
 
-        // create new refresh token
-        String refreshToken = jwtService.generateRefreshToken(user);
-        redisTokenService.save(
-                RedisToken.builder()
-                        .id(user.getId().toString())
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build());
-
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .build();
+    // Verify current password
+    if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+      throw new AppException(ErrorCode.INCORRECT_PASSWORD);
     }
 
-    public void sendForgotPasswordOtp(ForgotPasswordRequest request) {
-        log.info("Forgot password OTP to email: {}", request.getEmail());
-        User user = userService.getByEmail(request.getEmail());
-        String otpCode = generateOtp();
-        String otpKey = OTP_KEY + user.getId();
-        redisSecretService.saveSecretKey(otpKey, otpCode);
-        log.info("Generated OTP: {}", otpCode);
-        userMailQueueProducer.sendMailMessage(
-                OTPMailDTO.builder()
-                        .otpCode(otpCode)
-                        .receiverMail(request.getEmail())
-                        .type(OTPType.FORGOT_PASSWORD)
-                        .build());
+    // Check if new password matches confirm password
+    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+      throw new AppException(ErrorCode.PASSWORD_MISMATCH);
     }
+    // Update password
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+  }
 
-    @Override
-    public String confirmOTP(ConfirmOTPRequest request) {
-        log.info("Confirming OTP for email: {}", request.getEmail());
-        User user = userService.getByEmail(request.getEmail());
-        String otpKey = OTP_KEY + user.getId();
-        if (!redisSecretService.isValidSecretKey(otpKey, request.getOtp())) {
-            throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
-        }
-        redisSecretService.removeSecretKey(otpKey);
-        log.info("OTP confirmed for email: {}", request.getEmail());
-        String secretKey = Base64.getEncoder().encodeToString(request.getEmail().getBytes());
+  @Override
+  public TokenResponse outboundAuthenticate(String code) {
+    var response =
+        outboundIdentityClient.exchangeToken(
+            ExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID)
+                .clientSecret(CLIENT_SECRET)
+                .redirectUri(REDIRECT_URI)
+                .grantType(GRANT_TYPE)
+                .build());
 
-        String resetPasswordKey = RESET_PASSWORD_KEY + user.getId();
-        redisSecretService.saveSecretKey(resetPasswordKey, secretKey);
-        log.info("Reset password key saved for user ID: {}", user.getId());
-        return secretKey;
+    log.info("TOKEN RESPONSE {}", response);
+    // Get user info
+    var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+
+    log.info("User Info {}", userInfo);
+
+    Role customerRole =
+        roleRepository
+            .findByName(PredefinedRole.CUSTOMER_ROLE)
+            .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+    // Onboard user
+    var user =
+        userRepository
+            .findByEmail(userInfo.getEmail())
+            .orElseGet(
+                () ->
+                    userRepository.save(
+                        User.builder()
+                            .email(userInfo.getEmail())
+                            .fullName(userInfo.getName())
+                            .password("")
+                            .roles(Collections.singletonList(customerRole))
+                            .accountType(AccountType.FULL)
+                            .build()));
+    // create new access token
+    String accessToken = jwtService.generateToken(user);
+
+    // create new refresh token
+    String refreshToken = jwtService.generateRefreshToken(user);
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(user.getId().toString())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
+
+    return TokenResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
+  }
+
+  public void sendForgotPasswordOtp(ForgotPasswordRequest request) {
+    log.info("Forgot password OTP to email: {}", request.getEmail());
+    User user = userService.getByEmail(request.getEmail());
+    String otpCode = generateOtp();
+    String otpKey = OTP_KEY + user.getId();
+    redisSecretService.saveSecretKey(otpKey, otpCode);
+    log.info("Generated OTP: {}", otpCode);
+    userMailQueueProducer.sendMailMessage(
+        OTPMailDTO.builder()
+            .otpCode(otpCode)
+            .receiverMail(request.getEmail())
+            .type(OTPType.FORGOT_PASSWORD)
+            .build());
+  }
+
+  @Override
+  public String confirmOTP(ConfirmOTPRequest request) {
+    log.info("Confirming OTP for email: {}", request.getEmail());
+    User user = userService.getByEmail(request.getEmail());
+    String otpKey = OTP_KEY + user.getId();
+    if (!redisSecretService.isValidSecretKey(otpKey, request.getOtp())) {
+      throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
     }
+    redisSecretService.removeSecretKey(otpKey);
+    log.info("OTP confirmed for email: {}", request.getEmail());
+    String secretKey = Base64.getEncoder().encodeToString(request.getEmail().getBytes());
 
-    @Override
-    public void resendOTP(ResendOTPRequest request) {
-        log.info("Resending OTP to email: {}", request.getEmail());
-        User user = userService.getByEmail(request.getEmail());
-        String otpKey = OTP_KEY + user.getId();
-        boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
-        if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
-        String otpCode = generateOtp();
-        redisSecretService.saveSecretKey(otpKey, otpCode);
-        log.info("Generated new OTP: {}", otpCode);
-        userMailQueueProducer.sendMailMessage(
-                OTPMailDTO.builder()
-                        .otpCode(otpCode)
-                        .receiverMail(request.getEmail())
-                        .type(request.getOtpType())
-                        .build());
+    String resetPasswordKey = RESET_PASSWORD_KEY + user.getId();
+    redisSecretService.saveSecretKey(resetPasswordKey, secretKey);
+    log.info("Reset password key saved for user ID: {}", user.getId());
+    return secretKey;
+  }
+
+  @Override
+  public void resendOTP(ResendOTPRequest request) {
+    log.info("Resending OTP to email: {}", request.getEmail());
+    User user = userService.getByEmail(request.getEmail());
+    String otpKey = OTP_KEY + user.getId();
+    boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
+    if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
+    String otpCode = generateOtp();
+    redisSecretService.saveSecretKey(otpKey, otpCode);
+    log.info("Generated new OTP: {}", otpCode);
+    userMailQueueProducer.sendMailMessage(
+        OTPMailDTO.builder()
+            .otpCode(otpCode)
+            .receiverMail(request.getEmail())
+            .type(request.getOtpType())
+            .build());
+  }
+
+  @Override
+  @Transactional
+  public TokenResponse resetPassword(ResetPasswordRequest request) {
+    log.info("Resetting password for email: {}", request.getEmail());
+    User user = userService.getByEmail(request.getEmail());
+    String resetPasswordKey = RESET_PASSWORD_KEY + user.getId();
+    if (!redisSecretService.isValidSecretKey(resetPasswordKey, request.getResetKey())) {
+      throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
     }
+    redisSecretService.removeSecretKey(resetPasswordKey);
 
-    @Override
-    @Transactional
-    public TokenResponse resetPassword(ResetPasswordRequest request) {
-        log.info("Resetting password for email: {}", request.getEmail());
-        User user = userService.getByEmail(request.getEmail());
-        String resetPasswordKey = RESET_PASSWORD_KEY + user.getId();
-        if (!redisSecretService.isValidSecretKey(resetPasswordKey, request.getResetKey())) {
-            throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
-        }
-        redisSecretService.removeSecretKey(resetPasswordKey);
+    boolean isPasswordMismatch = !request.getNewPassword().equals(request.getConfirmPassword());
+    if (isPasswordMismatch) throw new AppException(ErrorCode.PASSWORD_MISMATCH);
 
-        boolean isPasswordMismatch = !request.getNewPassword().equals(request.getConfirmPassword());
-        if (isPasswordMismatch) throw new AppException(ErrorCode.PASSWORD_MISMATCH);
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+    log.info("Password reset successfully for email: {}", request.getEmail());
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-        log.info("Password reset successfully for email: {}", request.getEmail());
+    // create new access token
+    String accessToken = jwtService.generateToken(user);
 
-        // create new access token
-        String accessToken = jwtService.generateToken(user);
+    // create new refresh token
+    String refreshToken = jwtService.generateRefreshToken(user);
+    log.info(
+        "REDIS TOKEN {}",
+        RedisToken.builder()
+            .id(user.getUsername())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
+    redisTokenService.save(
+        RedisToken.builder()
+            .id(user.getId().toString())
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build());
 
-        // create new refresh token
-        String refreshToken = jwtService.generateRefreshToken(user);
-        log.info(
-                "REDIS TOKEN {}",
-                RedisToken.builder()
-                        .id(user.getUsername())
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build());
-        redisTokenService.save(
-                RedisToken.builder()
-                        .id(user.getId().toString())
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build());
+    return TokenResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
+  }
 
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .build();
-    }
+  /**
+   * Tìm user theo identifier (email hoặc username) Hỗ trợ cả customer (email) và admin account
+   * (username)
+   *
+   * @param identifier email hoặc username
+   * @return User entity
+   * @throws AppException nếu không tìm thấy user
+   */
+  private User findUserByIdentifier(String identifier) {
+    Optional<User> userOpt = userRepository.findByEmail(identifier);
+    if (userOpt.isEmpty()) userOpt = userRepository.findByUsername(identifier);
+    if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(identifier);
+    return userOpt.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+  }
 
-    /**
-     * Tìm user theo identifier (email hoặc username) Hỗ trợ cả customer (email) và admin account
-     * (username)
-     *
-     * @param identifier email hoặc username
-     * @return User entity
-     * @throws AppException nếu không tìm thấy user
-     */
-    private User findUserByIdentifier(String identifier) {
-        Optional<User> userOpt = userRepository.findByEmail(identifier);
-        if (userOpt.isEmpty()) userOpt = userRepository.findByUsername(identifier);
-        if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(identifier);
-        return userOpt.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    private String generateOtp() {
-        Random random = new Random();
-        int otp = random.nextInt(999999);
-        return String.format("%06d", otp);
-    }
+  private String generateOtp() {
+    Random random = new Random();
+    int otp = random.nextInt(999999);
+    return String.format("%06d", otp);
+  }
 }
