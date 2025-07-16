@@ -338,6 +338,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public String confirmOTP(ConfirmOTPRequest request) {
     log.info("Confirming OTP for email: {}", request.getEmail());
     User user = userService.getByEmail(request.getEmail());
+    user.setIsFirstLogin(false);
+    userRepository.save(user);
     String otpKey = OTP_KEY + user.getId();
     if (!redisSecretService.isValidSecretKey(otpKey, request.getOtp())) {
       throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
