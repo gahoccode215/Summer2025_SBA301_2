@@ -13,7 +13,7 @@ import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.*;
 import com.sba301.online_ticket_sales.service.PaymentService;
 import com.sba301.online_ticket_sales.service.PaymentStrategy;
-import com.sba301.online_ticket_sales.service.UserMailQueueProducer;
+import com.sba301.online_ticket_sales.service.SendMailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
@@ -37,8 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
   private final MovieScreenRepository movieScreenRepository;
   private final TicketOrderRepository ticketOrderRepository;
   private final OrderSeatRedisRepository orderSeatRedisRepository;
-
-  private final UserMailQueueProducer userMailQueueProducer;
+  private final SendMailService sendMailService;
 
   @Override
   public String createPayment(String orderCode, HttpServletRequest httpServletRequest) {
@@ -142,7 +141,7 @@ public class PaymentServiceImpl implements PaymentService {
 
       TicketMailDTO ticketMailDTO = createTicketMailDTO(ticketOrder, user, movieScreen);
 
-      userMailQueueProducer.sendMailTicketOrderMessage(ticketMailDTO);
+      sendMailService.sendTicketMail(ticketMailDTO);
 
     } else if (paymentStatus == PaymentStatus.CANCELLED || paymentStatus == PaymentStatus.EXPIRED) {
       log.info("Payment cancelled or expired for order: {}", order.getTicketCode());

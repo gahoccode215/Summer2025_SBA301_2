@@ -61,7 +61,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   OutboundIdentityClient outboundIdentityClient;
   OutboundUserClient outboundUserClient;
   RoleRepository roleRepository;
-  UserMailQueueProducer userMailQueueProducer;
+  SendMailService sendMailService;
 
   @NonFinal
   @Value("${outbound.identity.client-id}")
@@ -168,8 +168,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(
-        OTPMailDTO.builder()
+    sendMailService.sendMail(OTPMailDTO.builder()
             .otpCode(otpCode)
             .receiverMail(user.getEmail())
             .type(OTPType.REGISTER)
@@ -326,10 +325,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpKey = OTP_KEY + user.getId();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(
-        OTPMailDTO.builder()
+    sendMailService.sendMail(OTPMailDTO.builder()
             .otpCode(otpCode)
-            .receiverMail(request.getEmail())
+            .receiverMail(user.getEmail())
             .type(OTPType.FORGOT_PASSWORD)
             .build());
   }
@@ -364,10 +362,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(
-        OTPMailDTO.builder()
+    sendMailService.sendMail(OTPMailDTO.builder()
             .otpCode(otpCode)
-            .receiverMail(request.getEmail())
+            .receiverMail(user.getEmail())
             .type(request.getOtpType())
             .build());
   }
