@@ -94,8 +94,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
     }
     User user = authenticationMapper.toUser(request);
-    handleVerifyOtp(user);
     userRepository.save(user);
+    User savedUser = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    handleVerifyOtp(savedUser);
   }
 
   /**
