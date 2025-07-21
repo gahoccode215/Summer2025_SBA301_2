@@ -7,14 +7,14 @@ import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse
 import com.sba301.online_ticket_sales.dto.booking.response.TicketOrderDTO;
 import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
+import com.sba301.online_ticket_sales.enums.PaymentStatus;
 import com.sba301.online_ticket_sales.exception.AppException;
-import com.sba301.online_ticket_sales.repository.MovieRepository;
-import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
-import com.sba301.online_ticket_sales.repository.RoomRepository;
-import com.sba301.online_ticket_sales.repository.TicketOrderRepository;
+import com.sba301.online_ticket_sales.repository.*;
 import com.sba301.online_ticket_sales.service.BookingCacheService;
 import com.sba301.online_ticket_sales.service.BookingService;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,7 @@ public class BookingServiceImpl implements BookingService {
   private final MovieScreenRepository movieScreenRepository;
   private final BookingCacheService bookingCacheService;
   private final TicketOrderRepository ticketOrderRepository;
+  private final UserRepository userRepository;
 
   @Override
   public SeatMapResponse getSeatMap(Long movieScreenId) {
@@ -79,14 +80,17 @@ public class BookingServiceImpl implements BookingService {
   }
 
   @Override
+  @Transactional
   public BookingSeatResponse bookSeatsByManager(
       BookingTicketRequest bookingTicketRequest, Long cinemaId, Long customerId) {
+
     log.info("Booking seats by manager for request: {}", bookingTicketRequest);
 
     var authentication =
         (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     List<String> roleNames =
         authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
     boolean isAdmin =
         roleNames.contains("MANAGER")
             || roleNames.contains("ROLE_MANAGER")
@@ -102,7 +106,64 @@ public class BookingServiceImpl implements BookingService {
       }
     }
 
-    return processBooking(bookingTicketRequest, customerId);
+    MovieScreen movieScreen =
+        movieScreenRepository
+            .findById(bookingTicketRequest.getShowtimeId())
+            .orElseThrow(() -> new AppException(ErrorCode.MOVIESCREEN_NOT_WORKING));
+
+    for (String seatCode : bookingTicketRequest.getSeatCodes()) {
+      if (ticketOrderRepository.countSeatBooked(movieScreen.getId(), seatCode) > 0) {
+        log.error("Seat {} is already booked for showtime ID: {}", seatCode, movieScreen.getId());
+        throw new AppException(ErrorCode.SEAT_ALREADY_BOOKED);
+      }
+    }
+
+    log.info("All seats are available for booking.");
+    String ticketCode = generateTicketCode();
+    log.info("Generated ticket code: {}", ticketCode);
+
+    BigDecimal totalPrice =
+        movieScreen
+            .getTicketPrice()
+            .multiply(BigDecimal.valueOf(bookingTicketRequest.getSeatCodes().size()));
+
+    if (totalPrice.compareTo(BigDecimal.ZERO) < 0) {
+      log.error("Final price cannot be negative. Current value: {}", totalPrice);
+      throw new AppException(ErrorCode.INVALID_TICKET_PRICE);
+    }
+
+    User customer =
+        userRepository
+            .findById(customerId)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+    BigDecimal ticketPrice =
+        totalPrice.divide(
+            BigDecimal.valueOf(bookingTicketRequest.getSeatCodes().size()),
+            2,
+            RoundingMode.HALF_UP);
+
+    TicketOrder ticketOrder = new TicketOrder();
+    ticketOrder.setTicketCode(ticketCode);
+    ticketOrder.setUser(customer);
+    ticketOrder.setMovieScreen(movieScreen);
+    ticketOrder.setTotalAmount(totalPrice);
+    ticketOrder.setPaymentStatus(PaymentStatus.SUCCESS);
+
+    List<TicketOrderDetail> details = new ArrayList<>();
+    for (String seatCode : bookingTicketRequest.getSeatCodes()) {
+      TicketOrderDetail detail = new TicketOrderDetail();
+      detail.setSeatCode(seatCode);
+      detail.setPrice(ticketPrice);
+      detail.setTicketOrder(ticketOrder);
+      details.add(detail);
+    }
+    ticketOrder.setTicketDetails(details);
+
+    ticketOrderRepository.save(ticketOrder);
+
+    return buildBookingSeatResponse(
+        bookingTicketRequest.getSeatCodes(), ticketCode, movieScreen, totalPrice);
   }
 
   @Override

@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.config;
 
-
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.*;

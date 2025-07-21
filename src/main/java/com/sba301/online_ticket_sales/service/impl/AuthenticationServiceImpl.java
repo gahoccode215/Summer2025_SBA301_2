@@ -95,8 +95,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     User user = authenticationMapper.toUser(request);
     userRepository.save(user);
-    User savedUser = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    User savedUser =
+        userRepository
+            .findByEmail(request.getEmail())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     handleVerifyOtp(savedUser);
   }
 
@@ -117,9 +119,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     if (!user.isEnabled()) {
       throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
     }
-//    if (user.getPassword() == null) {
-//      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
-//    }
+    //    if (user.getPassword() == null) {
+    //      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
+    //    }
     if (user.getIsFirstLogin()) {
       handleVerifyOtp(user);
       throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
@@ -169,7 +171,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    sendMailService.sendMail(OTPMailDTO.builder()
+    sendMailService.sendMail(
+        OTPMailDTO.builder()
             .otpCode(otpCode)
             .receiverMail(user.getEmail())
             .type(OTPType.REGISTER)
@@ -326,7 +329,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpKey = OTP_KEY + user.getId();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated OTP: {}", otpCode);
-    sendMailService.sendMail(OTPMailDTO.builder()
+    sendMailService.sendMail(
+        OTPMailDTO.builder()
             .otpCode(otpCode)
             .receiverMail(user.getEmail())
             .type(OTPType.FORGOT_PASSWORD)
@@ -363,7 +367,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    sendMailService.sendMail(OTPMailDTO.builder()
+    sendMailService.sendMail(
+        OTPMailDTO.builder()
             .otpCode(otpCode)
             .receiverMail(user.getEmail())
             .type(request.getOtpType())

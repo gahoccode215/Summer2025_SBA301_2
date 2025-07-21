@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CinemaRepository extends JpaRepository<Cinema, Long> {
   List<Cinema> findAllByIsActiveTrue();
+
   @Query("SELECT COUNT(c) FROM Cinema c WHERE c.isActive = true")
   Long countByIsActiveTrue();
 }
