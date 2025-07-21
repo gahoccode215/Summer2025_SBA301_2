@@ -11,6 +11,9 @@ public interface MovieRepository
     extends JpaRepository<Movie, Long>, JpaSpecificationExecutor<Movie> {
   boolean existsByTitleIgnoreCase(String title);
 
+  @Query("SELECT COUNT(m) FROM Movie m WHERE m.isDeleted = false")
+  Long countByIsDeletedFalse();
+
   @Query(
       "SELECT COUNT(m) > 0 FROM Movie m WHERE LOWER(m.title) = LOWER(:title) AND m.id != :id AND m.isDeleted = false")
   boolean existsByTitleIgnoreCaseAndIdNot(@Param("title") String title, @Param("id") Long id);

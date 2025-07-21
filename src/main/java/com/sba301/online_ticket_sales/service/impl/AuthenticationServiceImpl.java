@@ -117,10 +117,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     if (!user.isEnabled()) {
       throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
     }
-    if (user.getPassword() == null) {
-      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
-    }
-
+//    if (user.getPassword() == null) {
+//      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
+//    }
     if (user.getIsFirstLogin()) {
       handleVerifyOtp(user);
       throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);

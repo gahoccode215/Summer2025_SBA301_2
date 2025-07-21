@@ -12,6 +12,27 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> {
+  @Query("""
+        SELECT COUNT(ms) FROM MovieScreen ms 
+        WHERE ms.showtime >= CURRENT_TIMESTAMP
+        """)
+  Long countActiveShowtimes();
+
+  @Query("""
+        SELECT COUNT(DISTINCT ms.movie.id) FROM MovieScreen ms 
+        JOIN ms.room r 
+        WHERE r.cinema.id = :cinemaId 
+        AND ms.showtime >= CURRENT_TIMESTAMP
+        """)
+  Long countUniqueMoviesByCinema(@Param("cinemaId") Long cinemaId);
+
+  @Query("""
+        SELECT COUNT(ms) FROM MovieScreen ms 
+        JOIN ms.room r 
+        WHERE r.cinema.id = :cinemaId 
+        AND ms.showtime >= CURRENT_TIMESTAMP
+        """)
+  Long countActiveShowtimesByCinema(@Param("cinemaId") Long cinemaId);
   @Query(
       value =
           """

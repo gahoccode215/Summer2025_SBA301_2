@@ -1,6 +1,5 @@
 package com.sba301.online_ticket_sales.config;
 
-import static org.springframework.amqp.core.QueueBuilder.LeaderLocator.random;
 
 import com.sba301.online_ticket_sales.constant.PredefinedRole;
 import com.sba301.online_ticket_sales.entity.*;

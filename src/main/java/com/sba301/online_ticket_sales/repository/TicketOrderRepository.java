@@ -1,7 +1,14 @@
 package com.sba301.online_ticket_sales.repository;
 
 import com.sba301.online_ticket_sales.entity.TicketOrder;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import com.sba301.online_ticket_sales.enums.PaymentStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -52,4 +59,159 @@ public interface TicketOrderRepository extends JpaRepository<TicketOrder, Long> 
   List<String> findSeatCodesByTicketCode(@Param("ticketCode") String ticketCode);
 
   List<TicketOrder> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+  @Query("""
+    SELECT COUNT(t) FROM TicketOrder t 
+    WHERE t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    """)
+  Long countByPaymentStatusAndCreatedAtBetween(
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+    SELECT COALESCE(SUM(t.totalAmount), 0) FROM TicketOrder t 
+    WHERE t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    """)
+  BigDecimal sumRevenueByDateRange(
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+    SELECT m.id, m.title, m.thumbnailUrl, COUNT(t.id), SUM(t.totalAmount)
+    FROM TicketOrder t
+    JOIN t.movieScreen ms 
+    JOIN ms.movie m
+    WHERE t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    GROUP BY m.id, m.title, m.thumbnailUrl
+    ORDER BY COUNT(t.id) DESC
+    """)
+  List<Object[]> findTopMoviesByDateRange(
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
+          Pageable pageable);
+
+  @Query("""
+    SELECT DATE(t.createdAt), SUM(t.totalAmount), COUNT(t.id)
+    FROM TicketOrder t 
+    WHERE t.paymentStatus = :status 
+    AND DATE(t.createdAt) BETWEEN :startDate AND :endDate
+    GROUP BY DATE(t.createdAt)
+    ORDER BY DATE(t.createdAt)
+    """)
+  List<Object[]> getRevenueByDateRange(
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDate startDate,
+          @Param("endDate") LocalDate endDate);
+
+  @Query("""
+    SELECT c.id, c.name, COUNT(t.id), SUM(t.totalAmount), 
+           (COUNT(t.id) * 100.0 / COUNT(ms.id)) as occupancyRate
+    FROM TicketOrder t 
+    JOIN t.movieScreen ms 
+    JOIN ms.room r 
+    JOIN r.cinema c
+    WHERE t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    GROUP BY c.id, c.name
+    ORDER BY SUM(t.totalAmount) DESC
+    """)
+  List<Object[]> getCinemaPerformanceByDateRange(
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+    SELECT t.ticketCode, u.fullName, m.title, c.name, t.createdAt, t.totalAmount, t.paymentStatus
+    FROM TicketOrder t 
+    JOIN t.user u 
+    JOIN t.movieScreen ms 
+    JOIN ms.movie m 
+    JOIN ms.room r 
+    JOIN r.cinema c
+    ORDER BY t.createdAt DESC
+    """)
+  List<Object[]> findRecentBookings(Pageable pageable);
+
+  @Query("""
+    SELECT COUNT(t) FROM TicketOrder t 
+    JOIN t.movieScreen ms 
+    JOIN ms.room r 
+    WHERE r.cinema.id = :cinemaId 
+    AND t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    """)
+  Long countByCinemaAndPaymentStatusAndDateRange(
+          @Param("cinemaId") Long cinemaId,
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+    SELECT COALESCE(SUM(t.totalAmount), 0) FROM TicketOrder t 
+    JOIN t.movieScreen ms 
+    JOIN ms.room r 
+    WHERE r.cinema.id = :cinemaId 
+    AND t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    """)
+  BigDecimal sumRevenueByCinemaAndDateRange(
+          @Param("cinemaId") Long cinemaId,
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+    SELECT m.id, m.title, m.thumbnailUrl, COUNT(t.id), SUM(t.totalAmount)
+    FROM TicketOrder t 
+    JOIN t.movieScreen ms 
+    JOIN ms.movie m 
+    JOIN ms.room r 
+    WHERE r.cinema.id = :cinemaId 
+    AND t.paymentStatus = :status 
+    AND t.createdAt BETWEEN :startDate AND :endDate
+    GROUP BY m.id, m.title, m.thumbnailUrl
+    ORDER BY COUNT(t.id) DESC
+    """)
+  List<Object[]> findTopMoviesByCinemaAndDateRange(
+          @Param("cinemaId") Long cinemaId,
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
+          Pageable pageable);
+
+  @Query("""
+    SELECT DATE(t.createdAt), SUM(t.totalAmount), COUNT(t.id)
+    FROM TicketOrder t 
+    JOIN t.movieScreen ms 
+    JOIN ms.room r 
+    WHERE r.cinema.id = :cinemaId 
+    AND t.paymentStatus = :status 
+    AND DATE(t.createdAt) BETWEEN :startDate AND :endDate
+    GROUP BY DATE(t.createdAt)
+    ORDER BY DATE(t.createdAt)
+    """)
+  List<Object[]> getRevenueByCinemaAndDateRange(
+          @Param("cinemaId") Long cinemaId,
+          @Param("status") PaymentStatus status,
+          @Param("startDate") LocalDate startDate,
+          @Param("endDate") LocalDate endDate);
+
+  @Query("""
+    SELECT t.ticketCode, u.fullName, m.title, c.name, t.createdAt, t.totalAmount, t.paymentStatus
+    FROM TicketOrder t
+    JOIN t.user u
+    JOIN t.movieScreen ms
+    JOIN ms.movie m
+    JOIN ms.room r
+    JOIN r.cinema c
+    WHERE c.id = :cinemaId
+    ORDER BY t.createdAt DESC
+    """)
+  List<Object[]> findRecentBookingsByCinema(@Param("cinemaId") Long cinemaId, Pageable pageable);
 }
