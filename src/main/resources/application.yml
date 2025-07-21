@@ -30,13 +30,18 @@ spring:
           auth: true
           starttls:
             enable: true
+
+  cloudinary:
+    cloudName: ${CLOUDINARY_CLOUD_NAME}
+    apiKey: ${CLOUDINARY_API_KEY}
+    apiSecret: ${CLOUDINARY_API_SECRET}
+
+
 outbound:
   identity:
     client-id: ${OAUTH_GOOGLE_CLIENT_ID}
     client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
-    redirect-uri: "http://localhost:3000/authenticate"
-
-
+    redirect-uri: "http://localhost:5173/authenticate"
 
 management:
   endpoints:
@@ -69,7 +74,16 @@ jwt:
   refreshKey: 9k1jJAWAKQCnCEz1pwcPNegbHoLugf9hgEnn6sz5pFc=
   resetKey: 2OeEeG48CvIcH1K0UAXbSo/7gPj3QLJ7MnQZuscRirQ=
 
-rabbitmq:
-  exchangeName: sba.exchange
-  user-mail-queue: userMailQueue
-  user-mail-routing-key: userMailQueueRoutingKey
+app:
+  defaultImage: https://media.licdn.com/dms/image/v2/C5112AQEw1fXuabCTyQ/article-inline_image-shrink_1500_2232/article-inline_image-shrink_1500_2232/0/1581099611064?e=1755129600&v=beta&t=uOI9KdstVt77LeFfmofOTwfgEbtAZ3LyR3aLwR70slw
+
+vnpay:
+  tmn-code: ${VNP_TMN_CODE}
+  hash-secret: ${VNP_HASHSECRET}
+  url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+  return-url: http://localhost:5173/payments/success
+  version: 2.1.0
+  command: pay
+  order-type: other
+  currency-code: VND

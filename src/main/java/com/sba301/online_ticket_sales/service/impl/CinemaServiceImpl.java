@@ -4,17 +4,23 @@ import com.sba301.online_ticket_sales.dto.cinema.request.CinemaRequest;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaDetailResponse;
 import com.sba301.online_ticket_sales.dto.cinema.response.CinemaResponse;
 import com.sba301.online_ticket_sales.entity.Cinema;
+import com.sba301.online_ticket_sales.entity.User;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
 import com.sba301.online_ticket_sales.service.CinemaService;
+import com.sba301.online_ticket_sales.service.CloudinaryService;
 import java.util.List;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Slf4j
@@ -23,18 +29,61 @@ import org.springframework.stereotype.Service;
 public class CinemaServiceImpl implements CinemaService {
   CinemaRepository cinemaRepository;
   CinemaMapper cinemaMapper;
+  CloudinaryService cloudinaryService;
+
+  String folder = "SBA301/online-ticket-sales/cinema";
 
   @Override
-  public Long upsertCinema(CinemaRequest request) {
+  public Long upsertCinema(CinemaRequest request, MultipartFile file) {
+    log.info("Upsert cinema with request: {}", request);
+    var authentication =
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    log.info("User: {}", authentication.getUsername());
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+    if (request.getRequestType().isCreate() && !isAdmin) {
+      throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+    }
+    if (request.getRequestType().isUpdate() && !isAdmin) {
+      boolean isManagerOfCinema =
+          authentication.getManagedCinemas().stream()
+              .anyMatch(cinema -> cinema.getId().equals(request.getId()));
+      if (!isManagerOfCinema) {
+        throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+      }
+    }
     Cinema cinema = cinemaMapper.toCinema(request);
+    try {
+      if (file != null && !file.isEmpty()) {
+        Map<String, String> accessKey = this.cloudinaryService.uploadImage(file.getBytes(), folder);
+        cinema.setMediaKey(cloudinaryService.getImageUrl(accessKey.get("asset_id")));
+        cinema.setPublicId(accessKey.get("public_id"));
+      }
+    } catch (Exception e) {
+      log.error("Error uploading image: {}", e.getMessage());
+    }
     Cinema result = cinemaRepository.save(cinema);
     log.info(request.getRequestType() + " cinema: {}", request.getId());
     return result.getId();
   }
 
   @Override
-  public List<CinemaResponse> getAllCinemas() {
-    List<Cinema> cinemas = cinemaRepository.findAll();
+  public List<CinemaResponse> getAllCinemasWithAuthentication() {
+    log.info("Get all cinemas");
+    var authentication =
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+    List<Cinema> cinemas;
+
+    if (isAdmin) {
+      cinemas = cinemaRepository.findAll();
+    } else {
+      cinemas = authentication.getManagedCinemas();
+    }
     if (!cinemas.isEmpty()) {
       return cinemas.stream().map(cinemaMapper::toCinemaResponse).toList();
     }
@@ -43,6 +92,23 @@ public class CinemaServiceImpl implements CinemaService {
 
   @Override
   public CinemaDetailResponse getCinemaDetail(Long id) {
+    log.info("Get cinema detail with id: {}", id);
+
+    var authentication =
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+
+    if (!isAdmin) {
+      boolean hasAccess =
+          authentication.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(id));
+      if (!hasAccess) {
+        throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+      }
+    }
+
     Cinema cinema =
         cinemaRepository
             .findById(id)
@@ -53,6 +119,17 @@ public class CinemaServiceImpl implements CinemaService {
 
   @Override
   public void deActivate(Long id, boolean active) {
+    log.info("Deactivating cinema with id: {}, active: {}", id, active);
+    var authentication =
+        (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    List<String> roleNames =
+        authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin = roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
+
+    if (!isAdmin) {
+      throw new AppException(ErrorCode.CINEMA_UPSERT_PERMISSION_DENIED);
+    }
     Cinema cinema =
         cinemaRepository
             .findById(id)
@@ -60,5 +137,15 @@ public class CinemaServiceImpl implements CinemaService {
     cinema.setActive(active);
     cinemaRepository.save(cinema);
     log.info("Deactivated cinema: {}, active: {}", id, active);
+  }
+
+  @Override
+  public List<CinemaResponse> getAllCinemasForCustomer() {
+    log.info("Get all cinemas for customer");
+    List<Cinema> cinemas = cinemaRepository.findAllByIsActiveTrue();
+    if (!cinemas.isEmpty()) {
+      return cinemas.stream().map(cinemaMapper::toCinemaResponse).toList();
+    }
+    return List.of();
   }
 }

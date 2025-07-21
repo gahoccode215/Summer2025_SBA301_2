@@ -2,7 +2,6 @@ package com.sba301.online_ticket_sales.dto.person.request;
 
 import com.sba301.online_ticket_sales.enums.Occupation;
 import java.time.LocalDate;
-import java.util.List;
 import lombok.*;
 
 @Getter
@@ -15,5 +14,4 @@ public class PersonCreationRequest {
   private Occupation occupation;
   private String biography;
   private Integer countryId;
-  private List<String> images;
 }

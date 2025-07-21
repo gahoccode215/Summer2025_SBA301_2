@@ -15,14 +15,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 public class ResendOTPRequest {
-    @NotNull(message = "Email is required")
-    @NotBlank(message = "Email cannot be blank")
-    @Pattern(
-            regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-            message = "The email format is incorrect.")
-    @Schema(description = "email", example = "email@email.com")
-    private String email;
+  @NotNull(message = "Email is required")
+  @NotBlank(message = "Email cannot be blank")
+  @Pattern(
+      regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      message = "The email format is incorrect.")
+  @Schema(description = "email", example = "email@email.com")
+  private String email;
 
-    @NotNull(message = "OTP type is require")
-    private OTPType otpType;
+  @NotNull(message = "OTP type is require")
+  private OTPType otpType;
 }

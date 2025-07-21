@@ -37,7 +37,6 @@ public class PersonMapperImpl implements PersonMapper {
         .occupation(request.getOccupation())
         .biography(request.getBiography())
         .country(country)
-        .images(request.getImages())
         .build();
   }
 
@@ -73,6 +72,5 @@ public class PersonMapperImpl implements PersonMapper {
               .orElseThrow(() -> new AppException(ErrorCode.COUNTRY_NOT_FOUND));
       person.setCountry(country);
     }
-    Optional.ofNullable(request.getImages()).ifPresent(person::setImages);
   }
 }

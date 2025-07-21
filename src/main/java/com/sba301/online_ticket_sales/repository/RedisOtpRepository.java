@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RedisOtpRepository extends CrudRepository<RedisSecretKey, String> {
 
-    void save(String key, String otp);
-    boolean existsById(String key);
+  void save(String key, String otp);
 
+  boolean existsById(String key);
 }

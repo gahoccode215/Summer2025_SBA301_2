@@ -9,6 +9,7 @@ import com.sba301.online_ticket_sales.dto.auth.response.TokenResponse;
 import com.sba301.online_ticket_sales.dto.common.OTPMailDTO;
 import com.sba301.online_ticket_sales.entity.Role;
 import com.sba301.online_ticket_sales.entity.User;
+import com.sba301.online_ticket_sales.enums.AccountType;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.OTPType;
 import com.sba301.online_ticket_sales.enums.TokenType;
@@ -26,10 +27,7 @@ import com.sba301.online_ticket_sales.service.RedisTokenService;
 import com.sba301.online_ticket_sales.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -63,6 +61,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   OutboundIdentityClient outboundIdentityClient;
   OutboundUserClient outboundUserClient;
   RoleRepository roleRepository;
+  SendMailService sendMailService;
 
   @NonFinal
   @Value("${outbound.identity.client-id}")
@@ -77,48 +76,82 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   protected String REDIRECT_URI;
 
   @NonFinal protected final String GRANT_TYPE = "authorization_code";
-  UserMailQueueProducer userMailQueueProducer;
 
   private final String OTP_KEY = "OTP_KEY_";
   private final String RESET_PASSWORD_KEY = "RESET_PASSWORD_KEY_";
 
+  /**
+   * Đăng ký tài khoản mới cho customer Chỉ customer mới có thể đăng ký, tài khoản quản trị được tạo
+   * bởi admin
+   *
+   * @param request thông tin đăng ký
+   */
   @Override
   public void register(RegisterRequest request) {
-    userRepository.save(authenticationMapper.toUser(request));
+
+    // Kiểm tra email đã tồn tại
+    if (userRepository.existsByEmail(request.getEmail())) {
+      throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+    }
+    User user = authenticationMapper.toUser(request);
+    userRepository.save(user);
+    User savedUser =
+        userRepository
+            .findByEmail(request.getEmail())
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    handleVerifyOtp(savedUser);
   }
 
+  /**
+   * Đăng nhập hệ thống Hỗ trợ đăng nhập bằng: - Email/password (cho customer) - Username/password
+   * (cho admin, manager, staff)
+   *
+   * @param request thông tin đăng nhập
+   * @return token response chứa access token và refresh token
+   */
   @Override
   public TokenResponse login(LoginRequest request) {
-    User user = userService.getByEmail(request.getEmail());
+
+    // Tìm user theo identifier (có thể là email hoặc username)
+    User user = findUserByIdentifier(request.getIdentifier());
+
+    // Kiểm tra tài khoản có bị vô hiệu hóa không
     if (!user.isEnabled()) {
       throw new AppException(ErrorCode.ACCOUNT_HAS_BEEN_DISABLE);
     }
+    //    if (user.getPassword() == null) {
+    //      throw new AppException(ErrorCode.QUICK_ACCOUNT_CANNOT_LOGIN);
+    //    }
+    if (user.getIsFirstLogin()) {
+      handleVerifyOtp(user);
+      throw new AppException(ErrorCode.REQUIRE_OTP_VALIDATION);
+    }
+
+    // Lấy danh sách roles của user
     List<String> roles = userService.getAllRolesByUserId(user.getId());
     List<SimpleGrantedAuthority> authorities =
         roles.stream().map(SimpleGrantedAuthority::new).toList();
+
+    log.info("authorities: {}", authorities);
+
     try {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
-              request.getEmail(), request.getPassword(), authorities));
+              user.getUsername(), request.getPassword(), authorities));
+
     } catch (BadCredentialsException e) {
       throw new AppException(ErrorCode.EMAIL_OR_PASSWORD_NOT_CORRECT);
     }
 
-    // create new access token
+    // Tạo access token mới
     String accessToken = jwtService.generateToken(user);
 
-    // create new refresh token
+    // Tạo refresh token mới
     String refreshToken = jwtService.generateRefreshToken(user);
-    log.info(
-        "REDIS TOKEN {}",
-        RedisToken.builder()
-            .id(user.getUsername())
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .build());
+
     redisTokenService.save(
         RedisToken.builder()
-            .id(user.getUsername())
+            .id(user.getId().toString())
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build());
@@ -127,7 +160,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .userId(user.getId())
+        .roleNames(roles)
         .build();
+  }
+
+  private void handleVerifyOtp(User user) {
+    String otpKey = OTP_KEY + user.getId();
+    boolean isExistOtp = redisSecretService.isOtpExists(otpKey);
+    if (isExistOtp) redisSecretService.removeSecretKey(otpKey);
+    String otpCode = generateOtp();
+    redisSecretService.saveSecretKey(otpKey, otpCode);
+    log.info("Generated new OTP: {}", otpCode);
+    sendMailService.sendMail(
+        OTPMailDTO.builder()
+            .otpCode(otpCode)
+            .receiverMail(user.getEmail())
+            .type(OTPType.REGISTER)
+            .build());
   }
 
   @Override
@@ -139,9 +188,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new AppException(ErrorCode.INVALID_TOKEN);
     }
     final String token = authHeader.substring(7);
-    final String email = jwtService.extractEmail(token, ACCESS_TOKEN);
-    log.info("EMAIL {}", email);
-    redisTokenService.remove(email);
+    final String identifier = jwtService.extractSubject(token, ACCESS_TOKEN);
+    User user = findUserByIdentifier(identifier); // Tìm user
+    String redisKey = user.getId().toString();
+    redisTokenService.remove(redisKey);
   }
 
   @Override
@@ -161,31 +211,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     log.info("Refresh token received: {}", refreshToken);
 
-    final String userName = jwtService.extractEmail(refreshToken, TokenType.REFRESH_TOKEN);
-    if (StringUtils.isBlank(userName)) {
+    final String identifier = jwtService.extractSubject(refreshToken, TokenType.REFRESH_TOKEN);
+    if (StringUtils.isBlank(identifier)) {
       throw new AppException(ErrorCode.INVALID_TOKEN);
     }
-    var user = userService.getByEmail(userName);
+    User user = findUserByIdentifier(identifier);
     if (!jwtService.isValid(refreshToken, TokenType.REFRESH_TOKEN, user)) {
       throw new AppException(ErrorCode.INVALID_TOKEN);
     }
 
     // Xóa access token cũ trong Redis
-    redisTokenService.remove(user.getUsername());
+    String redisKey = user.getId().toString();
+    redisTokenService.remove(redisKey);
 
     // Tạo access token mới
-    String accessToken = jwtService.generateToken(user);
+    String newAccessToken = jwtService.generateToken(user);
 
     // Lưu token mới vào Redis
     redisTokenService.save(
         RedisToken.builder()
-            .id(user.getUsername())
-            .accessToken(accessToken)
+            .id(redisKey)
+            .accessToken(newAccessToken)
             .refreshToken(refreshToken)
             .build());
 
     return TokenResponse.builder()
-        .accessToken(accessToken)
+        .accessToken(newAccessToken)
         .refreshToken(refreshToken)
         .userId(user.getId())
         .build();
@@ -250,6 +301,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .fullName(userInfo.getName())
                             .password("")
                             .roles(Collections.singletonList(customerRole))
+                            .accountType(AccountType.FULL)
                             .build()));
     // create new access token
     String accessToken = jwtService.generateToken(user);
@@ -258,7 +310,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String refreshToken = jwtService.generateRefreshToken(user);
     redisTokenService.save(
         RedisToken.builder()
-            .id(user.getUsername())
+            .id(user.getId().toString())
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build());
@@ -277,10 +329,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpKey = OTP_KEY + user.getId();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(
+    sendMailService.sendMail(
         OTPMailDTO.builder()
             .otpCode(otpCode)
-            .receiverMail(request.getEmail())
+            .receiverMail(user.getEmail())
             .type(OTPType.FORGOT_PASSWORD)
             .build());
   }
@@ -289,6 +341,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public String confirmOTP(ConfirmOTPRequest request) {
     log.info("Confirming OTP for email: {}", request.getEmail());
     User user = userService.getByEmail(request.getEmail());
+    user.setIsFirstLogin(false);
+    userRepository.save(user);
     String otpKey = OTP_KEY + user.getId();
     if (!redisSecretService.isValidSecretKey(otpKey, request.getOtp())) {
       throw new AppException(ErrorCode.SECRET_KEY_INCORRECT);
@@ -313,10 +367,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String otpCode = generateOtp();
     redisSecretService.saveSecretKey(otpKey, otpCode);
     log.info("Generated new OTP: {}", otpCode);
-    userMailQueueProducer.sendMailMessage(
+    sendMailService.sendMail(
         OTPMailDTO.builder()
             .otpCode(otpCode)
-            .receiverMail(request.getEmail())
+            .receiverMail(user.getEmail())
             .type(request.getOtpType())
             .build());
   }
@@ -353,7 +407,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             .build());
     redisTokenService.save(
         RedisToken.builder()
-            .id(user.getUsername())
+            .id(user.getId().toString())
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build());
@@ -363,6 +417,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .refreshToken(refreshToken)
         .userId(user.getId())
         .build();
+  }
+
+  /**
+   * Tìm user theo identifier (email hoặc username) Hỗ trợ cả customer (email) và admin account
+   * (username)
+   *
+   * @param identifier email hoặc username
+   * @return User entity
+   * @throws AppException nếu không tìm thấy user
+   */
+  private User findUserByIdentifier(String identifier) {
+    Optional<User> userOpt = userRepository.findByEmail(identifier);
+    if (userOpt.isEmpty()) userOpt = userRepository.findByUsername(identifier);
+    if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(identifier);
+    return userOpt.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
   }
 
   private String generateOtp() {

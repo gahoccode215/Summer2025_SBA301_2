@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OTPMailDTO {
-    private String receiverMail;
-    private String otpCode;
-    private OTPType type;
+  private String receiverMail;
+  private String otpCode;
+  private OTPType type;
 }

@@ -27,7 +27,9 @@ public class Person extends AbstractEntity<Integer> implements Serializable {
   @Enumerated(EnumType.STRING)
   Occupation occupation;
 
+  @Column(columnDefinition = "TEXT")
   String biography;
+
   boolean isDeleted;
 
   @ManyToOne(fetch = FetchType.LAZY)
