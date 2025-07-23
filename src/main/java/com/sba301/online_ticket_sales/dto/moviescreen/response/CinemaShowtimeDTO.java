@@ -1,5 +1,6 @@
 package com.sba301.online_ticket_sales.dto.moviescreen.response;
 
+import com.sba301.online_ticket_sales.enums.MovieScreenStatus;
 import java.time.LocalDateTime;
 
 public interface CinemaShowtimeDTO {
@@ -16,4 +17,6 @@ public interface CinemaShowtimeDTO {
   LocalDateTime getShowTime();
 
   String getRoomType();
+
+  MovieScreenStatus getStatus();
 }

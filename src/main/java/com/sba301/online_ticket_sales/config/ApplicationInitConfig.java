@@ -74,7 +74,7 @@ public class ApplicationInitConfig {
       initializePersons();
       initializeMovies();
       initializeCinemas();
-      seedMovieScreens(7);
+      //      seedMovieScreens(7);
       log.info("Application initialization completed .....");
     };
   }
@@ -119,7 +119,7 @@ public class ApplicationInitConfig {
                 .movie(movie)
                 .showtime(startTime)
                 .ticketPrice(ticketPrice)
-                    .status(MovieScreenStatus.ACTIVE)
+                .status(MovieScreenStatus.ACTIVE)
                 .build();
         return Optional.of(screen);
       }

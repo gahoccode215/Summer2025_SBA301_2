@@ -17,7 +17,6 @@ import com.sba301.online_ticket_sales.service.SendMailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -90,7 +89,8 @@ public class PaymentServiceImpl implements PaymentService {
 
   @Override
   @Transactional
-  public void handlePaymentCallback(VnPayCallbackParamRequest request, HttpServletResponse response) throws IOException {
+  public void handlePaymentCallback(VnPayCallbackParamRequest request, HttpServletResponse response)
+      throws IOException {
     TicketOrderDTO order =
         ticketOrderRedisRepository
             .findById(request.getVnp_TxnRef())
@@ -154,8 +154,6 @@ public class PaymentServiceImpl implements PaymentService {
     } else {
       throw new AppException(ErrorCode.PAYMENT_ERROR);
     }
-
-
   }
 
   private TicketMailDTO createTicketMailDTO(TicketOrder order, User user, MovieScreen movieScreen) {
