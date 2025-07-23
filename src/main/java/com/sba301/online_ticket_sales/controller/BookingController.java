@@ -1,9 +1,8 @@
 package com.sba301.online_ticket_sales.controller;
 
 import com.sba301.online_ticket_sales.dto.booking.request.BookingTicketRequest;
-import com.sba301.online_ticket_sales.dto.booking.response.BookingSeatResponse;
-import com.sba301.online_ticket_sales.dto.booking.response.SeatMapResponse;
-import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse;
+import com.sba301.online_ticket_sales.dto.booking.request.TicketSearchRequest;
+import com.sba301.online_ticket_sales.dto.booking.response.*;
 import com.sba301.online_ticket_sales.dto.common.ApiResponseDTO;
 import com.sba301.online_ticket_sales.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -131,5 +131,91 @@ public class BookingController {
             .message("Seats booked successfully")
             .result(response)
             .build());
+  }
+
+  @GetMapping
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+  @Operation(
+      summary = "Get all tickets",
+      description = "Get all tickets with optional search by ticket code (Admin/Manager only)")
+  public ResponseEntity<Page<TicketListResponse>> getAllTickets(
+      @RequestParam(required = false) String ticketCode,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(defaultValue = "createdAt") String sortBy,
+      @RequestParam(defaultValue = "DESC") String sortDirection) {
+
+    TicketSearchRequest searchRequest = new TicketSearchRequest();
+    searchRequest.setTicketCode(ticketCode);
+    searchRequest.setPage(page);
+    searchRequest.setSize(size);
+    searchRequest.setSortBy(sortBy);
+    searchRequest.setSortDirection(sortDirection);
+
+    Page<TicketListResponse> tickets = bookingService.getAllTickets(searchRequest);
+    return ResponseEntity.ok(tickets);
+  }
+
+  @GetMapping("/cinema/{cinemaId}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+  @Operation(
+      summary = "Get tickets by cinema",
+      description = "Get tickets for a specific cinema with optional search by ticket code")
+  public ResponseEntity<Page<TicketListResponse>> getTicketsByCinema(
+      @PathVariable Long cinemaId,
+      @RequestParam(required = false) String ticketCode,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(defaultValue = "createdAt") String sortBy,
+      @RequestParam(defaultValue = "DESC") String sortDirection) {
+
+    TicketSearchRequest searchRequest = new TicketSearchRequest();
+    searchRequest.setTicketCode(ticketCode);
+    searchRequest.setPage(page);
+    searchRequest.setSize(size);
+    searchRequest.setSortBy(sortBy);
+    searchRequest.setSortDirection(sortDirection);
+
+    Page<TicketListResponse> tickets = bookingService.getTicketsByCinema(cinemaId, searchRequest);
+    return ResponseEntity.ok(tickets);
+  }
+
+  @GetMapping("/cinema/{cinemaId}/today")
+  //  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+  @Operation(
+      summary = "Get today's tickets by cinema",
+      description = "Get today's tickets for a specific cinema")
+  public ResponseEntity<List<TicketListResponse>> getTodayTicketsByCinema(
+      @PathVariable Long cinemaId) {
+    List<TicketListResponse> tickets = bookingService.getTodayTicketsByCinema(cinemaId);
+    return ResponseEntity.ok(tickets);
+  }
+
+  @GetMapping("/detail/{ticketCode}")
+  //  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF', 'USER')")
+  @Operation(
+      summary = "Get ticket detail by code",
+      description = "Get detailed information of a ticket by ticket code")
+  public ResponseEntity<TicketDetailResponse> getTicketDetail(@PathVariable String ticketCode) {
+    TicketDetailResponse ticketDetail = bookingService.getTicketDetail(ticketCode);
+    return ResponseEntity.ok(ticketDetail);
+  }
+
+  @GetMapping("/detail/id/{ticketId}")
+  //  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+  @Operation(
+      summary = "Get ticket detail by ID",
+      description = "Get detailed information of a ticket by ticket ID")
+  public ResponseEntity<TicketDetailResponse> getTicketDetailById(@PathVariable Long ticketId) {
+    TicketDetailResponse ticketDetail = bookingService.getTicketDetailById(ticketId);
+    return ResponseEntity.ok(ticketDetail);
+  }
+
+  @PostMapping("/checkin/{ticketCode}")
+  //  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+  @Operation(summary = "Check-in ticket", description = "Check-in a ticket for movie entry")
+  public ResponseEntity<CheckInResponse> checkInTicket(@PathVariable String ticketCode) {
+    CheckInResponse response = bookingService.checkInTicket(ticketCode);
+    return ResponseEntity.ok(response);
   }
 }

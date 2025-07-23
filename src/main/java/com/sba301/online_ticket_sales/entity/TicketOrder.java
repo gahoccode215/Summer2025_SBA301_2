@@ -4,6 +4,7 @@ import com.sba301.online_ticket_sales.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
@@ -41,4 +42,14 @@ public class TicketOrder extends AbstractEntity<Long> implements Serializable {
   @OneToMany(mappedBy = "ticketOrder", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<TicketOrderDetail> ticketDetails = new ArrayList<>();
+
+  @Column(name = "is_checked_in", nullable = false)
+  @Builder.Default
+  private boolean isCheckedIn = false;
+
+  @Column(name = "check_in_time")
+  private LocalDateTime checkInTime;
+
+  @Column(name = "check_in_by")
+  private String checkInBy;
 }

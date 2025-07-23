@@ -1,10 +1,8 @@
 package com.sba301.online_ticket_sales.service.impl;
 
 import com.sba301.online_ticket_sales.dto.booking.request.BookingTicketRequest;
-import com.sba301.online_ticket_sales.dto.booking.response.BookingSeatResponse;
-import com.sba301.online_ticket_sales.dto.booking.response.SeatMapResponse;
-import com.sba301.online_ticket_sales.dto.booking.response.TicketHistoryResponse;
-import com.sba301.online_ticket_sales.dto.booking.response.TicketOrderDTO;
+import com.sba301.online_ticket_sales.dto.booking.request.TicketSearchRequest;
+import com.sba301.online_ticket_sales.dto.booking.response.*;
 import com.sba301.online_ticket_sales.entity.*;
 import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.enums.PaymentStatus;
@@ -21,6 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,8 +32,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class BookingServiceImpl implements BookingService {
-  private final MovieRepository movieRepository;
-  private final RoomRepository roomRepository;
+
   private final MovieScreenRepository movieScreenRepository;
   private final BookingCacheService bookingCacheService;
   private final TicketOrderRepository ticketOrderRepository;
@@ -258,6 +259,216 @@ public class BookingServiceImpl implements BookingService {
     return ticketHistory;
   }
 
+  @Override
+  public Page<TicketListResponse> getAllTickets(TicketSearchRequest searchRequest) {
+    log.info("Getting all tickets with search criteria: {}", searchRequest);
+
+    User user = getUserAuthenticated();
+    List<String> roleNames =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
+
+    if (!isAdmin) {
+      throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+    }
+
+    Pageable pageable = createPageable(searchRequest);
+
+    Page<TicketOrder> ticketOrders =
+        ticketOrderRepository.findAllTicketsWithSearch(searchRequest.getTicketCode(), pageable);
+
+    return ticketOrders.map(this::convertToTicketListResponse);
+  }
+
+  @Override
+  public Page<TicketListResponse> getTicketsByCinema(
+      Long cinemaId, TicketSearchRequest searchRequest) {
+    log.info("Getting tickets for cinema ID: {} with search criteria: {}", cinemaId, searchRequest);
+
+    User user = getUserAuthenticated();
+    List<String> roleNames =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
+
+    // Uncomment nếu muốn check quyền truy cập cinema
+    // if (!isAdmin) {
+    //   boolean hasAccess = user.getManagedCinemas().stream()
+    //           .anyMatch(cinema -> cinema.getId().equals(cinemaId));
+    //   if (!hasAccess) {
+    //     throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+    //   }
+    // }
+
+    Pageable pageable = createPageable(searchRequest);
+
+    // Sử dụng query riêng cho cinema thay vì gọi getAllTickets
+    Page<TicketOrder> ticketOrders =
+        ticketOrderRepository.findTicketsByCinemaWithSearch(
+            cinemaId, searchRequest.getTicketCode(), pageable);
+
+    return ticketOrders.map(this::convertToTicketListResponse);
+  }
+
+  @Override
+  public TicketDetailResponse getTicketDetail(String ticketCode) {
+    log.info("Getting ticket detail for ticket code: {}", ticketCode);
+
+    TicketOrder ticketOrder =
+        ticketOrderRepository
+            .findByTicketCodeWithDetails(ticketCode)
+            .orElseThrow(() -> new AppException(ErrorCode.TICKET_NOT_FOUND));
+
+    validateTicketAccess(ticketOrder);
+
+    return convertToTicketDetailResponse(ticketOrder);
+  }
+
+  @Override
+  public TicketDetailResponse getTicketDetailById(Long ticketId) {
+    log.info("Getting ticket detail for ticket ID: {}", ticketId);
+
+    TicketOrder ticketOrder =
+        ticketOrderRepository
+            .findByIdWithDetails(ticketId)
+            .orElseThrow(() -> new AppException(ErrorCode.TICKET_NOT_FOUND));
+
+    validateTicketAccess(ticketOrder);
+
+    return convertToTicketDetailResponse(ticketOrder);
+  }
+
+  @Override
+  @Transactional
+  public CheckInResponse checkInTicket(String ticketCode) {
+    log.info("Checking in ticket with code: {}", ticketCode);
+
+    User user = getUserAuthenticated();
+    List<String> roleNames =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isStaff =
+        roleNames.contains("STAFF")
+            || roleNames.contains("ROLE_STAFF")
+            || roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
+
+    if (!isStaff) {
+      throw new AppException(ErrorCode.NO_PERMISSION_TO_CHECKIN);
+    }
+
+    TicketOrder ticketOrder =
+        ticketOrderRepository
+            .findByTicketCodeWithDetails(ticketCode)
+            .orElseThrow(() -> new AppException(ErrorCode.TICKET_NOT_FOUND));
+
+    // Validate ticket status
+    if (ticketOrder.getPaymentStatus() != PaymentStatus.SUCCESS) {
+      throw new AppException(ErrorCode.TICKET_NOT_PAID);
+    }
+
+    if (ticketOrder.isCheckedIn()) {
+      throw new AppException(ErrorCode.TICKET_ALREADY_CHECKED_IN);
+    }
+
+    // Check if showtime is today and within check-in window (30 minutes before showtime)
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime showtimeStart = ticketOrder.getMovieScreen().getShowtime();
+    LocalDateTime checkInWindow = showtimeStart.minusMinutes(30);
+
+    if (now.isBefore(checkInWindow)) {
+      throw new AppException(ErrorCode.CHECKIN_TOO_EARLY);
+    }
+
+    if (now.isAfter(showtimeStart.plusMinutes(15))) {
+      throw new AppException(ErrorCode.CHECKIN_TOO_LATE);
+    }
+
+    // Check cinema access for non-admin users
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
+
+    if (!isAdmin) {
+      Long cinemaId = ticketOrder.getMovieScreen().getRoom().getCinema().getId();
+      boolean hasAccess =
+          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(cinemaId));
+      if (!hasAccess) {
+        throw new AppException(ErrorCode.NO_PERMISSION_TO_CHECKIN);
+      }
+    }
+
+    // Perform check-in
+    ticketOrder.setCheckedIn(true);
+    ticketOrder.setCheckInTime(now);
+    ticketOrder.setCheckInBy(user.getUsername());
+
+    ticketOrderRepository.save(ticketOrder);
+
+    log.info("Ticket {} checked in successfully by {}", ticketCode, user.getUsername());
+
+    List<String> seatCodes =
+        ticketOrder.getTicketDetails().stream().map(TicketOrderDetail::getSeatCode).toList();
+
+    return CheckInResponse.builder()
+        .ticketCode(ticketCode)
+        .customerName(ticketOrder.getUser().getFullName())
+        .movieTitle(ticketOrder.getMovieScreen().getMovie().getTitle())
+        .cinemaName(ticketOrder.getMovieScreen().getRoom().getCinema().getName())
+        .roomName(ticketOrder.getMovieScreen().getRoom().getName())
+        .showtimeStart(showtimeStart)
+        .seatCodes(seatCodes)
+        .checkInTime(now)
+        .checkInBy(user.getUsername())
+        .message("Ticket checked in successfully")
+        .build();
+  }
+
+  @Override
+  public List<TicketListResponse> getTodayTicketsByCinema(Long cinemaId) {
+    log.info("Getting today's tickets for cinema ID: {}", cinemaId);
+
+    User user = getUserAuthenticated();
+    List<String> roleNames =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN");
+
+    if (!isAdmin) {
+      boolean hasAccess =
+          user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(cinemaId));
+      if (!hasAccess) {
+        throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+      }
+    }
+
+    LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+    LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+
+    List<TicketOrder> ticketOrders =
+        ticketOrderRepository.findTicketsByCinemaAndTimeRange(
+            List.of(cinemaId), startOfDay, endOfDay);
+
+    return ticketOrders.stream().map(this::convertToTicketListResponse).toList();
+  }
+
   private TicketHistoryResponse convertToTicketHistoryResponse(TicketOrder ticketOrder) {
     MovieScreen movieScreen = ticketOrder.getMovieScreen();
     Movie movie = movieScreen.getMovie();
@@ -303,5 +514,122 @@ public class BookingServiceImpl implements BookingService {
       throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
     return (User) authentication.getPrincipal();
+  }
+
+  private void validateTicketAccess(TicketOrder ticketOrder) {
+    User user = getUserAuthenticated();
+    List<String> roleNames =
+        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+    boolean isAdmin =
+        roleNames.contains("MANAGER")
+            || roleNames.contains("ROLE_MANAGER")
+            || roleNames.contains("ADMIN")
+            || roleNames.contains("ROLE_ADMIN")
+            || roleNames.contains("STAFF")
+            || roleNames.contains("ROLE_STAFF");
+
+    if (!isAdmin) {
+      // Check if user is the ticket owner
+      if (!ticketOrder.getUser().getId().equals(user.getId())) {
+        // Check if user has access to the cinema
+        Long cinemaId = ticketOrder.getMovieScreen().getRoom().getCinema().getId();
+        boolean hasAccess =
+            user.getManagedCinemas().stream().anyMatch(cinema -> cinema.getId().equals(cinemaId));
+        if (!hasAccess) {
+          throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKET);
+        }
+      }
+    }
+  }
+
+  private TicketListResponse convertToTicketListResponse(TicketOrder ticketOrder) {
+    MovieScreen movieScreen = ticketOrder.getMovieScreen();
+    Movie movie = movieScreen.getMovie();
+
+    List<String> seatCodes =
+        ticketOrder.getTicketDetails().stream().map(TicketOrderDetail::getSeatCode).toList();
+
+    LocalDateTime showtimeEnd =
+        movieScreen.getShowtime().plusMinutes(movie.getDuration()).plusMinutes(15);
+
+    return TicketListResponse.builder()
+        .ticketId(ticketOrder.getId())
+        .ticketCode(ticketOrder.getTicketCode())
+        .customerName(ticketOrder.getUser().getFullName())
+        .customerEmail(ticketOrder.getUser().getEmail())
+        .movieTitle(movie.getTitle())
+        .cinemaName(movieScreen.getRoom().getCinema().getName())
+        .roomName(movieScreen.getRoom().getName())
+        .showtimeStart(movieScreen.getShowtime())
+        .showtimeEnd(showtimeEnd)
+        .seatCodes(seatCodes)
+        .totalAmount(ticketOrder.getTotalAmount())
+        .paymentStatus(ticketOrder.getPaymentStatus())
+        .isPrinted(ticketOrder.isPrinted())
+        .isCheckedIn(ticketOrder.isCheckedIn())
+        .bookingTime(ticketOrder.getCreatedAt())
+        .build();
+  }
+
+  private TicketDetailResponse convertToTicketDetailResponse(TicketOrder ticketOrder) {
+    MovieScreen movieScreen = ticketOrder.getMovieScreen();
+    Movie movie = movieScreen.getMovie();
+    Room room = movieScreen.getRoom();
+    Cinema cinema = room.getCinema();
+    User customer = ticketOrder.getUser();
+
+    List<SeatDetail> seatDetails =
+        ticketOrder.getTicketDetails().stream()
+            .map(
+                detail ->
+                    SeatDetail.builder()
+                        .seatCode(detail.getSeatCode())
+                        .price(detail.getPrice())
+                        .build())
+            .toList();
+
+    LocalDateTime showtimeEnd =
+        movieScreen.getShowtime().plusMinutes(movie.getDuration()).plusMinutes(15);
+
+    return TicketDetailResponse.builder()
+        .ticketId(ticketOrder.getId())
+        .ticketCode(ticketOrder.getTicketCode())
+        .customerId(customer.getId())
+        .customerName(customer.getFullName())
+        .customerEmail(customer.getEmail())
+        .customerPhone(customer.getPhone())
+        .movieId(movie.getId())
+        .movieTitle(movie.getTitle())
+        .moviePosterUrl(movie.getThumbnailUrl())
+        .movieDuration(movie.getDuration())
+        .cinemaId(cinema.getId())
+        .cinemaName(cinema.getName())
+        .cinemaAddress(cinema.getAddress())
+        .roomId(room.getId())
+        .roomName(room.getName())
+        .roomType(room.getRoomType().name())
+        .showtimeId(movieScreen.getId())
+        .showtimeStart(movieScreen.getShowtime())
+        .showtimeEnd(showtimeEnd)
+        .seatDetails(seatDetails)
+        .totalAmount(ticketOrder.getTotalAmount())
+        .paymentStatus(ticketOrder.getPaymentStatus())
+        .isPrinted(ticketOrder.isPrinted())
+        .isCheckedIn(ticketOrder.isCheckedIn())
+        .checkInTime(ticketOrder.getCheckInTime())
+        .checkInBy(ticketOrder.getCheckInBy())
+        .bookingTime(ticketOrder.getCreatedAt())
+        .lastUpdated(ticketOrder.getUpdatedAt())
+        .build();
+  }
+
+  private Pageable createPageable(TicketSearchRequest searchRequest) {
+    Sort sort =
+        searchRequest.getSortDirection().equalsIgnoreCase("ASC")
+            ? Sort.by(searchRequest.getSortBy()).ascending()
+            : Sort.by(searchRequest.getSortBy()).descending();
+
+    return PageRequest.of(searchRequest.getPage(), searchRequest.getSize(), sort);
   }
 }

@@ -111,6 +111,21 @@ public enum ErrorCode {
   INVALID_TICKET_PRICE(8003, "Giá vé không thể âm", HttpStatus.BAD_REQUEST),
   FAILED_TO_CREATE_ORDER(8004, "Tạo đơn hàng vé thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
   NO_PERMISSION_TO_BOOK(8005, "Bạn không có quyền đặt vé cho suất chiếu này", HttpStatus.FORBIDDEN),
+  NO_PERMISSION_TO_VIEW_TICKETS(
+      1030, "You don't have permission to view tickets", HttpStatus.BAD_REQUEST),
+  NO_PERMISSION_TO_VIEW_TICKET(
+      1031, "You don't have permission to view this ticket", HttpStatus.BAD_REQUEST),
+  NO_PERMISSION_TO_CHECKIN(
+      1032, "You don't have permission to check-in tickets", HttpStatus.BAD_REQUEST),
+  TICKET_NOT_FOUND(1033, "Ticket not found", HttpStatus.BAD_REQUEST),
+  TICKET_NOT_PAID(1034, "Ticket has not been paid", HttpStatus.BAD_REQUEST),
+  TICKET_ALREADY_CHECKED_IN(1035, "Ticket has already been checked in", HttpStatus.BAD_REQUEST),
+  CHECKIN_TOO_EARLY(
+      1036,
+      "Check-in is too early. Please check-in within 30 minutes before showtime",
+      HttpStatus.BAD_REQUEST),
+  CHECKIN_TOO_LATE(
+      1037, "Check-in is too late. Check-in is not allowed after showtime", HttpStatus.BAD_REQUEST),
 
   // PAYMENT EXCEPTION (9000 - 9099)
   PAYMENT_ERROR(9000, "Lỗi thanh toán", HttpStatus.BAD_REQUEST),

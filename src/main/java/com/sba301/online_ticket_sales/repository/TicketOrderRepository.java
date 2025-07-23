@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -223,4 +225,66 @@ public interface TicketOrderRepository extends JpaRepository<TicketOrder, Long> 
     ORDER BY t.createdAt DESC
     """)
   List<Object[]> findRecentBookingsByCinema(@Param("cinemaId") Long cinemaId, Pageable pageable);
+
+  Optional<TicketOrder> findByTicketCode(String ticketCode);
+
+  @Query(
+      "SELECT DISTINCT t FROM TicketOrder t "
+          + "LEFT JOIN FETCH t.user u "
+          + "LEFT JOIN FETCH t.movieScreen ms "
+          + "LEFT JOIN FETCH ms.movie m "
+          + "LEFT JOIN FETCH ms.room r "
+          + "LEFT JOIN FETCH r.cinema c "
+          + "LEFT JOIN FETCH t.ticketDetails td "
+          + "WHERE (:ticketCode IS NULL OR :ticketCode = '' OR t.ticketCode LIKE %:ticketCode%)")
+  Page<TicketOrder> findAllTicketsWithSearch(
+      @Param("ticketCode") String ticketCode, Pageable pageable);
+
+  @Query(
+      "SELECT DISTINCT t FROM TicketOrder t "
+          + "LEFT JOIN FETCH t.user u "
+          + "LEFT JOIN FETCH t.movieScreen ms "
+          + "LEFT JOIN FETCH ms.movie m "
+          + "LEFT JOIN FETCH ms.room r "
+          + "LEFT JOIN FETCH r.cinema c "
+          + "LEFT JOIN FETCH t.ticketDetails td "
+          + "WHERE c.id = :cinemaId "
+          + "AND (:ticketCode IS NULL OR :ticketCode = '' OR t.ticketCode LIKE %:ticketCode%)")
+  Page<TicketOrder> findTicketsByCinemaWithSearch(
+      @Param("cinemaId") Long cinemaId, @Param("ticketCode") String ticketCode, Pageable pageable);
+
+  @Query(
+      "SELECT t FROM TicketOrder t "
+          + "LEFT JOIN FETCH t.user u "
+          + "LEFT JOIN FETCH t.movieScreen ms "
+          + "LEFT JOIN FETCH ms.movie m "
+          + "LEFT JOIN FETCH ms.room r "
+          + "LEFT JOIN FETCH r.cinema c "
+          + "LEFT JOIN FETCH t.ticketDetails td "
+          + "WHERE t.ticketCode = :ticketCode")
+  Optional<TicketOrder> findByTicketCodeWithDetails(@Param("ticketCode") String ticketCode);
+
+  @Query(
+      "SELECT t FROM TicketOrder t "
+          + "LEFT JOIN FETCH t.user u "
+          + "LEFT JOIN FETCH t.movieScreen ms "
+          + "LEFT JOIN FETCH ms.movie m "
+          + "LEFT JOIN FETCH ms.room r "
+          + "LEFT JOIN FETCH r.cinema c "
+          + "LEFT JOIN FETCH t.ticketDetails td "
+          + "WHERE t.id = :ticketId")
+  Optional<TicketOrder> findByIdWithDetails(@Param("ticketId") Long ticketId);
+
+  @Query(
+      "SELECT t FROM TicketOrder t "
+          + "JOIN t.movieScreen ms "
+          + "JOIN ms.room r "
+          + "JOIN r.cinema c "
+          + "WHERE c.id IN :cinemaIds "
+          + "AND ms.showtime BETWEEN :startTime AND :endTime "
+          + "ORDER BY ms.showtime ASC")
+  List<TicketOrder> findTicketsByCinemaAndTimeRange(
+      @Param("cinemaIds") List<Long> cinemaIds,
+      @Param("startTime") LocalDateTime startTime,
+      @Param("endTime") LocalDateTime endTime);
 }
