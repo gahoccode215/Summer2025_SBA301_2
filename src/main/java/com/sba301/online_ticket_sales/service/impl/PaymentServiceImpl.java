@@ -15,7 +15,10 @@ import com.sba301.online_ticket_sales.service.PaymentService;
 import com.sba301.online_ticket_sales.service.PaymentStrategy;
 import com.sba301.online_ticket_sales.service.SendMailService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -87,7 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
 
   @Override
   @Transactional
-  public void handlePaymentCallback(VnPayCallbackParamRequest request) {
+  public void handlePaymentCallback(VnPayCallbackParamRequest request, HttpServletResponse response) throws IOException {
     TicketOrderDTO order =
         ticketOrderRedisRepository
             .findById(request.getVnp_TxnRef())
@@ -143,12 +146,16 @@ public class PaymentServiceImpl implements PaymentService {
 
       sendMailService.sendTicketMail(ticketMailDTO);
 
+      response.sendRedirect("http://localhost:5173/payment/success");
+
     } else if (paymentStatus == PaymentStatus.CANCELLED || paymentStatus == PaymentStatus.EXPIRED) {
       log.info("Payment cancelled or expired for order: {}", order.getTicketCode());
       throw new AppException(ErrorCode.PAYMENT_FAILED_OR_EXPIRED);
     } else {
       throw new AppException(ErrorCode.PAYMENT_ERROR);
     }
+
+
   }
 
   private TicketMailDTO createTicketMailDTO(TicketOrder order, User user, MovieScreen movieScreen) {

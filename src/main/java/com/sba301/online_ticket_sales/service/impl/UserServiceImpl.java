@@ -216,7 +216,7 @@ public class UserServiceImpl implements UserService {
         User.builder()
             .fullName(request.getFullName())
             .email(request.getEmail())
-            .password(null)
+            .password(passwordEncoder.encode(request.getEmail()))
             .status(UserStatus.ACTIVE)
             .accountType(AccountType.QUICK)
             .roles(roles)

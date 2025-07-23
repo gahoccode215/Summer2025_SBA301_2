@@ -82,7 +82,7 @@ vnpay:
   hash-secret: ${VNP_HASHSECRET}
   url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
   api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
-  return-url: http://localhost:5173/payments/success
+  return-url: http://localhost:8080/api/v1/payments/callback
   version: 2.1.0
   command: pay
   order-type: other
