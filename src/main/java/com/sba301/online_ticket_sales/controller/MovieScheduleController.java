@@ -101,8 +101,8 @@ public class MovieScheduleController {
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/status")
   public ResponseEntity<ApiResponseDTO<Void>> activateMovieSchedule(
-      @PathVariable Long id, @RequestParam String status) {
-    movieScheduleService.activateMovieSchedule(id, MovieScreenStatus.valueOf(status));
+      @PathVariable Long id, @RequestParam MovieScreenStatus status) {
+    movieScheduleService.activateMovieSchedule(id, status);
     return ResponseEntity.ok(
         ApiResponseDTO.<Void>builder()
             .code(HttpStatus.OK.value())

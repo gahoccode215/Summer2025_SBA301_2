@@ -189,4 +189,14 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                   """,
       nativeQuery = true)
   List<MovieShowtimeDTO> findAllByCinema(@Param("cinemaId") Long cinemaId);
+
+  @Query("""
+    SELECT COUNT(ms) > 0
+    FROM MovieScreen ms
+    WHERE ms.room.id = :roomId
+      AND ms.showtime >= CURRENT_TIMESTAMP
+      AND ms.status = 'ACTIVE'
+""")
+  boolean existsActiveShowtimeByRoomId(@Param("roomId") Long roomId);
+
 }

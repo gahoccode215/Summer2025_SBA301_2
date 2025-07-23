@@ -13,6 +13,7 @@ import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.repository.MovieRepository;
 import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
 import com.sba301.online_ticket_sales.repository.RoomRepository;
+import com.sba301.online_ticket_sales.repository.TicketOrderRepository;
 import com.sba301.online_ticket_sales.service.MovieScheduleService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
   private final MovieRepository movieRepository;
   private final RoomRepository roomRepository;
   private final MovieScreenRepository movieScreenRepository;
+  private final TicketOrderRepository ticketOrderRepository;
 
   private static final int BREAK_TIME_MINUTES = 10;
 
@@ -160,6 +162,12 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
         movieScreenRepository
             .findById(id)
             .orElseThrow(() -> new AppException(ErrorCode.SCHEDULE_NOT_FOUND));
+    if (status != MovieScreenStatus.ACTIVE) {
+      List<String> bookedSeats = ticketOrderRepository.findSeatCodesByShowtimeId(id);
+      if (!bookedSeats.isEmpty()) {
+        throw new AppException(ErrorCode.SCHEDULE_ALREADY_HAS_BOOKINGS);
+      }
+    }
     movieScreen.setStatus(status);
     movieScreen.setUpdatedBy(authentication.getId());
     movieScreenRepository.save(movieScreen);

@@ -9,6 +9,7 @@ import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
+import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
 import com.sba301.online_ticket_sales.service.CinemaService;
 import com.sba301.online_ticket_sales.service.CloudinaryService;
 import java.util.List;
@@ -30,6 +31,7 @@ public class CinemaServiceImpl implements CinemaService {
   CinemaRepository cinemaRepository;
   CinemaMapper cinemaMapper;
   CloudinaryService cloudinaryService;
+  MovieScreenRepository movieScreenRepository;
 
   String folder = "SBA301/online-ticket-sales/cinema";
 
@@ -134,6 +136,12 @@ public class CinemaServiceImpl implements CinemaService {
         cinemaRepository
             .findById(id)
             .orElseThrow(() -> new AppException(ErrorCode.CINEMA_NOT_FOUND));
+    if (!active) {
+      boolean hasActiveShowtimes = movieScreenRepository.countActiveShowtimesByCinema(id) > 0;
+      if (hasActiveShowtimes) {
+        throw new AppException(ErrorCode.CINEMA_HAS_ACTIVE_SHOWTIME);
+      }
+    }
     cinema.setActive(active);
     cinemaRepository.save(cinema);
     log.info("Deactivated cinema: {}, active: {}", id, active);

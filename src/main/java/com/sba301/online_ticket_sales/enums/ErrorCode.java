@@ -83,6 +83,11 @@ public enum ErrorCode {
       2002, "Bạn không có quyền tạo hoặc cập nhật rạp", HttpStatus.FORBIDDEN),
   ROOM_NOT_FOUND(2004, "Phòng không tìm thấy", HttpStatus.NOT_FOUND),
   ROOM_OR_MOVIE_NOT_ACTIVE(2005, "Phòng hoặc phim không hoạt động", HttpStatus.BAD_REQUEST),
+  DUPLICATE_ROOM_NAME(2006, "Tên phòng đã tồn tại trong rạp", HttpStatus.BAD_REQUEST),
+  ROOM_HAS_FUTURE_SHOWTIME(
+      2007, "Phòng có lịch chiếu trong tương lai, không thể xóa", HttpStatus.BAD_REQUEST),
+  CINEMA_HAS_ACTIVE_SHOWTIME(
+      2008, "Rạp có lịch chiếu đang hoạt động, không thể vô hiệu hóa", HttpStatus.BAD_REQUEST),
 
   // OTP EXCEPTION ()
   SECRET_KEY_INCORRECT(2100, "Khóa bí mật không chính xác", HttpStatus.NOT_FOUND),
@@ -94,6 +99,8 @@ public enum ErrorCode {
   SCHEDULE_NOT_ACTIVE(2202, "Lịch chiếu không hoạt động", HttpStatus.BAD_REQUEST),
   SCHEDULE_NO_PERMISSION(
       2203, "Bạn không có quyền tạo hoặc cập nhật lịch chiếu", HttpStatus.FORBIDDEN),
+  SCHEDULE_ALREADY_HAS_BOOKINGS(
+      2204, "Lịch chiếu đã có đặt vé, không thể xóa", HttpStatus.BAD_REQUEST),
 
   // BOOKING
   TICKET_ORDER_NOT_FOUND_CACHE(
