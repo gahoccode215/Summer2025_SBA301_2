@@ -101,14 +101,14 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     ms.id AS show_time_id,
                     r.id AS room_id,
                     ms.showtime AS show_time,
-                    r.room_type AS room_type
+                    r.room_type AS room_type,
+                    ms.status
                   FROM movie_screens ms
                   JOIN movies m ON ms.movie_id = m.id
                   JOIN rooms r ON ms.room_id = r.id
                   JOIN cinemas c ON r.cinema_id = c.id
                   WHERE m.id = :movieId
                     AND ms.showtime BETWEEN :startOfDay AND :endOfDay
-                    AND ms.status = 'ACTIVE'
                   ORDER BY c.id, ms.showtime
                   """,
       nativeQuery = true)
@@ -127,7 +127,8 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     ms.id AS show_time_id,
                     r.id AS room_id,
                     ms.showtime AS show_time,
-                    r.room_type AS room_type
+                    r.room_type AS room_type,
+                     ms.status
                   FROM movie_screens ms
                   JOIN movies m ON ms.movie_id = m.id
                   JOIN rooms r ON ms.room_id = r.id
@@ -151,12 +152,12 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     m.thumbnail_url AS moviePosterUrl,
                     m.duration AS movieDuration,
                     m.age_restriction AS movieRating,
-                    CAST(m.release_date AS DATETIME) AS movieReleaseDate
+                    CAST(m.release_date AS DATETIME) AS movieReleaseDate,
+                    ms.status
                   FROM movie_screens ms
                   JOIN rooms r ON ms.room_id = r.id
                   JOIN movies m ON ms.movie_id = m.id
                   WHERE r.cinema_id = :cinemaId
-                    AND ms.status = 'ACTIVE'
                     AND ms.showtime >= :queryTime
                     AND ms.showtime < :upperBound
                   ORDER BY m.id, ms.showtime
@@ -180,7 +181,8 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
                     m.thumbnail_url AS moviePosterUrl,
                     m.duration AS movieDuration,
                     m.age_restriction AS movieRating,
-                    CAST(m.release_date AS DATETIME) AS movieReleaseDate
+                    CAST(m.release_date AS DATETIME) AS movieReleaseDate,
+                                      ms.status
                   FROM movie_screens ms
                   JOIN rooms r ON ms.room_id = r.id
                   JOIN movies m ON ms.movie_id = m.id
@@ -190,7 +192,8 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
       nativeQuery = true)
   List<MovieShowtimeDTO> findAllByCinema(@Param("cinemaId") Long cinemaId);
 
-  @Query("""
+  @Query(
+      """
     SELECT COUNT(ms) > 0
     FROM MovieScreen ms
     WHERE ms.room.id = :roomId
@@ -198,5 +201,4 @@ public interface MovieScreenRepository extends JpaRepository<MovieScreen, Long> 
       AND ms.status = 'ACTIVE'
 """)
   boolean existsActiveShowtimeByRoomId(@Param("roomId") Long roomId);
-
 }

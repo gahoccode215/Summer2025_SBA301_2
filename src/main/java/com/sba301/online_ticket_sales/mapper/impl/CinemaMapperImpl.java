@@ -13,15 +13,12 @@ import com.sba301.online_ticket_sales.enums.ErrorCode;
 import com.sba301.online_ticket_sales.exception.AppException;
 import com.sba301.online_ticket_sales.mapper.CinemaMapper;
 import com.sba301.online_ticket_sales.repository.CinemaRepository;
-
-import java.time.LocalDateTime;
+import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.sba301.online_ticket_sales.repository.MovieScreenRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,106 +26,117 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CinemaMapperImpl implements CinemaMapper {
   private final CinemaRepository cinemaRepository;
-    private final MovieScreenRepository movieScreenRepository;
+  private final MovieScreenRepository movieScreenRepository;
 
-    @Override
-    @Transactional
-    public Cinema toCinema(CinemaRequest request) {
-        if (request.getRequestType().isCreate()) {
-            Cinema cinema = new Cinema();
-            cinema.setName(request.getName());
-            cinema.setAddress(request.getAddress());
-            cinema.setHotline(request.getHotline());
-            cinema.setProvince(request.getProvince());
+  @Override
+  @Transactional
+  public Cinema toCinema(CinemaRequest request) {
+    if (request.getRequestType().isCreate()) {
+      Cinema cinema = new Cinema();
+      cinema.setName(request.getName());
+      cinema.setAddress(request.getAddress());
+      cinema.setHotline(request.getHotline());
+      cinema.setProvince(request.getProvince());
 
-            request.getRoomRequestList()
-                    .forEach(roomRequest -> {
-                        boolean isDuplicate = cinema.getRooms().stream()
-                                .anyMatch(r -> r.getName().trim().equalsIgnoreCase(roomRequest.getName().trim()));
-                        if (isDuplicate) {
-                            throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
-                        }
-
-                        Room room = new Room();
-                        room.setName(roomRequest.getName());
-                        room.setRoomType(roomRequest.getRoomType());
-                        cinema.addRoom(room);
-                    });
-
-            return cinema;
-        }
-
-        if (request.getId() == null) {
-            throw new AppException(ErrorCode.CINEMA_NOT_FOUND);
-        }
-
-        Cinema cinema = cinemaRepository
-                .findById(request.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.CINEMA_NOT_FOUND));
-
-        cinema.setName(request.getName());
-        cinema.setAddress(request.getAddress());
-        cinema.setHotline(request.getHotline());
-        cinema.setProvince(request.getProvince());
-
-        if (request.getRoomRequestList() != null) {
-            Map<Long, RoomRequest> roomRequestMap = request.getRoomRequestList().stream()
-                    .filter(r -> r.getId() != null)
-                    .collect(Collectors.toMap(RoomRequest::getId, Function.identity()));
-
-            List<Room> existingRooms = cinema.getRooms();
-
-            existingRooms.forEach(existingRoom -> {
-                RoomRequest roomReq = roomRequestMap.get(existingRoom.getId());
-
-                if (roomReq != null) {
-                    String newName = roomReq.getName().trim();
-
-                    boolean isDuplicate = existingRooms.stream()
-                            .anyMatch(r -> !r.getId().equals(existingRoom.getId()) &&
-                                    r.getName().trim().equalsIgnoreCase(newName));
-
-                    if (isDuplicate) {
-                        throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
-                    }
-
-                    existingRoom.setName(roomReq.getName());
-                    existingRoom.setRoomType(roomReq.getRoomType());
-                    roomRequestMap.remove(existingRoom.getId());
-                } else {
-                    boolean hasFutureShowtime = movieScreenRepository
-                            .existsActiveShowtimeByRoomId(existingRoom.getId());
-
-                    if (hasFutureShowtime) {
-                        throw new AppException(ErrorCode.ROOM_HAS_FUTURE_SHOWTIME);
-                    }
-
-                    existingRoom.setActive(false);
+      request
+          .getRoomRequestList()
+          .forEach(
+              roomRequest -> {
+                boolean isDuplicate =
+                    cinema.getRooms().stream()
+                        .anyMatch(
+                            r -> r.getName().trim().equalsIgnoreCase(roomRequest.getName().trim()));
+                if (isDuplicate) {
+                  throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
                 }
-            });
 
-            request.getRoomRequestList().stream()
-                    .filter(r -> r.getId() == null)
-                    .forEach(roomRequest -> {
-                        String newRoomName = roomRequest.getName().trim();
+                Room room = new Room();
+                room.setName(roomRequest.getName());
+                room.setRoomType(roomRequest.getRoomType());
+                cinema.addRoom(room);
+              });
 
-                        boolean isDuplicate = cinema.getRooms().stream()
-                                .anyMatch(r -> r.getName().trim().equalsIgnoreCase(newRoomName));
-
-                        if (isDuplicate) {
-                            throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
-                        }
-
-                        Room newRoom = new Room();
-                        newRoom.setName(roomRequest.getName());
-                        newRoom.setRoomType(roomRequest.getRoomType());
-                        cinema.addRoom(newRoom);
-                    });
-        }
-
-        return cinema;
+      return cinema;
     }
 
+    if (request.getId() == null) {
+      throw new AppException(ErrorCode.CINEMA_NOT_FOUND);
+    }
+
+    Cinema cinema =
+        cinemaRepository
+            .findById(request.getId())
+            .orElseThrow(() -> new AppException(ErrorCode.CINEMA_NOT_FOUND));
+
+    cinema.setName(request.getName());
+    cinema.setAddress(request.getAddress());
+    cinema.setHotline(request.getHotline());
+    cinema.setProvince(request.getProvince());
+
+    if (request.getRoomRequestList() != null) {
+      Map<Long, RoomRequest> roomRequestMap =
+          request.getRoomRequestList().stream()
+              .filter(r -> r.getId() != null)
+              .collect(Collectors.toMap(RoomRequest::getId, Function.identity()));
+
+      List<Room> existingRooms = cinema.getRooms();
+
+      existingRooms.forEach(
+          existingRoom -> {
+            RoomRequest roomReq = roomRequestMap.get(existingRoom.getId());
+
+            if (roomReq != null) {
+              String newName = roomReq.getName().trim();
+
+              boolean isDuplicate =
+                  existingRooms.stream()
+                      .anyMatch(
+                          r ->
+                              !r.getId().equals(existingRoom.getId())
+                                  && r.getName().trim().equalsIgnoreCase(newName));
+
+              if (isDuplicate) {
+                throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
+              }
+
+              existingRoom.setName(roomReq.getName());
+              existingRoom.setRoomType(roomReq.getRoomType());
+              roomRequestMap.remove(existingRoom.getId());
+            } else {
+              boolean hasFutureShowtime =
+                  movieScreenRepository.existsActiveShowtimeByRoomId(existingRoom.getId());
+
+              if (hasFutureShowtime) {
+                throw new AppException(ErrorCode.ROOM_HAS_FUTURE_SHOWTIME);
+              }
+
+              existingRoom.setActive(false);
+            }
+          });
+
+      request.getRoomRequestList().stream()
+          .filter(r -> r.getId() == null)
+          .forEach(
+              roomRequest -> {
+                String newRoomName = roomRequest.getName().trim();
+
+                boolean isDuplicate =
+                    cinema.getRooms().stream()
+                        .anyMatch(r -> r.getName().trim().equalsIgnoreCase(newRoomName));
+
+                if (isDuplicate) {
+                  throw new AppException(ErrorCode.DUPLICATE_ROOM_NAME);
+                }
+
+                Room newRoom = new Room();
+                newRoom.setName(roomRequest.getName());
+                newRoom.setRoomType(roomRequest.getRoomType());
+                cinema.addRoom(newRoom);
+              });
+    }
+
+    return cinema;
+  }
 
   @Override
   public CinemaResponse toCinemaResponse(Cinema cinema) {

@@ -205,6 +205,7 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
               .roomId(dto.getRoomId())
               .showTime(dto.getShowTime())
               .roomType(RoomType.valueOf(dto.getRoomType()))
+              .status(dto.getStatus())
               .build();
 
       showTimeMap.computeIfAbsent(dto.getCinemaId(), id -> new ArrayList<>()).add(showTime);
@@ -275,6 +276,7 @@ public class MovieScheduleServiceImpl implements MovieScheduleService {
               .roomId(dto.getRoomId())
               .roomType(RoomType.valueOf(dto.getRoomType()))
               .showTime(dto.getShowTime())
+              .status(dto.getStatus())
               .build();
 
       showTimeMap.computeIfAbsent(dto.getMovieId(), id -> new ArrayList<>()).add(showTime);

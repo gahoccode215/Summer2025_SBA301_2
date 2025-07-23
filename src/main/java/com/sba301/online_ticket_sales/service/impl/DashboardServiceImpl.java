@@ -157,35 +157,35 @@ public class DashboardServiceImpl implements DashboardService {
   }
 
   private List<RevenueByDate> getRevenueChart(
-          Long cinemaId, LocalDate startDate, LocalDate endDate) {
+      Long cinemaId, LocalDate startDate, LocalDate endDate) {
     List<Object[]> results;
 
     if (cinemaId != null) {
       results =
-              ticketOrderRepository.getRevenueByCinemaAndDateRange(
-                      cinemaId, PaymentStatus.SUCCESS, startDate, endDate);
+          ticketOrderRepository.getRevenueByCinemaAndDateRange(
+              cinemaId, PaymentStatus.SUCCESS, startDate, endDate);
     } else {
       results =
-              ticketOrderRepository.getRevenueByDateRange(PaymentStatus.SUCCESS, startDate, endDate);
+          ticketOrderRepository.getRevenueByDateRange(PaymentStatus.SUCCESS, startDate, endDate);
     }
 
     return results.stream()
-            .map(
-                    result -> {
-                      // Convert java.sql.Date to LocalDate
-                      LocalDate date = result[0] instanceof java.sql.Date
-                              ? ((java.sql.Date) result[0]).toLocalDate()
-                              : (LocalDate) result[0];
+        .map(
+            result -> {
+              // Convert java.sql.Date to LocalDate
+              LocalDate date =
+                  result[0] instanceof java.sql.Date
+                      ? ((java.sql.Date) result[0]).toLocalDate()
+                      : (LocalDate) result[0];
 
-                      return RevenueByDate.builder()
-                              .date(date)
-                              .revenue((BigDecimal) result[1])
-                              .bookings((Long) result[2])
-                              .build();
-                    })
-            .collect(Collectors.toList());
+              return RevenueByDate.builder()
+                  .date(date)
+                  .revenue((BigDecimal) result[1])
+                  .bookings((Long) result[2])
+                  .build();
+            })
+        .collect(Collectors.toList());
   }
-
 
   private List<CinemaPerformance> getCinemaPerformances(
       LocalDateTime startDate, LocalDateTime endDate) {
