@@ -271,7 +271,7 @@ public class BookingServiceImpl implements BookingService {
         roleNames.contains("MANAGER")
             || roleNames.contains("ROLE_MANAGER")
             || roleNames.contains("ADMIN")
-            || roleNames.contains("ROLE_ADMIN");
+            || roleNames.contains("ROLE_ADMIN") || roleNames.contains("STAFF") || roleNames.contains("ROLE_STAFF");
 
     if (!isAdmin) {
       throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
@@ -387,13 +387,13 @@ public class BookingServiceImpl implements BookingService {
     LocalDateTime showtimeStart = ticketOrder.getMovieScreen().getShowtime();
     LocalDateTime checkInWindow = showtimeStart.minusMinutes(30);
 
-    if (now.isBefore(checkInWindow)) {
-      throw new AppException(ErrorCode.CHECKIN_TOO_EARLY);
-    }
-
-    if (now.isAfter(showtimeStart.plusMinutes(15))) {
-      throw new AppException(ErrorCode.CHECKIN_TOO_LATE);
-    }
+//    if (now.isBefore(checkInWindow)) {
+//      throw new AppException(ErrorCode.CHECKIN_TOO_EARLY);
+//    }
+//
+//    if (now.isAfter(showtimeStart.plusMinutes(15))) {
+//      throw new AppException(ErrorCode.CHECKIN_TOO_LATE);
+//    }
 
     // Check cinema access for non-admin users
     boolean isAdmin =
