@@ -265,56 +265,77 @@ public class BookingServiceImpl implements BookingService {
 
     User user = getUserAuthenticated();
     List<String> roleNames =
-        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+            user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
     boolean isAdmin =
-        roleNames.contains("MANAGER")
-            || roleNames.contains("ROLE_MANAGER")
-            || roleNames.contains("ADMIN")
-            || roleNames.contains("ROLE_ADMIN") || roleNames.contains("STAFF") || roleNames.contains("ROLE_STAFF");
+            roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
-    if (!isAdmin) {
+    boolean isManagerOrStaff =
+            roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER") ||
+                    roleNames.contains("STAFF") || roleNames.contains("ROLE_STAFF");
+
+    if (!isAdmin && !isManagerOrStaff) {
       throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
     }
 
     Pageable pageable = createPageable(searchRequest);
+    Page<TicketOrder> ticketOrders;
 
-    Page<TicketOrder> ticketOrders =
-        ticketOrderRepository.findAllTicketsWithSearch(searchRequest.getTicketCode(), pageable);
+    if (isAdmin) {
+      // Admin can see all tickets
+      ticketOrders = ticketOrderRepository.findAllTicketsWithSearch(
+              searchRequest.getTicketCode(), pageable);
+    } else {
+      // Manager/Staff can only see tickets from their managed cinemas
+      List<Long> managedCinemaIds = user.getManagedCinemas().stream()
+              .map(Cinema::getId)
+              .toList();
+
+      if (managedCinemaIds.isEmpty()) {
+        throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+      }
+
+      ticketOrders = ticketOrderRepository.findTicketsByManagedCinemasWithSearch(
+              managedCinemaIds, searchRequest.getTicketCode(), pageable);
+    }
 
     return ticketOrders.map(this::convertToTicketListResponse);
   }
 
   @Override
   public Page<TicketListResponse> getTicketsByCinema(
-      Long cinemaId, TicketSearchRequest searchRequest) {
+          Long cinemaId, TicketSearchRequest searchRequest) {
     log.info("Getting tickets for cinema ID: {} with search criteria: {}", cinemaId, searchRequest);
 
     User user = getUserAuthenticated();
     List<String> roleNames =
-        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+            user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
     boolean isAdmin =
-        roleNames.contains("MANAGER")
-            || roleNames.contains("ROLE_MANAGER")
-            || roleNames.contains("ADMIN")
-            || roleNames.contains("ROLE_ADMIN");
+            roleNames.contains("ADMIN") || roleNames.contains("ROLE_ADMIN");
 
-    // Uncomment nếu muốn check quyền truy cập cinema
-    // if (!isAdmin) {
-    //   boolean hasAccess = user.getManagedCinemas().stream()
-    //           .anyMatch(cinema -> cinema.getId().equals(cinemaId));
-    //   if (!hasAccess) {
-    //     throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
-    //   }
-    // }
+    boolean isManagerOrStaff =
+            roleNames.contains("MANAGER") || roleNames.contains("ROLE_MANAGER") ||
+                    roleNames.contains("STAFF") || roleNames.contains("ROLE_STAFF");
+
+    if (!isAdmin && !isManagerOrStaff) {
+      throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+    }
+
+    // Check cinema access for non-admin users
+    if (!isAdmin) {
+      boolean hasAccess = user.getManagedCinemas().stream()
+              .anyMatch(cinema -> cinema.getId().equals(cinemaId));
+      if (!hasAccess) {
+        throw new AppException(ErrorCode.NO_PERMISSION_TO_VIEW_TICKETS);
+      }
+    }
 
     Pageable pageable = createPageable(searchRequest);
 
-    // Sử dụng query riêng cho cinema thay vì gọi getAllTickets
     Page<TicketOrder> ticketOrders =
-        ticketOrderRepository.findTicketsByCinemaWithSearch(
-            cinemaId, searchRequest.getTicketCode(), pageable);
+            ticketOrderRepository.findTicketsByCinemaWithSearch(
+                    cinemaId, searchRequest.getTicketCode(), pageable);
 
     return ticketOrders.map(this::convertToTicketListResponse);
   }

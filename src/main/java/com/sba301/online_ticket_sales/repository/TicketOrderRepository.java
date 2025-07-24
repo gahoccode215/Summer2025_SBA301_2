@@ -28,6 +28,18 @@ public interface TicketOrderRepository extends JpaRepository<TicketOrder, Long> 
       nativeQuery = true)
   List<String> findSeatCodesByShowtimeId(@Param("showtimeId") Long showtimeId);
 
+  @Query("SELECT t FROM TicketOrder t " +
+          "JOIN t.movieScreen ms " +
+          "JOIN ms.room r " +
+          "JOIN r.cinema c " +
+          "WHERE c.id IN :cinemaIds " +
+          "AND (:ticketCode IS NULL OR t.ticketCode LIKE %:ticketCode%) " +
+          "ORDER BY t.createdAt DESC")
+  Page<TicketOrder> findTicketsByManagedCinemasWithSearch(
+          @Param("cinemaIds") List<Long> cinemaIds,
+          @Param("ticketCode") String ticketCode,
+          Pageable pageable);
+
   @Query(
       value =
           """
